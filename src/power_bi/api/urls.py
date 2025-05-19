@@ -5,7 +5,7 @@ from .views import *
 
 router = DefaultRouter()
 router.register(
-    "solar-new-id",
+    "solar-interfaces-vgr",
     viewset=SolarInterfacesVGR,
     basename="solar-new-id",
 )
