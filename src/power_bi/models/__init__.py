@@ -1,0 +1,1 @@
+from .tbl_solar_interfaces_vgr import TblSolarInterfacesVgr

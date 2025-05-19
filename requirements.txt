@@ -1,0 +1,29 @@
+# Django & DRF
+Django==4.2.10
+django-cors-headers==4.3.1
+django-filter==23.5
+django-rest-knox==4.2.0
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.1
+drf-yasg==1.21.7
+djangorestframework-filters
+
+# Database
+mssql-django==1.4
+pyodbc
+
+# Data Processing
+polars==1.29.0
+pandas==1.5.3
+
+# Authentication
+PyJWT
+
+# HTTP & Networking
+certifi==2024.2.2
+charset-normalizer==3.3.2
+idna==3.6
+requests==2.31.0
+urllib3==2.2.0
+
+python-dotenv==1.0.1

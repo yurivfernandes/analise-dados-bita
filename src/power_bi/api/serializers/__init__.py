@@ -1,0 +1,1 @@
+from .solar_new_id_serializer import SolarInterfacesVgrSerializer

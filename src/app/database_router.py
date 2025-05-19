@@ -1,0 +1,37 @@
+from django.db.models import Model
+
+
+class MultiDBRouter:
+    """
+    Um roteador de banco de dados para direcionar as operações dos módulos dw_analytics e power_bi.
+    """
+
+    def db_for_read(self, model, **hints):
+        """Direciona leituras das models para o banco correto."""
+        if model._meta.app_label == "dw_analytics":
+            return "dw_analytics"
+        elif model._meta.app_label == "power_bi":
+            return "power_bi"
+        return None
+
+    def db_for_write(self, model, **hints):
+        """Direciona escritas das models para o banco correto."""
+        if model._meta.app_label == "dw_analytics":
+            return "dw_analytics"
+        elif model._meta.app_label == "power_bi":
+            return "power_bi"
+        return None
+
+    def allow_relation(self, obj1, obj2, **hints):
+        """Permite relações entre objetos do mesmo banco."""
+        if obj1._state.db == obj2._state.db:
+            return True
+        return None
+
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
+        """Impede migrações nos bancos dw_analytics e power_bi."""
+        if app_label == "dw_analytics":
+            return db == "dw_analytics"
+        elif app_label == "power_bi":
+            return db == "power_bi"
+        return None
