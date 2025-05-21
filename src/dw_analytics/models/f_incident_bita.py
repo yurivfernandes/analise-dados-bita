@@ -2,6 +2,7 @@ from django.db import models
 
 
 class FIncidentsBita(models.Model):
+    id = models.AutoField(primary_key=True)
     number = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
@@ -69,6 +70,7 @@ class FIncidentsBita(models.Model):
         null=True,
     )
     priority = models.IntegerField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "f_incidents_bita"

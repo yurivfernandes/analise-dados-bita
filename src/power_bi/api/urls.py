@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import *
@@ -10,6 +10,18 @@ router.register(
     basename="solar-new-id",
 )
 
-urlpatterns = []
+router.register(
+    "solar-id-vgr-interface-vgr-corrigido",
+    viewset=SolarIDVGRInterfaceVGRCorrigido,
+    basename="solar-new-id",
+)
+
+urlpatterns = [
+    path(
+        "load-interface-new-id-vgr/",
+        view=LoadInterfaceNewIDVGR.as_view(),
+        name="interfaces-new",
+    ),
+]
 
 urlpatterns += router.urls

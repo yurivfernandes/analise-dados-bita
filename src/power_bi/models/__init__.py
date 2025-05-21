@@ -1,1 +1,2 @@
+from .solar_id_vgr_interface_vgr_corrigido import SolarIDVGRInterfaceCorrigido
 from .tbl_solar_interfaces_vgr import TblSolarInterfacesVgr

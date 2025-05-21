@@ -29,9 +29,9 @@ class MultiDBRouter:
         return None
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
-        """Impede migrações nos bancos dw_analytics e power_bi."""
+        """Direciona as migrações para o banco correto"""
         if app_label == "dw_analytics":
             return db == "dw_analytics"
         elif app_label == "power_bi":
             return db == "power_bi"
-        return None
+        return True
