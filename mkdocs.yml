@@ -8,39 +8,18 @@ nav:
     - Boas Práticas: auxiliares/boas_praticas.md
     - Requirements: auxiliares/requirements.md
   - Conceitos Django:
-    - Visão Geral: auxiliares/index.md
-    - Boas Práticas: auxiliares/boas_praticas.md
-    - Requirements: auxiliares/requirements.md
-    - Conceitos:
-      - Visão Geral: auxiliares/conceitos/index.md
-      - URLs: auxiliares/conceitos/urls.md
-      - Serializers: auxiliares/conceitos/serializers.md
-      - Views: auxiliares/conceitos/views.md
-      - Migrations: auxiliares/conceitos/migrations.md
-      - Admin: auxiliares/conceitos/admin.md
-      - Tests: auxiliares/conceitos/tests.md
-      - Pipelines: auxiliares/conceitos/pipelines.md
-    - Models:
-      - Tipo de Dados: auxiliares/models/tipos_de_dados.md
+    - Visão Geral: auxiliares/conceitos/index.md
+    - Models: auxiliares/conceitos/models.md
+    - Views: auxiliares/conceitos/views.md
+    - Pipelines: auxiliares/conceitos/pipelines.md
+    - Tipos de Dados: auxiliares/models/tipos_de_dados.md
   - Apps:
-    - app:
-      - Visão Geral: app/index.md
-      - asgi: app/asgi.md
-      - database_router: app/database_router.md
-      - settings: app/settings.md
-      - urls: app/urls.md
-      - wsgi: app/wsgi.md
-      - Utils:
-        - Visão Geral: app/utils/index.md
-        - Pipeline: app/utils/pipeline.md
-        - Paginators: app/utils/paginators.md
     - DW Analytics:
       - Visão Geral: dw_analytics/index.md
       - Models:
         - Visão Geral: dw_analytics/models/index.md
         - Todas as Models: dw_analytics/models/todas_as_models.md
       - API:
-        - Visão Geral: dw_analytics/api/index.md
         - Views: 
           - Visão Geral: dw_analytics/api/views/index.md
           - F Incidents Bita: dw_analytics/api/views/f_incidents_bita_viewset.md
@@ -55,7 +34,6 @@ nav:
         - Visão Geral: power_bi/models/index.md
         - Todas as Models: power_bi/models/todas_as_models.md
       - API:
-        - Visão Geral: power_bi/api/index.md
         - Views:
           - Visão Geral: power_bi/api/views/index.md
           - Solar Interfaces: power_bi/api/views/solar_interfaces_vgr.md
@@ -64,12 +42,19 @@ nav:
         - Serializers:
           - Visão Geral: power_bi/api/serializers/index.md
           - Solar New ID: power_bi/api/serializers/solar_new_id_serializer.md
+          - Solar ID VGR Interface VGR Corrigido: power_bi/api/serializers/solar_id_vgr_interface_vgr_corrigido_serializer.md
         - URLs: power_bi/api/urls.md
       - Tasks:
         - Visão Geral: power_bi/tasks/index.md
         - Load Interface: power_bi/tasks/load_interface_new_id.md
       - Utils:
         - Visão Geral: power_bi/utils/mixin.md
+    -App:
+      - Utils:
+        - Pipeline: app/utils/pipeline.md
+        - Paginators: app/utils/paginators.md
+        - Database Router: app/utils/database_router.md
+        - Index: app/utils/index.md
 
 theme:
   name: material
@@ -99,6 +84,18 @@ theme:
     - navigation.expand
     - search.highlight
 
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_if_no_docstring: true
+            show_root_heading: true
+            show_source: false
+
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
@@ -113,8 +110,12 @@ markdown_extensions:
   - toc:
       permalink: true
 
+extra:
+  assets_dir: assets
+
 extra_css:
   - stylesheets/extra.css
 extra_javascript: []
-site_dir: ./src/docs
-use_directory_urls: false
+extra_files:
+  - htsite_dir: ../src/docs
+.site_dir: ./src/docs
