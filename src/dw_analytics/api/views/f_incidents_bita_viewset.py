@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 
-from app.paginators import CustomLargePagination
+from app.utils.paginators import CustomLargePagination
 
 from ...models import FIncidentsBita
 from ..serializers import FIncidentsBitaSerializer
