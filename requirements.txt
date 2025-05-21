@@ -27,3 +27,9 @@ requests==2.31.0
 urllib3==2.2.0
 
 python-dotenv==1.0.1
+
+# Documentation
+mkdocs==1.5.3
+mkdocs-material==9.5.12
+mkdocstrings==0.24.0
+mkdocstrings-python==1.7.5

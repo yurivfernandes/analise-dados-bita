@@ -1,0 +1,120 @@
+site_name: Análise de Dados BITA
+site_description: Documentação do projeto de análise de dados BITA
+
+nav:
+  - Início: index.md
+  - Projeto:
+    - Configuração: auxiliares/conceitos/index.md
+    - Boas Práticas: auxiliares/boas_praticas.md
+    - Requirements: auxiliares/requirements.md
+  - Conceitos Django:
+    - Visão Geral: auxiliares/index.md
+    - Boas Práticas: auxiliares/boas_praticas.md
+    - Requirements: auxiliares/requirements.md
+    - Conceitos:
+      - Visão Geral: auxiliares/conceitos/index.md
+      - URLs: auxiliares/conceitos/urls.md
+      - Serializers: auxiliares/conceitos/serializers.md
+      - Views: auxiliares/conceitos/views.md
+      - Migrations: auxiliares/conceitos/migrations.md
+      - Admin: auxiliares/conceitos/admin.md
+      - Tests: auxiliares/conceitos/tests.md
+      - Pipelines: auxiliares/conceitos/pipelines.md
+    - Models:
+      - Tipo de Dados: auxiliares/models/tipos_de_dados.md
+  - Apps:
+    - app:
+      - Visão Geral: app/index.md
+      - asgi: app/asgi.md
+      - database_router: app/database_router.md
+      - settings: app/settings.md
+      - urls: app/urls.md
+      - wsgi: app/wsgi.md
+      - Utils:
+        - Visão Geral: app/utils/index.md
+        - Pipeline: app/utils/pipeline.md
+        - Paginators: app/utils/paginators.md
+    - DW Analytics:
+      - Visão Geral: dw_analytics/index.md
+      - Models:
+        - Visão Geral: dw_analytics/models/index.md
+        - Todas as Models: dw_analytics/models/todas_as_models.md
+      - API:
+        - Visão Geral: dw_analytics/api/index.md
+        - Views: 
+          - Visão Geral: dw_analytics/api/views/index.md
+          - F Incidents Bita: dw_analytics/api/views/f_incidents_bita_viewset.md
+        - Serializers:
+          - Visão Geral: dw_analytics/api/serializers/index.md
+          - F Incidents Bita: dw_analytics/api/serializers/f_incidents_bita_serializer.md
+        - URLs: dw_analytics/api/urls.md
+      - Migrations: dw_analytics/migrations/index.md
+    - Power BI:
+      - Visão Geral: power_bi/index.md
+      - Models:
+        - Visão Geral: power_bi/models/index.md
+        - Todas as Models: power_bi/models/todas_as_models.md
+      - API:
+        - Visão Geral: power_bi/api/index.md
+        - Views:
+          - Visão Geral: power_bi/api/views/index.md
+          - Solar Interfaces: power_bi/api/views/solar_interfaces_vgr.md
+          - Solar ID VGR: power_bi/api/views/solar_id_vgr_interface_vgr_corrigido_viewset.md
+          - Load Interface: power_bi/api/views/load_interfaces_new_id.md
+        - Serializers:
+          - Visão Geral: power_bi/api/serializers/index.md
+          - Solar New ID: power_bi/api/serializers/solar_new_id_serializer.md
+        - URLs: power_bi/api/urls.md
+      - Tasks:
+        - Visão Geral: power_bi/tasks/index.md
+        - Load Interface: power_bi/tasks/load_interface_new_id.md
+      - Utils:
+        - Visão Geral: power_bi/utils/mixin.md
+
+theme:
+  name: material
+  logo: https://github.com/yurivfernandes/projeto-base-vita/blob/main/frontend/src/assets/logo_login.svg
+  favicon: https://github.com/yurivfernandes/projeto-base-vita/blob/main/frontend/src/assets/logo_login.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Mudar para modo escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Mudar para modo claro
+  language: pt-BR
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+extra_css:
+  - stylesheets/extra.css
+extra_javascript: []
+site_dir: ./src/docs
+use_directory_urls: false

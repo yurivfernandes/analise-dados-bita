@@ -1,0 +1,2298 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentação do projeto de análise de dados BITA">
+      
+      
+      
+      
+        <link rel="prev" href="database_router.html">
+      
+      
+        <link rel="next" href="urls.html">
+      
+      <link rel="icon" href="https://github.com/yurivfernandes/projeto-base-vita/blob/main/frontend/src/assets/logo_login.svg">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.0.5">
+    
+    
+      
+        <title>settings - Análise de Dados BITA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.558e4712.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="deep-purple">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#settingspy" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="../index.html" title="Análise de Dados BITA" class="md-header__button md-logo" aria-label="Análise de Dados BITA" data-md-component="logo">
+      
+  <img src="https://github.com/yurivfernandes/projeto-base-vita/blob/main/frontend/src/assets/logo_login.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Análise de Dados BITA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              settings
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="deep-purple"  aria-label="Mudar para modo escuro"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Mudar para modo escuro" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="deep-purple"  aria-label="Mudar para modo claro"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Mudar para modo claro" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../index.html" class="md-tabs__link">
+      Início
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../auxiliares/conceitos/index.html" class="md-tabs__link">
+        Projeto
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../auxiliares/index.html" class="md-tabs__link">
+        Conceitos Django
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="index.html" class="md-tabs__link md-tabs__link--active">
+        Apps
+      </a>
+    </li>
+  
+
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="Análise de Dados BITA" class="md-nav__button md-logo" aria-label="Análise de Dados BITA" data-md-component="logo">
+      
+  <img src="https://github.com/yurivfernandes/projeto-base-vita/blob/main/frontend/src/assets/logo_login.svg" alt="logo">
+
+    </a>
+    Análise de Dados BITA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        Início
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" tabindex="0" aria-expanded="false">
+          Projeto
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Projeto" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Projeto
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/index.html" class="md-nav__link">
+        Configuração
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/boas_praticas.html" class="md-nav__link">
+        Boas Práticas
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/requirements.html" class="md-nav__link">
+        Requirements
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" tabindex="0" aria-expanded="false">
+          Conceitos Django
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Conceitos Django" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Conceitos Django
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/boas_praticas.html" class="md-nav__link">
+        Boas Práticas
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/requirements.html" class="md-nav__link">
+        Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_4" tabindex="0" aria-expanded="false">
+          Conceitos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Conceitos" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          Conceitos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/urls.md" class="md-nav__link">
+        URLs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/serializers.html" class="md-nav__link">
+        Serializers
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/views.html" class="md-nav__link">
+        Views
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/migrations.html" class="md-nav__link">
+        Migrations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/admin.html" class="md-nav__link">
+        Admin
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/tests.html" class="md-nav__link">
+        Tests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/conceitos/pipelines.html" class="md-nav__link">
+        Pipelines
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_5" type="checkbox" id="__nav_3_5" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_5" tabindex="0" aria-expanded="false">
+          Models
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Models" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_5">
+          <span class="md-nav__icon md-icon"></span>
+          Models
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auxiliares/models/tipos_de_dados.html" class="md-nav__link">
+        Tipo de Dados
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" tabindex="0" aria-expanded="true">
+          Apps
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Apps" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Apps
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_1" tabindex="0" aria-expanded="true">
+          app
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="app" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_1">
+          <span class="md-nav__icon md-icon"></span>
+          app
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="asgi.html" class="md-nav__link">
+        asgi
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="database_router.html" class="md-nav__link">
+        database_router
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          settings
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="settings.html" class="md-nav__link md-nav__link--active">
+        settings
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Indice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Indice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-e" class="md-nav__link">
+    O que é?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#para-que-serve" class="md-nav__link">
+    Para que serve?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explicacao-ponto-a-ponto" class="md-nav__link">
+    Explicação ponto a ponto
+  </a>
+  
+    <nav class="md-nav" aria-label="Explicação ponto a ponto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-imports-e-carregamento-de-variaveis-de-ambiente" class="md-nav__link">
+    1. Imports e carregamento de variáveis de ambiente
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-diretorio-base-do-projeto" class="md-nav__link">
+    2. Diretório base do projeto
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-seguranca" class="md-nav__link">
+    3. Segurança
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-apps-instalados" class="md-nav__link">
+    4. Apps instalados
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-middlewares" class="md-nav__link">
+    5. Middlewares
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-urls-e-templates" class="md-nav__link">
+    6. URLs e Templates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-bancos-de-dados" class="md-nav__link">
+    7. Bancos de dados
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-validacao-de-senha" class="md-nav__link">
+    8. Validação de senha
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-internacionalizacao" class="md-nav__link">
+    9. Internacionalização
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-arquivos-estaticos-e-media" class="md-nav__link">
+    10. Arquivos estáticos e media
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-chave-primaria-padrao" class="md-nav__link">
+    11. Chave primária padrão
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-usuario-customizado" class="md-nav__link">
+    12. Usuário customizado
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-cors" class="md-nav__link">
+    13. CORS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-django-rest-framework" class="md-nav__link">
+    14. Django REST Framework
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-filtros" class="md-nav__link">
+    15. Filtros
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-pode-e-nao-pode-alterar" class="md-nav__link">
+    O que pode e não pode alterar
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-adicionar-um-novo-app" class="md-nav__link">
+    Como adicionar um novo app
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="urls.html" class="md-nav__link">
+        urls
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="wsgi.html" class="md-nav__link">
+        wsgi
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_1_7" type="checkbox" id="__nav_4_1_7" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_1_7" tabindex="0" aria-expanded="false">
+          Utils
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Utils" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_1_7">
+          <span class="md-nav__icon md-icon"></span>
+          Utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="utils/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="utils/pipeline.html" class="md-nav__link">
+        Pipeline
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="utils/paginators.html" class="md-nav__link">
+        Paginators
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2" tabindex="0" aria-expanded="false">
+          DW Analytics
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="DW Analytics" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          DW Analytics
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_2_2" type="checkbox" id="__nav_4_2_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2_2" tabindex="0" aria-expanded="false">
+          Models
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Models" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Models
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/models/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/models/todas_as_models.html" class="md-nav__link">
+        Todas as Models
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_2_3" type="checkbox" id="__nav_4_2_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2_3" tabindex="0" aria-expanded="false">
+          API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/api/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_2_3_2" type="checkbox" id="__nav_4_2_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2_3_2" tabindex="0" aria-expanded="false">
+          Views
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Views" data-md-level="4">
+        <label class="md-nav__title" for="__nav_4_2_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Views
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/api/views/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/api/views/f_incidents_bita_viewset.html" class="md-nav__link">
+        F Incidents Bita
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_2_3_3" type="checkbox" id="__nav_4_2_3_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2_3_3" tabindex="0" aria-expanded="false">
+          Serializers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Serializers" data-md-level="4">
+        <label class="md-nav__title" for="__nav_4_2_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Serializers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/api/serializers/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/api/serializers/f_incidents_bita_serializer.html" class="md-nav__link">
+        F Incidents Bita
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/api/urls.html" class="md-nav__link">
+        URLs
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dw_analytics/migrations/index.html" class="md-nav__link">
+        Migrations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_3" type="checkbox" id="__nav_4_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3" tabindex="0" aria-expanded="false">
+          Power BI
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Power BI" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_3">
+          <span class="md-nav__icon md-icon"></span>
+          Power BI
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_3_2" type="checkbox" id="__nav_4_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3_2" tabindex="0" aria-expanded="false">
+          Models
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Models" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Models
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/models/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/models/todas_as_models.html" class="md-nav__link">
+        Todas as Models
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_3_3" type="checkbox" id="__nav_4_3_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3_3" tabindex="0" aria-expanded="false">
+          API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_3_3_2" type="checkbox" id="__nav_4_3_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3_3_2" tabindex="0" aria-expanded="false">
+          Views
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Views" data-md-level="4">
+        <label class="md-nav__title" for="__nav_4_3_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Views
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/views/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/views/solar_interfaces_vgr.html" class="md-nav__link">
+        Solar Interfaces
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/views/solar_id_vgr_interface_vgr_corrigido_viewset.html" class="md-nav__link">
+        Solar ID VGR
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/views/load_interfaces_new_id.html" class="md-nav__link">
+        Load Interface
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_3_3_3" type="checkbox" id="__nav_4_3_3_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3_3_3" tabindex="0" aria-expanded="false">
+          Serializers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Serializers" data-md-level="4">
+        <label class="md-nav__title" for="__nav_4_3_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Serializers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/serializers/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/serializers/solar_new_id_serializer.html" class="md-nav__link">
+        Solar New ID
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/api/urls.html" class="md-nav__link">
+        URLs
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_3_4" type="checkbox" id="__nav_4_3_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3_4" tabindex="0" aria-expanded="false">
+          Tasks
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tasks" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tasks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/tasks/index.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/tasks/load_interface_new_id.html" class="md-nav__link">
+        Load Interface
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_3_5" type="checkbox" id="__nav_4_3_5" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3_5" tabindex="0" aria-expanded="false">
+          Utils
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Utils" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_3_5">
+          <span class="md-nav__icon md-icon"></span>
+          Utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../power_bi/utils/mixin.html" class="md-nav__link">
+        Visão Geral
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Indice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Indice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-e" class="md-nav__link">
+    O que é?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#para-que-serve" class="md-nav__link">
+    Para que serve?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explicacao-ponto-a-ponto" class="md-nav__link">
+    Explicação ponto a ponto
+  </a>
+  
+    <nav class="md-nav" aria-label="Explicação ponto a ponto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-imports-e-carregamento-de-variaveis-de-ambiente" class="md-nav__link">
+    1. Imports e carregamento de variáveis de ambiente
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-diretorio-base-do-projeto" class="md-nav__link">
+    2. Diretório base do projeto
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-seguranca" class="md-nav__link">
+    3. Segurança
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-apps-instalados" class="md-nav__link">
+    4. Apps instalados
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-middlewares" class="md-nav__link">
+    5. Middlewares
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-urls-e-templates" class="md-nav__link">
+    6. URLs e Templates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-bancos-de-dados" class="md-nav__link">
+    7. Bancos de dados
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-validacao-de-senha" class="md-nav__link">
+    8. Validação de senha
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-internacionalizacao" class="md-nav__link">
+    9. Internacionalização
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-arquivos-estaticos-e-media" class="md-nav__link">
+    10. Arquivos estáticos e media
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-chave-primaria-padrao" class="md-nav__link">
+    11. Chave primária padrão
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-usuario-customizado" class="md-nav__link">
+    12. Usuário customizado
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-cors" class="md-nav__link">
+    13. CORS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-django-rest-framework" class="md-nav__link">
+    14. Django REST Framework
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-filtros" class="md-nav__link">
+    15. Filtros
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-pode-e-nao-pode-alterar" class="md-nav__link">
+    O que pode e não pode alterar
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-adicionar-um-novo-app" class="md-nav__link">
+    Como adicionar um novo app
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="settingspy"><code>settings.py</code><a class="headerlink" href="#settingspy" title="Permanent link">&para;</a></h1>
+<h2 id="o-que-e">O que é?<a class="headerlink" href="#o-que-e" title="Permanent link">&para;</a></h2>
+<p>Arquivo central de configuração do Django. Ele define todas as variáveis e parâmetros que controlam o funcionamento do projeto, desde bancos de dados até autenticação, localização, arquivos estáticos e apps instalados.</p>
+<hr />
+<h2 id="para-que-serve">Para que serve?<a class="headerlink" href="#para-que-serve" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Centralizar todas as configurações do projeto.</li>
+<li>Permitir fácil customização do ambiente (desenvolvimento, produção, testes).</li>
+<li>Garantir que todos os apps e integrações funcionem corretamente.</li>
+</ul>
+<hr />
+<h2 id="explicacao-ponto-a-ponto">Explicação ponto a ponto<a class="headerlink" href="#explicacao-ponto-a-ponto" title="Permanent link">&para;</a></h2>
+<h3 id="1-imports-e-carregamento-de-variaveis-de-ambiente">1. Imports e carregamento de variáveis de ambiente<a class="headerlink" href="#1-imports-e-carregamento-de-variaveis-de-ambiente" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">os</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">load_dotenv</span><span class="p">()</span>
+</code></pre></div>
+- <code>os</code> e <code>Path</code> são usados para manipular caminhos e variáveis do sistema.
+- <code>load_dotenv()</code> carrega variáveis do arquivo <code>.env</code> para proteger dados sensíveis (senhas, usuários, etc).</p>
+<hr />
+<h3 id="2-diretorio-base-do-projeto">2. Diretório base do projeto<a class="headerlink" href="#2-diretorio-base-do-projeto" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+</code></pre></div>
+- Define o diretório raiz do projeto, usado para construir caminhos relativos (ex: arquivos estáticos, media).</p>
+<hr />
+<h3 id="3-seguranca">3. Segurança<a class="headerlink" href="#3-seguranca" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s2">&quot;django-insecure-...&quot;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">ALLOWED_HOSTS</span> <span class="o">=</span> <span class="p">[]</span>
+</code></pre></div>
+- <code>SECRET_KEY</code>: Chave secreta usada para criptografia interna do Django.
+- <code>DEBUG</code>: Ativa/desativa modo debug (NUNCA deixe True em produção).
+- <code>ALLOWED_HOSTS</code>: Lista de domínios permitidos para acessar o projeto.</p>
+<hr />
+<h3 id="4-apps-instalados">4. Apps instalados<a class="headerlink" href="#4-apps-instalados" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="s2">&quot;django.contrib.admin&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="s2">&quot;django.contrib.auth&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="s2">&quot;django.contrib.contenttypes&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="s2">&quot;django.contrib.sessions&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s2">&quot;django.contrib.messages&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="s2">&quot;django.contrib.staticfiles&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="s2">&quot;corsheaders&quot;</span><span class="p">,</span>  <span class="c1"># CORS para requisições externas</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="s2">&quot;rest_framework&quot;</span><span class="p">,</span>  <span class="c1"># Django REST Framework</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="s2">&quot;django_filters&quot;</span><span class="p">,</span>  <span class="c1"># Filtros para APIs</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="s2">&quot;rest_framework.authtoken&quot;</span><span class="p">,</span>  <span class="c1"># Autenticação por token</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="s2">&quot;access&quot;</span><span class="p">,</span>  <span class="c1"># App de autenticação customizado</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="s2">&quot;dw_analytics&quot;</span><span class="p">,</span>  <span class="c1"># App de analytics</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="s2">&quot;power_bi&quot;</span><span class="p">,</span>  <span class="c1"># App de integração Power BI</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">]</span>
+</code></pre></div>
+- Cada string é o nome de um app Django.
+- <strong>Para adicionar um novo app</strong>: crie o app com <code>python manage.py startapp nome_do_app</code> e adicione <code>"nome_do_app"</code> à lista.
+- <strong>Por quê?</strong>: Só apps listados aqui são reconhecidos pelo Django (migrações, admin, etc).</p>
+<hr />
+<h3 id="5-middlewares">5. Middlewares<a class="headerlink" href="#5-middlewares" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">MIDDLEWARE</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="s2">&quot;corsheaders.middleware.CorsMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="s2">&quot;django.middleware.security.SecurityMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="s2">&quot;django.contrib.sessions.middleware.SessionMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="s2">&quot;django.middleware.common.CommonMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="s2">&quot;django.middleware.csrf.CsrfViewMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="s2">&quot;django.contrib.auth.middleware.AuthenticationMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="s2">&quot;django.contrib.messages.middleware.MessageMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="s2">&quot;django.middleware.clickjacking.XFrameOptionsMiddleware&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">]</span>
+</code></pre></div>
+- Middlewares são camadas intermediárias que processam requisições e respostas.
+- <strong>Ordem importa</strong>: CORS deve vir antes de outros middlewares para funcionar corretamente.</p>
+<hr />
+<h3 id="6-urls-e-templates">6. URLs e Templates<a class="headerlink" href="#6-urls-e-templates" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">ROOT_URLCONF</span> <span class="o">=</span> <span class="s2">&quot;app.urls&quot;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">TEMPLATES</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="p">{</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="s2">&quot;BACKEND&quot;</span><span class="p">:</span> <span class="s2">&quot;django.template.backends.django.DjangoTemplates&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="s2">&quot;DIRS&quot;</span><span class="p">:</span> <span class="p">[],</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="s2">&quot;APP_DIRS&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="s2">&quot;OPTIONS&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>            <span class="s2">&quot;context_processors&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>                <span class="s2">&quot;django.template.context_processors.debug&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>                <span class="s2">&quot;django.template.context_processors.request&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>                <span class="s2">&quot;django.contrib.auth.context_processors.auth&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>                <span class="s2">&quot;django.contrib.messages.context_processors.messages&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>            <span class="p">],</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="p">},</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="p">},</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="p">]</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">WSGI_APPLICATION</span> <span class="o">=</span> <span class="s2">&quot;app.wsgi.application&quot;</span>
+</code></pre></div>
+- <code>ROOT_URLCONF</code>: Arquivo principal de rotas.
+- <code>TEMPLATES</code>: Configuração do sistema de templates do Django.
+- <code>WSGI_APPLICATION</code>: Ponto de entrada para servidores WSGI.</p>
+<hr />
+<h3 id="7-bancos-de-dados">7. Bancos de dados<a class="headerlink" href="#7-bancos-de-dados" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">DATABASES</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="s2">&quot;ENGINE&quot;</span><span class="p">:</span> <span class="s2">&quot;mssql&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DB_NAME_APLICATION&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s2">&quot;USER&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DB_USER&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s2">&quot;PASSWORD&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DB_PASSWORD&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="s2">&quot;HOST&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DB_HOST&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="s2">&quot;PORT&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DB_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;1433&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="s2">&quot;OPTIONS&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="s2">&quot;driver&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DB_DRIVER&quot;</span><span class="p">,</span> <span class="s2">&quot;SQL Server Native Client 11.0&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>            <span class="s2">&quot;Trusted_Connection&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="p">},</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="p">},</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="s2">&quot;dw_analytics&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="s2">&quot;power_bi&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="p">}</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="n">DATABASE_ROUTERS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;app.database_router.MultiDBRouter&quot;</span><span class="p">]</span>
+</code></pre></div>
+- Permite múltiplos bancos de dados, cada um com suas credenciais.
+- <code>DATABASE_ROUTERS</code> define a lógica para direcionar queries para o banco correto.
+- <strong>Não remova</strong>: Essencial para o funcionamento dos apps que usam bancos separados.</p>
+<hr />
+<h3 id="8-validacao-de-senha">8. Validação de senha<a class="headerlink" href="#8-validacao-de-senha" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">AUTH_PASSWORD_VALIDATORS</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="p">{</span><span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;django.contrib.auth.password_validation.UserAttributeSimilarityValidator&quot;</span><span class="p">},</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="p">{</span><span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;django.contrib.auth.password_validation.MinimumLengthValidator&quot;</span><span class="p">},</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="p">{</span><span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;django.contrib.auth.password_validation.CommonPasswordValidator&quot;</span><span class="p">},</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="p">{</span><span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;django.contrib.auth.password_validation.NumericPasswordValidator&quot;</span><span class="p">},</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">]</span>
+</code></pre></div>
+- Define regras para senhas de usuários.</p>
+<hr />
+<h3 id="9-internacionalizacao">9. Internacionalização<a class="headerlink" href="#9-internacionalizacao" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">LANGUAGE_CODE</span> <span class="o">=</span> <span class="s2">&quot;en-us&quot;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">TIME_ZONE</span> <span class="o">=</span> <span class="s2">&quot;UTC&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">USE_I18N</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">USE_TZ</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+- Configura idioma e fuso horário padrão.</p>
+<hr />
+<h3 id="10-arquivos-estaticos-e-media">10. Arquivos estáticos e media<a class="headerlink" href="#10-arquivos-estaticos-e-media" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">STATIC_URL</span> <span class="o">=</span> <span class="s2">&quot;static/&quot;</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">MEDIA_URL</span> <span class="o">=</span> <span class="s2">&quot;/media/&quot;</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">MEDIA_ROOT</span> <span class="o">=</span> <span class="n">BASE_DIR</span> <span class="o">/</span> <span class="s2">&quot;cadastro/arquivos&quot;</span>
+</code></pre></div>
+- Define onde arquivos estáticos e uploads de usuários são armazenados.</p>
+<hr />
+<h3 id="11-chave-primaria-padrao">11. Chave primária padrão<a class="headerlink" href="#11-chave-primaria-padrao" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">DEFAULT_AUTO_FIELD</span> <span class="o">=</span> <span class="s2">&quot;django.db.models.BigAutoField&quot;</span>
+</code></pre></div>
+- Define o tipo padrão de campo para chaves primárias.</p>
+<hr />
+<h3 id="12-usuario-customizado">12. Usuário customizado<a class="headerlink" href="#12-usuario-customizado" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">AUTH_USER_MODEL</span> <span class="o">=</span> <span class="s2">&quot;access.User&quot;</span>
+</code></pre></div>
+- Define o modelo de usuário customizado do app <code>access</code>.</p>
+<hr />
+<h3 id="13-cors">13. CORS<a class="headerlink" href="#13-cors" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">CORS_ALLOW_ALL_ORIGINS</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">CORS_ALLOWED_ORIGINS</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="s2">&quot;http://localhost:5173&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="s2">&quot;http://127.0.0.1:5173&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="p">]</span>
+</code></pre></div>
+- Permite requisições de origens externas (ex: frontend em React).</p>
+<hr />
+<h3 id="14-django-rest-framework">14. Django REST Framework<a class="headerlink" href="#14-django-rest-framework" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">REST_FRAMEWORK</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="s2">&quot;DEFAULT_PAGINATION_CLASS&quot;</span><span class="p">:</span> <span class="s2">&quot;rest_framework.pagination.PageNumberPagination&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="s2">&quot;PAGE_SIZE&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="s2">&quot;DEFAULT_FILTER_BACKENDS&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>        <span class="s2">&quot;django_filters.rest_framework.DjangoFilterBackend&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>        <span class="s2">&quot;rest_framework.filters.SearchFilter&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>        <span class="s2">&quot;rest_framework.filters.OrderingFilter&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="p">],</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="s2">&quot;DEFAULT_AUTHENTICATION_CLASSES&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>        <span class="s2">&quot;rest_framework.authentication.TokenAuthentication&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>        <span class="s2">&quot;rest_framework.authentication.SessionAuthentication&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="p">],</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>    <span class="s2">&quot;DEFAULT_PERMISSION_CLASSES&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>        <span class="s2">&quot;rest_framework.permissions.IsAuthenticated&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>    <span class="p">],</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="p">}</span>
+</code></pre></div>
+- Configura paginação, autenticação, filtros e permissões padrão para APIs.</p>
+<hr />
+<h3 id="15-filtros">15. Filtros<a class="headerlink" href="#15-filtros" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">FILTERS_DEFAULT_LOOKUP_EXPR</span> <span class="o">=</span> <span class="s2">&quot;icontains&quot;</span>
+</code></pre></div>
+- Define o lookup padrão para filtros (busca insensível a maiúsculas/minúsculas).</p>
+<hr />
+<h2 id="o-que-pode-e-nao-pode-alterar">O que pode e não pode alterar<a class="headerlink" href="#o-que-pode-e-nao-pode-alterar" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Pode</strong>:</li>
+<li>Adicionar apps em <code>INSTALLED_APPS</code>.</li>
+<li>Adicionar middlewares.</li>
+<li>Alterar variáveis de ambiente para bancos de dados.</li>
+<li>
+<p>Customizar configurações do REST Framework conforme necessidade.</p>
+</li>
+<li>
+<p><strong>Não pode</strong>:</p>
+</li>
+<li>Remover variáveis essenciais (<code>DATABASES</code>, <code>INSTALLED_APPS</code>, <code>ROOT_URLCONF</code>, <code>WSGI_APPLICATION</code>).</li>
+<li>Alterar <code>SECRET_KEY</code> em produção sem migrar tokens/senhas.</li>
+<li>Deixar <code>DEBUG=True</code> em produção.</li>
+</ul>
+<hr />
+<h2 id="como-adicionar-um-novo-app">Como adicionar um novo app<a class="headerlink" href="#como-adicionar-um-novo-app" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Crie o app:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>python<span class="w"> </span>manage.py<span class="w"> </span>startapp<span class="w"> </span>nome_do_app
+</code></pre></div></li>
+<li>Adicione <code>"nome_do_app"</code> em <code>INSTALLED_APPS</code>.</li>
+<li>(Opcional) Crie rotas e inclua no arquivo de URLs principal.</li>
+</ol>
+<p><strong>Por quê?</strong><br />
+Sem adicionar o app, o Django não reconhece modelos, rotas ou comandos do novo app.</p>
+<hr />
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../assets/javascripts/workers/search.e5c33ebb.min.js", "translations": {"clipboard.copied": "Copiado para \u00e1rea de Transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de Transfer\u00eancia", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Perdido", "select.version": "Selecione a vers\u00e3o"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.51d95adb.min.js"></script>
+      
+    
+  </body>
+</html>
