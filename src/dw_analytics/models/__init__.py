@@ -2,7 +2,7 @@ from .d_assignment_group import DAssignmentGroup
 from .d_company import DCompany
 from .d_contract import DContract
 from .d_operacao import DOperacao
-from .d_premissas import DPremissas
+from .d_premissa import DPremissa
 from .d_resolved_by import DResolvedBy
 from .d_resolved_by_assignment_group import DResolvedByAssignmentGroup
 from .d_sorted_ticket import DSortedTicket
