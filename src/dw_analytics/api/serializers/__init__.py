@@ -1,2 +1,6 @@
 from .f_incident_fields_serializer import FieldMetadataSerializer
 from .f_incidents_bita_serializer import FIncidentsBitaSerializer
+from .incident_detail_serializer import IncidentDetailSerializer
+from .incident_task_serializer import IncidentTaskSerializer
+from .planta_vgr_serializer import PlantaVgrSerializer
+from .sae_localidades_serializer import SaeLocalidadesSerializer

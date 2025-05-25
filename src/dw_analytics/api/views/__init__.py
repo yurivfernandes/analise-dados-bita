@@ -1,2 +1,3 @@
-from .f_incidents_bita_viewset import FIncidentsBitaViewset
 from .f_incident_fields_view import FIncidentFieldsView
+from .f_incidents_bita_viewset import FIncidentsBitaViewset
+from .incident_view import IncidentViewSet

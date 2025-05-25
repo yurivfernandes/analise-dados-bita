@@ -9,6 +9,7 @@ router.register(
     viewset=FIncidentsBitaViewset,
     basename="f-incidents-bita",
 )
+router.register("incidents", viewset=IncidentViewSet, basename="incidents")
 
 urlpatterns = [
     path(
