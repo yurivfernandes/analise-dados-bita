@@ -10,6 +10,12 @@ router.register(
     basename="f-incidents-bita",
 )
 
-urlpatterns = []
+urlpatterns = [
+    path(
+        "incident-fields/",
+        FIncidentFieldsView.as_view(),
+        name="incident-fields",
+    ),
+]
 
 urlpatterns += router.urls

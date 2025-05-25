@@ -1,1 +1,2 @@
+from .f_incident_fields_serializer import FieldMetadataSerializer
 from .f_incidents_bita_serializer import FIncidentsBitaSerializer
