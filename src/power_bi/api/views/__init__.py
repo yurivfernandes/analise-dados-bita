@@ -1,5 +1,5 @@
-from .load_interfaces_new_id import LoadInterfaceNewIDVGR
-from .solar_id_vgr_interface_vgr_corrigido_viewset import (
-    SolarIDVGRInterfaceVGRCorrigido,
-)
-from .solar_interfaces_vgr import SolarInterfacesVGR
+from .load_interface_original_vgr import LoadInterfaceOriginalVGRView
+from .load_interface_vgr import LoadInterfaceVGRView
+from .load_node_original_vgr import LoadNodeOriginalVGRView
+from .solar_interface import SolarInterface
+from .load_node_vgr import LoadNodeVGRView

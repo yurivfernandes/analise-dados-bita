@@ -23,4 +23,5 @@ urlpatterns = [
     path("api/access/", include("access.api.urls")),
     path("api/power-bi/", include("power_bi.api.urls")),
     path("api/dw-analytics/", include("dw_analytics.api.urls")),
+    path("api/correios/", include("correios.api.urls")),
 ]

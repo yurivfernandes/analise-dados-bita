@@ -1,14 +1,11 @@
-import os
-
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ...tasks import LoadInterfaceNewID
+from ...tasks import LoadNodeOriginalVGR
 
 
-class LoadInterfaceNewIDVGR(APIView):
-    """View que aciona a task de construção da base de [Consolidacao]"""
+class LoadNodeOriginalVGRView(APIView):
+    """View que aciona a task de construção da base de [LoadNodeOriginalVGR]"""
 
     def post(self, request, *args, **kwargs) -> Response:
         filtros = {
@@ -16,7 +13,7 @@ class LoadInterfaceNewIDVGR(APIView):
             "nome_do_cliente_list": request.data.get("nome_do_cliente", []),
         }
 
-        with LoadInterfaceNewID(**filtros) as load:
+        with LoadNodeOriginalVGR(**filtros) as load:
             log = load.run()
         return Response(log)
 

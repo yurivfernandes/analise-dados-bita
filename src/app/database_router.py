@@ -12,6 +12,8 @@ class MultiDBRouter:
             return "dw_analytics"
         elif model._meta.app_label == "power_bi":
             return "power_bi"
+        elif model._meta.app_label == "correios":
+            return "correios"
         return None
 
     def db_for_write(self, model, **hints):
@@ -20,6 +22,8 @@ class MultiDBRouter:
             return "dw_analytics"
         elif model._meta.app_label == "power_bi":
             return "power_bi"
+        elif model._meta.app_label == "correios":
+            return "correios"
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -34,4 +38,6 @@ class MultiDBRouter:
             return db == "dw_analytics"
         elif app_label == "power_bi":
             return db == "power_bi"
+        elif app_label == "correios":
+            return db == "correios"
         return True

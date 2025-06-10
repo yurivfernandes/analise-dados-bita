@@ -1,1 +1,4 @@
-from .load_interface_new_id import LoadInterfaceNewID
+from .load_interface_original_vgr import LoadInterfaceOriginalVGR
+from .load_interface_vgr import LoadInterfaceVGR
+from .load_node_original import LoadNodeOriginalVGR
+from .load_node_vgr import LoadNodeVGR

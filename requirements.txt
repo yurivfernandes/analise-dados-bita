@@ -15,6 +15,7 @@ pyodbc
 # Data Processing
 polars==1.29.0
 pandas==1.5.3
+pyarrow == 20.0.0
 
 # Authentication
 PyJWT

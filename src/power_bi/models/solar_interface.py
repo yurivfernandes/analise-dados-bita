@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class SolarIDVGRInterfaceCorrigido(models.Model):
+class SolarInterface(models.Model):
     id = models.AutoField(db_column="id", primary_key=True)
     company_remedy = models.CharField(
         db_column="company_remedy",
@@ -10,8 +10,8 @@ class SolarIDVGRInterfaceCorrigido(models.Model):
         blank=True,
         null=True,
     )
-    nome_do_cliente = models.CharField(
-        db_column="nome_do_cliente",
+    nome_cliente = models.CharField(
+        db_column="nome_cliente",
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
@@ -87,15 +87,8 @@ class SolarIDVGRInterfaceCorrigido(models.Model):
         blank=True,
         null=True,
     )
-    interfaceid = models.CharField(
+    interface_id = models.CharField(
         db_column="interfaceid",
-        max_length=255,
-        db_collation="SQL_Latin1_General_CP1_CI_AS",
-        blank=True,
-        null=True,
-    )
-    id_vantive_principal = models.CharField(
-        db_column="id_vantive_principal",
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
@@ -115,22 +108,8 @@ class SolarIDVGRInterfaceCorrigido(models.Model):
         blank=True,
         null=True,
     )
-    operadora2 = models.CharField(
-        db_column="operadora2",
-        max_length=255,
-        db_collation="SQL_Latin1_General_CP1_CI_AS",
-        blank=True,
-        null=True,
-    )
-    operadora3 = models.CharField(
-        db_column="operadora3",
-        max_length=255,
-        db_collation="SQL_Latin1_General_CP1_CI_AS",
-        blank=True,
-        null=True,
-    )
     historico_ids = models.JSONField(default=list, db_column="historico_ids")
 
     class Meta:
-        db_table = "solar_id_vgr_interface_corrigido"
+        db_table = "solar_interface"
         app_label = "power_bi"
