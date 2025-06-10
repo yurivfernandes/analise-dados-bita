@@ -3,15 +3,15 @@ from functools import cached_property
 import polars as pl
 
 # from celery import shared_task
-from django.db import connection, transaction
+from django.db import connection
 
 from app.utils.pipeline import Pipeline
 
 from ..models import SolarNodeOriginal
-from ..utils.mixin import MixinViews
+from ..utils import MixinTasksSolar
 
 
-class LoadNodeOriginalVGR(MixinViews, Pipeline):
+class LoadNodeOriginalVGR(MixinTasksSolar, Pipeline):
     """Extrai e carrega os dados dos Nodes."""
 
     def __init__(self, **kwargs) -> None:
@@ -74,11 +74,11 @@ class LoadNodeOriginalVGR(MixinViews, Pipeline):
         }
 
     def run(self) -> dict:
-        print("Iniciando...")
-        self.dataset = self._node_dataset
-        print("Dataset pronto para ser carregado...")
-        self.load()
-        print("Finalizando...")
+        print(f"...INICIANDO A TASK [{self.__class__.__name__}]...")
+        dataset = self._node_dataset
+        print("...DATASET PRONTO PARA SER INSERIDO NO BANCO!...")
+        self.load(dataset=dataset, model=SolarNodeOriginal)
+        print("...DADOS SALVOS NO BANCO, FINALIZANDO...")
         return self.log
 
     @property
@@ -141,7 +141,7 @@ class LoadNodeOriginalVGR(MixinViews, Pipeline):
                     ') AS SAE  
                     ON CAST(SAE.ID_VANTIVE AS VARCHAR) = CAST(node.ID_VGR AS VARCHAR)
             """
-        print("Executando a query...")
+        print("...EXECUTANDO A QUERY PRINCIPAL...")
         with connection.cursor() as cursor:
             cursor.execute(query)
             result = cursor.fetchall()
@@ -155,32 +155,6 @@ class LoadNodeOriginalVGR(MixinViews, Pipeline):
             ),
             orient="row",
         ).rename({k: v["rename"] for k, v in self._schema_query_node.items()})
-
-    @transaction.atomic
-    def load(self) -> None:
-        self._delete()
-        self._save()
-
-    def _delete(self):
-        print("Deletando os registros do banco...")
-        n_deleted, __ = (
-            SolarNodeOriginal.objects.using("power_bi")
-            .filter(**self._filtro)
-            .delete()
-        )
-        self.log["n_deleted"] = n_deleted
-
-    def _save(self):
-        print("Salvando os novos registros no banco...")
-        if self.dataset.is_empty():
-            return
-
-        objs = [SolarNodeOriginal(**vals) for vals in self.dataset.to_dicts()]
-        bulk = SolarNodeOriginal.objects.using("power_bi").bulk_create(
-            objs=objs, batch_size=1000
-        )
-        self.log["n_inserted"] = len(bulk)
-        print(f"Finalizado a carga, criado {len(bulk)} registros...")
 
 
 # @shared_task(

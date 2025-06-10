@@ -1,39 +1,10 @@
-from datetime import datetime
-
 import polars as pl
 from django.db import models
-from rest_framework.request import Request
-from rest_framework.response import Response
+
+from .mixin_querys import MixinQuerys
 
 
-class MixinViews:
-    """MÉTODOS COMUNS PARA USO NAS VIEWS."""
-
-    def get(self, request: Request, *args, **kwargs) -> Response:
-        """Implementar o método main retornando um DataFrame"""
-        raise NotImplementedError("Subclass must implement this method")
-
-    def main(self) -> list:
-        """Implementar o método main retornando um DataFrame"""
-        raise NotImplementedError("Subclass must implement this method")
-
-    def valid_date(self, data_inicio: str, data_fim: str):
-        """Valida se as datas passadas no request são válidas"""
-        if not data_inicio or not data_fim:
-            raise ValueError(
-                "Ambas as datas, início e fim, devem ser fornecidas."
-            )
-        try:
-            data_inicio_formatada = datetime.strptime(data_inicio, "%Y-%m-%d")
-            data_fim_formatada = datetime.strptime(data_fim, "%Y-%m-%d")
-        except ValueError:
-            raise ValueError("As datas devem estar no formato 'aaaa-mm-dd'.")
-        if data_inicio_formatada > data_fim_formatada:
-            raise ValueError(
-                "A data de início não pode ser posterior à data de fim."
-            )
-        return (data_inicio_formatada, data_fim_formatada)
-
+class MixinGetDataset(MixinQuerys):
     def get_dataset(
         self, query_set: models.QuerySet, schema: dict
     ) -> pl.DataFrame:
@@ -43,7 +14,7 @@ class MixinViews:
             schema=dict(**{k: v.get("type") for k, v in schema.items()}),
         ).rename({k: v["rename"] for k, v in schema.items()})
 
-    def generate_schema_from_model(self, model: models):
+    def generate_schema_from_model(self, model: models)->dict:
         """Gera um schema de campos com todos os campos da model"""
         schema = {}
         for field in model._meta.get_fields():

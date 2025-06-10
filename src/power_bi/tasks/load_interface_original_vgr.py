@@ -3,15 +3,15 @@ from functools import cached_property
 import polars as pl
 
 # from celery import shared_task
-from django.db import connection, transaction
+from django.db import connection
 
 from app.utils.pipeline import Pipeline
 
 from ..models import SolarInterfaceOriginal
-from ..utils.mixin import MixinViews
+from ..utils import MixinTasksSolar
 
 
-class LoadInterfaceOriginalVGR(MixinViews, Pipeline):
+class LoadInterfaceOriginalVGR(MixinTasksSolar, Pipeline):
     """Extrai, transforma e carrega os dados Interface"""
 
     def __init__(self, **kwargs) -> None:
@@ -89,11 +89,11 @@ class LoadInterfaceOriginalVGR(MixinViews, Pipeline):
         }
 
     def run(self) -> dict:
-        print("Iniciando...")
-        self.dataset = self._interface_dataset
-        print("Dataset pronto para ser carregado...")
-        self.load()
-        print("Finalizando...")
+        print(f"...INICIANDO A TASK [{self.__class__.__name__}]...")
+        dataset = self._interface_dataset
+        print("...DATASET PRONTO PARA SER INSERIDO NO BANCO!...")
+        self.load(dataset=dataset, model=SolarInterfaceOriginal)
+        print("...DADOS SALVOS NO BANCO, FINALIZANDO...")
         return self.log
 
     @property
@@ -167,7 +167,7 @@ class LoadInterfaceOriginalVGR(MixinViews, Pipeline):
                         ') AS SAE  
                         ON CAST(SAE.ID_VANTIVE AS VARCHAR) = CAST(N.id_vgr AS VARCHAR)
                         """
-        print("Executando a query...")
+        print("...EXECUTANDO A QUERY PRINCIPAL...")
         with connection.cursor() as cursor:
             cursor.execute(query)
             result = cursor.fetchall()
@@ -183,34 +183,6 @@ class LoadInterfaceOriginalVGR(MixinViews, Pipeline):
         ).rename(
             {k: v["rename"] for k, v in self._schema_query_interfaces.items()}
         )
-
-    @transaction.atomic
-    def load(self) -> None:
-        self._delete()
-        self._save()
-
-    def _delete(self):
-        print("Deletando os registros do banco...")
-        n_deleted, __ = (
-            SolarInterfaceOriginal.objects.using("power_bi")
-            .filter(**self._filtro)
-            .delete()
-        )
-        self.log["n_deleted"] = n_deleted
-
-    def _save(self):
-        print("Salvando os novos registros no banco...")
-        if self.dataset.is_empty():
-            return
-
-        objs = [
-            SolarInterfaceOriginal(**vals) for vals in self.dataset.to_dicts()
-        ]
-        bulk = SolarInterfaceOriginal.objects.using("power_bi").bulk_create(
-            objs=objs, batch_size=1000
-        )
-        self.log["n_inserted"] = len(bulk)
-        print(f"Finalizado a carga, criado {len(bulk)} registros...")
 
 
 # @shared_task(
