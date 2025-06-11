@@ -4,10 +4,10 @@ import polars as pl
 from django.db import models, transaction
 
 from .mixin_etl_dataset import MixinETLDataset
-from .mixin_get_dataset import MixinGetDataset
+from .mixin_get_dataset_solar import MixinGetDatasetSolar
 
 
-class MixinTasksSolar(MixinETLDataset, MixinGetDataset):
+class MixinTasksSolar(MixinETLDataset, MixinGetDatasetSolar):
     """Classe que define os métodos e estrutura principal das tasks"""
 
     def run(self) -> dict:
@@ -19,7 +19,7 @@ class MixinTasksSolar(MixinETLDataset, MixinGetDataset):
         """Método que controla o save e o delete dos registros através de uma transação atomica, garantindo que os dados serão salvos ou o rollback acontece."""
         self.log["n_deleted"] = self.delete(model=model)
         self.log["n_inserted"] = self.save(dataset=dataset, model=model)
-        
+
     def delete(self, model=models.Model) -> int:
         print("...LIMPANDO A BASE NO BANCO DE DADOS...")
         n_deleted, __ = model.objects.filter(**self._filtro).delete()

@@ -15,7 +15,7 @@ class LoadInterfaceOriginalVGRView(APIView):
 
         with LoadInterfaceOriginalVGR(**filtros) as load:
             log = load.run()
-        return Response(log)
+        return Response(log) 
 
         # load_consolidacao_async.delay()
         # return Response(

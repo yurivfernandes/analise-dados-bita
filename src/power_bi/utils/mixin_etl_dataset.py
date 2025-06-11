@@ -112,7 +112,7 @@ class MixinETLDataset:
 
     def corrigir_nome_cliente(self, df: pl.DataFrame) -> pl.DataFrame:
         """CORRIGE NOS NOMES DAS COMPANYS"""
-        print("....CORRIGINDO NOME DOS CLIENTES...")
+        print("...CORRIGINDO NOME DOS CLIENTES...")
         return (
             df.with_columns(
                 pl.when(

@@ -8,7 +8,11 @@ from .mixin_get_dataset import MixinGetDataset
 
 class MixinViews(MixinGetDataset):
     def get(self, request: Request, *args, **kwargs) -> Response:
-        """Implementar o método main retornando um DataFrame"""
+        """Implementar o método get retornando um Response"""
+        raise NotImplementedError("Subclass must implement this method")
+
+    def post(self, request, *args, **kwargs) -> Response:
+        """Implementar o método post retornando um Response"""
         raise NotImplementedError("Subclass must implement this method")
 
     def valid_date(self, data_inicio: str, data_fim: str):
