@@ -7,6 +7,7 @@ class SolarNomeOperadoraCorreto(models.Model):
         db_column="nome_solar",
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
+        unique=True,
     )
     nome_correto = models.CharField(
         db_column="nome_correto",

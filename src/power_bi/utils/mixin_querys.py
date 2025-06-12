@@ -13,7 +13,7 @@ from ..models import (
 
 class MixinQuerys:
     """MÉTODOS COMUNS PARA USO NAS VIEWS."""
-
+    
     def get_solar_node_original_queryset(self) -> QuerySet:
         """Retorna o queryset com o nome correto do cliente"""
         return SolarNodeOriginal.objects.using("power_bi").filter(

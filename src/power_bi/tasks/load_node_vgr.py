@@ -2,13 +2,13 @@ import polars as pl
 
 from app.utils.pipeline import Pipeline
 
-from ..models import SolarNode
-from ..utils import MixinTasksSolar
+from ..models import SolarNode, SolarNodeOriginal
+from ..utils import MixinETLSolar
 
 # from celery import shared_task
 
 
-class LoadNodeVGR(MixinTasksSolar, Pipeline):
+class LoadNodeVGR(Pipeline, MixinETLSolar):
     """Extrai, transforma e carrega os dados de nodes."""
 
     def __init__(self, **kwargs) -> None:
@@ -36,11 +36,41 @@ class LoadNodeVGR(MixinTasksSolar, Pipeline):
 
     def run(self) -> dict:
         print(f"...INICIANDO A TASK [{self.__class__.__name__}]...")
-        dataset = self.transform_dataset(dataset=self.solar_node_original)
+        self.dataset = self.solar_node_original
+        lenght_dataset_inicial = len(self.dataset)
+        self.transform_dataset()
+        lenght_dataset_final = len(self.dataset)
+        if lenght_dataset_inicial != lenght_dataset_final:
+            raise Exception(
+                "O tamanho do dataset inicial é diferente do dataset final. "
+                "Procure o suporte para analisar o problema."
+            )
         print("...DATASET PRONTO PARA SER INSERIDO NO BANCO!...")
-        self.load(dataset=dataset, model=SolarNode)
-        print("...DADOS SALVOS NO BANCO, FINALIZANDO...")
+        self.load(dataset=self.dataset, model=SolarNode, filtro=self._filtro)
+        print("...FINALIZANDO A PIPELINE...")
         return self.log
+
+    @property
+    def solar_node_original(self) -> pl.DataFrame:
+        """Retorna os registros as interfaces que foram importadas do solar."""
+        print("...BUSCANDO OS DADOS DOS NODES...")
+        schema = self.generate_schema_from_model(model=SolarNodeOriginal)
+        return self.get_dataset(
+            query_set=self.get_solar_node_original_queryset().values(*schema),
+            schema=schema,
+        )
+
+    def transform_dataset(self) -> None:
+        """Extrai e transforma o dataset principal incluindo log de IDs antigos."""
+        self.dataset = (
+            self.dataset.pipe(self.limpar_texto)
+            .pipe(self.corrigir_operadoras)
+            .pipe(self.corrigir_tecnologias)
+            .pipe(self.corrigir_nome_cliente)
+            .pipe(self.get_uf_and_municipio)
+            .pipe(self.get_novo_id_vgr)
+            .pipe(self.selecionar_colunas)
+        )
 
     def corrigir_operadoras(self, df: pl.DataFrame) -> pl.DataFrame:
         """Corrige o nome das operadores conforme a tabela [SolarNomeOperadoraCorreto] e tenta buscar o nome da operadora em outras colunas."""
@@ -93,7 +123,7 @@ class LoadNodeVGR(MixinTasksSolar, Pipeline):
 
 
 # @shared_task(
-#     name="receita.load_consolidacao",
+#     name="power_bi.load_node_vgr",
 #     bind=True,
 #     autoretry_for=(Exception,),
 #     retry_backoff=5,

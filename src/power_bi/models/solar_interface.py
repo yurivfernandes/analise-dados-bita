@@ -88,7 +88,7 @@ class SolarInterface(models.Model):
         null=True,
     )
     interface_id = models.CharField(
-        db_column="interfaceid",
+        db_column="interface_id",
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,

@@ -8,10 +8,9 @@ from django.db import connection
 from app.utils.pipeline import Pipeline
 
 from ..models import SolarNodeOriginal
-from ..utils import MixinTasksSolar
 
 
-class LoadNodeOriginalVGR(MixinTasksSolar, Pipeline):
+class LoadNodeOriginalVGR(Pipeline):
     """Extrai e carrega os dados dos Nodes."""
 
     def __init__(self, **kwargs) -> None:
@@ -77,8 +76,10 @@ class LoadNodeOriginalVGR(MixinTasksSolar, Pipeline):
         print(f"...INICIANDO A TASK [{self.__class__.__name__}]...")
         dataset = self._node_dataset
         print("...DATASET PRONTO PARA SER INSERIDO NO BANCO!...")
-        self.load(dataset=dataset, model=SolarNodeOriginal)
-        print("...DADOS SALVOS NO BANCO, FINALIZANDO...")
+        self.load(
+            dataset=dataset, model=SolarNodeOriginal, filtro=self._filtro
+        )
+        print("...FINALIZANDO A PIPELINE...")
         return self.log
 
     @property
@@ -158,7 +159,7 @@ class LoadNodeOriginalVGR(MixinTasksSolar, Pipeline):
 
 
 # @shared_task(
-#     name="receita.load_consolidacao",
+#     name="power_bi.load_node_original_vgr",
 #     bind=True,
 #     autoretry_for=(Exception,),
 #     retry_backoff=5,

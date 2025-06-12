@@ -4,50 +4,12 @@ from itertools import islice
 import polars as pl
 from django.db import connection
 
+from ..mixin_etl import MixinETL
+from .mixin_get_dataset_solar import MixinGetDatasetSolar
 
-class MixinETLDataset:
+
+class MixinETLSolar(MixinETL, MixinGetDatasetSolar):
     """Classe que define como será o etl dos datasets do Solar."""
-
-    def transform_dataset(self, dataset: pl.DataFrame) -> pl.DataFrame:
-        """Extrai e transforma o dataset principal incluindo log de IDs antigos."""
-        return (
-            dataset.pipe(self.limpar_texto)
-            .pipe(self.corrigir_operadoras)
-            .pipe(self.corrigir_tecnologias)
-            .pipe(self.corrigir_nome_cliente)
-            .pipe(self.get_uf_and_municipio)
-            .pipe(self.corrigir_uf_and_municipio)
-            .pipe(self.get_novo_id_vgr)
-            .pipe(self.selecionar_colunas)
-        )
-
-    def limpar_texto(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Limpa o texto das colunas que tem texto."""
-        print("...LIMPANDO OS TEXTO DE TODAS AS COLUNAS...")
-        return df.select(
-            [
-                pl.col(col)
-                .cast(pl.Utf8)
-                .replace(
-                    {
-                        "None": None,
-                        "none": None,
-                        "NONE": None,
-                        "": None,
-                        "N/A": None,
-                        "n/a": None,
-                        "N/a": None,
-                        "null": None,
-                        "NULL": None,
-                        "[null]": None,
-                        "[NULL]": None,
-                    }
-                )
-                .str.strip_chars()
-                .str.replace(r"\s+", " ")
-                for col in df.columns
-            ]
-        ).with_columns(pl.col("cep").str.replace("-", ""))
 
     def corrigir_operadoras(self, df: pl.DataFrame) -> pl.DataFrame:
         """Implementar o método main retornando um DataFrame"""
@@ -82,7 +44,7 @@ class MixinETLDataset:
         """Busca o nome da tecnologia no de x para e corrige."""
         print("...BUSCANDO E CORRIGINDO OS NOMES DE TECNOLOGIAS...")
         return (
-            df.join(self._nome_tecnologia_correto, how="left", on="tecnologia")
+            df.join(self.nome_tecnologia_correto, how="left", on="tecnologia")
             .with_columns(
                 pl.when(
                     pl.col("nome_correto").is_in(
@@ -137,7 +99,7 @@ class MixinETLDataset:
     def get_uf_and_municipio(self, df: pl.DataFrame) -> pl.DataFrame:
         """Atribui a cidade e a uf com base na lista de CEP's do dataset"""
         print(
-            "...ATRIBUINDO OS DADOS DE UF E MUNICÍPIO DA BASE DOS CORREIOS COM BASE NO CEP DO ID NO SAE..."
+            "...ATRIBUINDO OS DADOS DE UF E MUNICÍPIO DA BASE DOS CORREIOS COM BASE NO CEP DO ID_VGR NO SAE..."
         )
         cep_list = (
             df.with_columns(pl.col("cep").cast(pl.String))
@@ -216,6 +178,7 @@ class MixinETLDataset:
         print(
             "...CORRIGINDO O STATUS VANTIVE E BUSCANDO NOVOS IDS VGR QUANDO EXISTEM...."
         )
+
         new_id_dataframe = (
             df.filter(
                 ~pl.col("status_vantive").is_in(
@@ -259,7 +222,6 @@ class MixinETLDataset:
 
         faturavel_and_tecnico_dataset = df.filter(
             pl.col("status_vantive").is_in(["RFS Faturável", "RFS Técnico"])
-            | ~pl.col("status_vantive").is_null()
         ).with_columns(
             pl.lit([]).cast(pl.List(pl.Utf8)).alias("historico_ids")
         )
@@ -268,26 +230,25 @@ class MixinETLDataset:
 
     def get_final_id_vgr(self, id_vgr: str, status_vantive: str) -> dict:
         """Busca o ID final iterativamente e mantém um log de IDs."""
-        historico_ids = []
         if id_vgr in (None, "N/A", "AMERICA TOWER - MTR-CORP-3226", "SPO-815"):
             return {
                 "id_vgr": id_vgr,
                 "status_vantive": status_vantive,
-                "historico_ids": historico_ids,
+                "historico_ids": [],
             }
 
         if status_vantive in ("RFS Faturável", "RFS Técnico", "Cancelado"):
             return {
                 "id_vgr": id_vgr,
                 "status_vantive": status_vantive,
-                "historico_ids": historico_ids,
+                "historico_ids": [],
             }
 
+        historico_ids = [id_vgr]
         while True:
             result = self.query_sae(id_vgr)
             novo_id = str(result["novo_id"])
             novo_status = result["status_vantive"]
-
             if novo_id in (None, "None", id_vgr):
                 if status_vantive == novo_status:
                     return {
@@ -347,7 +308,3 @@ class MixinETLDataset:
             "status_vantive": None,
             "novo_id": None,
         }
-
-    def selecionar_colunas(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Implementar o método main retornando um DataFrame"""
-        raise NotImplementedError("Subclass must implement this method")
