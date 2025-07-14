@@ -16,7 +16,13 @@ class DCompany(models.Model):
         blank=True,
         null=True,
     )
+    nome_correto = models.CharField(
+        max_length=255,
+        db_collation="SQL_Latin1_General_CP1_CI_AS",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         db_table = "d_company"
-        app_label = "dw_analytics" 
+        app_label = "dw_analytics"

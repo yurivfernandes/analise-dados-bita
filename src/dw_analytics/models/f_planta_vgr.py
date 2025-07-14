@@ -152,4 +152,3 @@ class FPlantaVgr(models.Model):
 
     class Meta:
         db_table = "f_planta_vgr"
-        app_label = "dw_analytics"

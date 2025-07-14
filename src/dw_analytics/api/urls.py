@@ -17,6 +17,11 @@ urlpatterns = [
         FIncidentFieldsView.as_view(),
         name="incident-fields",
     ),
+    path(
+        "load-incident-sn/",
+        LoadIncidentSNView.as_view(),
+        name="load-incident-sn",
+    ),
 ]
 
 urlpatterns += router.urls

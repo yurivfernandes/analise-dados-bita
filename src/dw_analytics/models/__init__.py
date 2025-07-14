@@ -1,6 +1,7 @@
 from .d_assignment_group import DAssignmentGroup
 from .d_company import DCompany
 from .d_contract import DContract
+from .d_incident_sla import DIncidentSla
 from .d_operacao import DOperacao
 from .d_premissa import DPremissa
 from .d_resolved_by import DResolvedBy

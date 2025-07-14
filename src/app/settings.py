@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "dw_analytics",
     "power_bi",
     "correios",
+    "service_now",
 ]
 
 MIDDLEWARE = [
@@ -129,6 +130,18 @@ DATABASES = {
     "correios": {
         "ENGINE": "mssql",
         "NAME": os.getenv("DB_NAME_CORREIOS"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT", "1433"),
+        "OPTIONS": {
+            "driver": os.getenv("DB_DRIVER", "SQL Server Native Client 11.0"),
+            "Trusted_Connection": "yes",
+        },
+    },
+    "service_now": {
+        "ENGINE": "mssql",
+        "NAME": os.getenv("DB_NAME_SERVICE_NOW"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
