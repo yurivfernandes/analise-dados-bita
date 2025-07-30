@@ -13,9 +13,7 @@ Este projeto utiliza Django para realizar análises de dados com integração ao
 [![Pandas](https://img.shields.io/badge/Pandas-1.5.3-white?logo=pandas)](https://pandas.pydata.org/)
 [![NumPy](https://img.shields.io/badge/NumPy-latest-informational?logo=numpy)](https://numpy.org/)
 [![Celery](https://img.shields.io/badge/Celery-5.2.7-darkgreen?logo=celery)](https://docs.celeryq.dev/)
-[![MkDocs](https://img.shields.io/badge/MkDocs-Material-9.5.12-yellow?logo=markdown)](https://squidfunk.github.io/mkdocs-material/)
 [![JWT](https://img.shields.io/badge/JWT-PyJWT-green?logo=jsonwebtokens)](https://pyjwt.readthedocs.io/)
-[![Meraki](https://img.shields.io/badge/Meraki-API-2.0.3-blue?logo=cisco)](https://developer.cisco.com/meraki/)
 
 ## Configuração do Ambiente
 
