@@ -51,7 +51,6 @@ class LoadMerakiDevices(MixinGetDataset, Pipeline):
                 )
                 if not resp:
                     break
-                print(f"Org {org_id}: {len(resp)} dispositivos recebidos")
                 all_devices.extend(resp)
                 starting_after = resp[-1]["serial"]
                 df_org = pl.DataFrame(data=all_devices)

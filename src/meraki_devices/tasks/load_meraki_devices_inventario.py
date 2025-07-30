@@ -34,7 +34,6 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                 .str.replace_all(r"\s+", "")
                 .alias("name")
             )
-            .fill_nan(None)
             .select(
                 [
                     "name",
@@ -45,7 +44,6 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                     "address",
                     "lat",
                     "lng",
-                    "notes",
                     "wan1Ip",
                     "wan2Ip",
                     "firmware",
@@ -58,6 +56,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                     "note_3",
                 ]
             )
+            .fill_nan(None)
         )
 
     @property

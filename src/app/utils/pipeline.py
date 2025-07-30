@@ -22,9 +22,10 @@ class Pipeline:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.log["finished_at"] = timezone.now()
-        self.log["duration"] = (
-            self.log["finished_at"] - self.log["started_at"]
-        ).total_seconds()
+        self.log["duration"] = round(
+            (self.log["finished_at"] - self.log["started_at"]).total_seconds(),
+            2,
+        )
 
     def run(self) -> dict:
         """Implementar o método run que executa a task retornando um Dicionário"""

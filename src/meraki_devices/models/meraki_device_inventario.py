@@ -10,7 +10,6 @@ class DeviceInventario(models.Model):
     address = models.TextField(null=True)
     lat = models.FloatField(null=True)
     lng = models.FloatField(null=True)
-    notes = models.TextField(null=True)
     wan1Ip = models.GenericIPAddressField(null=True)
     wan2Ip = models.GenericIPAddressField(null=True)
     firmware = models.CharField(max_length=50, null=True)
@@ -21,6 +20,7 @@ class DeviceInventario(models.Model):
     note_1 = models.CharField(max_length=1000, null=True)
     note_2 = models.CharField(max_length=1000, null=True)
     note_3 = models.CharField(max_length=1000, null=True)
+    note_4 = models.CharField(max_length=1000, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.model})"
