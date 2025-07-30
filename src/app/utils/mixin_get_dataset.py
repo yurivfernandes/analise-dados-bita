@@ -37,5 +37,7 @@ class MixinGetDataset:
             return pl.Datetime
         elif isinstance(field, models.DateField):
             return pl.Date
+        elif isinstance(field, models.JSONField):
+            return pl.Object
         else:
             return pl.String

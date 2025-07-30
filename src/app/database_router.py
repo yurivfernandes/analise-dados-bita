@@ -16,6 +16,8 @@ class MultiDBRouter:
             return "correios"
         elif model._meta.app_label == "service_now":
             return "service_now"
+        elif model._meta.app_label == "meraki_devices":
+            return "default"
         return None
 
     def db_for_write(self, model, **hints):
@@ -28,6 +30,8 @@ class MultiDBRouter:
             return "correios"
         elif model._meta.app_label == "service_now":
             return "service_now"
+        elif model._meta.app_label == "meraki_devices":
+            return "default"
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -46,4 +50,6 @@ class MultiDBRouter:
             return db == "correios"
         elif app_label == "service_now":
             return db == "service_now"
+        elif app_label == "meraki_devices":
+            return db == "default"
         return True

@@ -63,9 +63,9 @@ class LoadIncidentSN(Pipeline, MixinGetDataset, MixinQuerys):
     def _extract_and_transform_dataset(self) -> None:
         """Extrai e transforma os dados do ServiceNow usando Polars"""
         self.dataset = (
-            self._incidents_dataset.pipe(self.convert_datetime_columns)
+            self._incidents_dataset.pipe(self._convert_datetime_columns)
             .pipe(self._handle_duplicates)
-            .pipe(self.join_sla_dataset)
+            .pipe(self._join_sla_dataset)
         )
 
     @property
@@ -81,7 +81,7 @@ class LoadIncidentSN(Pipeline, MixinGetDataset, MixinQuerys):
             for key in schema_fincident
             if key in schema and key != "id"
         }
-        query_set = self.stringify_all_values(
+        query_set = self._stringify_all_values(
             list(self.get_incident_queryset().values(*schema_string.keys()))
         )
 
@@ -90,7 +90,7 @@ class LoadIncidentSN(Pipeline, MixinGetDataset, MixinQuerys):
             schema=schema_string,
         )
 
-    def stringify_all_values(self, data: list[dict]) -> list[dict]:
+    def _stringify_all_values(self, data: list[dict]) -> list[dict]:
         """Converte todos os valores de todos os registros para string"""
         for item in data:
             for key, value in item.items():
@@ -124,7 +124,7 @@ class LoadIncidentSN(Pipeline, MixinGetDataset, MixinQuerys):
             .first()
         )
 
-    def convert_datetime_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _convert_datetime_columns(self, df: pl.DataFrame) -> pl.DataFrame:
         """Converte as colunas de datetime necessárias no dataset."""
         return df.with_columns(
             pl.col("opened_at")
@@ -144,7 +144,7 @@ class LoadIncidentSN(Pipeline, MixinGetDataset, MixinQuerys):
             .alias("u_tempo_indisponivel"),
         )
 
-    def join_sla_dataset(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _join_sla_dataset(self, df: pl.DataFrame) -> pl.DataFrame:
         """Busca o SLA com base nos tickets do DF principal."""
 
         schema = {
@@ -235,7 +235,7 @@ class LoadIncidentSN(Pipeline, MixinGetDataset, MixinQuerys):
 
 
 # @shared_task(
-#     name="dw_analytics.load_incidents_sn",
+#     name="dw_analytics.load_incident_sn_async",
 #     bind=True,
 #     autoretry_for=(Exception,),
 #     retry_backoff=5,

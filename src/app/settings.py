@@ -44,19 +44,20 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",  # Adicionar CORS headers
-    "rest_framework",  # Adicionar DRF
-    "django_filters",  # Adicionar Django Filters
-    "rest_framework.authtoken",  # Adicionar esta linha
+    "corsheaders",
+    "rest_framework",
+    "django_filters",
+    "rest_framework.authtoken",
     "access",
     "dw_analytics",
     "power_bi",
     "correios",
     "service_now",
+    "meraki_devices",
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",  # Adicionar no início
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -228,5 +229,4 @@ REST_FRAMEWORK = {
 }
 
 # Configurações do Django Filter
-FILTERS_DEFAULT_LOOKUP_EXPR = "icontains"
 FILTERS_DEFAULT_LOOKUP_EXPR = "icontains"

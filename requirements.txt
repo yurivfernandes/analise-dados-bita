@@ -16,6 +16,8 @@ pyodbc
 polars==1.29.0
 pandas==1.5.3
 pyarrow == 20.0.0
+numpy
+fastexcel == 0.14.0
 
 # Authentication
 PyJWT
@@ -37,3 +39,6 @@ mkdocstrings-python==1.7.5
 
 # Task Queue
 celery==5.2.7
+
+#Meraki
+meraki==2.0.3

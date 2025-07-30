@@ -78,6 +78,6 @@ __pycache__
 .pytest_cache/
 .coverage
 htmlcov/
-
+*.xlsx
 # MkDocs
 site/

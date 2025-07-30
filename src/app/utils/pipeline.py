@@ -86,8 +86,6 @@ class Pipeline:
             return
 
         objs = [model(**vals) for vals in dataset.to_dicts()]
-        bulk = model.objects.using("power_bi").bulk_create(
-            objs=objs, batch_size=1000
-        )
+        bulk = model.objects.bulk_create(objs=objs, batch_size=1000)
         self.log["n_inserted"] = len(bulk)
         print(f"...{len(bulk)} REGISTROS SALVOS NO BANCO DE DADOS...")
