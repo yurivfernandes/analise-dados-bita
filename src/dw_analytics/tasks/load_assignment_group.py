@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Dict
 
-# from celery import shared_task
+from celery import shared_task
 from django.db import transaction
 from django.db.models import Q
 
@@ -116,13 +116,13 @@ class LoadAssignmentGroupTask:
             }
 
 
-# @shared_task(
-#     name="dw_analytics.load_assignment_group",
-#     bind=True,
-#     autoretry_for=(Exception,),
-#     retry_backoff=5,
-#     retry_kwargs={"max_retries": 3},
-# )
+@shared_task(
+    name="dw_analytics.load_assignment_group",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=5,
+    retry_kwargs={"max_retries": 3},
+)
 def load_assignment_group_async(self, update_all: bool = False) -> Dict:
     task = LoadAssignmentGroup(update_all=update_all)
     return task.run()

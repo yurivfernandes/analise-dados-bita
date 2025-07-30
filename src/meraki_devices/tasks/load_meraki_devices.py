@@ -2,6 +2,7 @@ from typing import Dict
 
 import meraki
 import polars as pl
+from celery import shared_task
 
 from app.utils import MixinGetDataset, Pipeline
 
@@ -61,13 +62,13 @@ class LoadMerakiDevices(MixinGetDataset, Pipeline):
         return pl.concat(dfs)
 
 
-# @shared_task(
-#     name="dw_analytics.load_meraki_devices_async",
-#     bind=True,
-#     autoretry_for=(Exception,),
-#     retry_backoff=5,
-#     retry_kwargs={"max_retries": 3},
-# )
+@shared_task(
+    name="meraki.load_meraki_devices_async",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=5,
+    retry_kwargs={"max_retries": 3},
+)
 def load_meraki_devices_async(self, api_key: str = False) -> Dict:
     sync_task = LoadMerakiDevices(api_key=api_key)
     return sync_task.run()

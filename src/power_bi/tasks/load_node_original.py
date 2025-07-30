@@ -1,8 +1,7 @@
 from functools import cached_property
 
 import polars as pl
-
-# from celery import shared_task
+from celery import shared_task
 from django.db import connection
 
 from app.utils.pipeline import Pipeline
@@ -158,13 +157,13 @@ class LoadNodeOriginalVGR(Pipeline):
         ).rename({k: v["rename"] for k, v in self._schema_query_node.items()})
 
 
-# @shared_task(
-#     name="power_bi.load_node_original_vgr",
-#     bind=True,
-#     autoretry_for=(Exception,),
-#     retry_backoff=5,
-#     retry_kwargs={"max_retries": 3},
-# )
+@shared_task(
+    name="power_bi.load_node_original_vgr",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=5,
+    retry_kwargs={"max_retries": 3},
+)
 def load_node_original_vgr_async(self, filtros: dict) -> dict:
     with LoadNodeOriginalVGR(**filtros) as task:
         log = task.run()

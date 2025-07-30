@@ -4,8 +4,7 @@ from operator import or_
 from typing import Dict
 
 import polars as pl
-
-# from celery import shared_task
+from celery import shared_task
 from django.db.models import Case, Max, Q, QuerySet, Value, When
 from django.utils import timezone
 
@@ -234,13 +233,13 @@ class LoadIncidentSN(Pipeline, MixinGetDataset, MixinQuerys):
         )
 
 
-# @shared_task(
-#     name="dw_analytics.load_incident_sn_async",
-#     bind=True,
-#     autoretry_for=(Exception,),
-#     retry_backoff=5,
-#     retry_kwargs={"max_retries": 3},
-# )
+@shared_task(
+    name="dw_analytics.load_incident_sn_async",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=5,
+    retry_kwargs={"max_retries": 3},
+)
 def load_incident_sn_async(self, full_sync: bool = False) -> Dict:
     sync_task = LoadIncidentSN(full_sync=full_sync)
     return sync_task.run()

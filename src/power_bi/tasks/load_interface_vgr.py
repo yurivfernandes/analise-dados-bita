@@ -1,11 +1,10 @@
 import polars as pl
+from celery import shared_task
 
 from app.utils.pipeline import Pipeline
 
 from ..models import SolarInterface, SolarInterfaceOriginal
 from ..utils import MixinETLSolar
-
-# from celery import shared_task
 
 
 class LoadInterfaceVGR(Pipeline, MixinETLSolar):
@@ -156,13 +155,13 @@ class LoadInterfaceVGR(Pipeline, MixinETLSolar):
         )
 
 
-# @shared_task(
-#     name="power_bi.load_interface_vgr",
-#     bind=True,
-#     autoretry_for=(Exception,),
-#     retry_backoff=5,
-#     retry_kwargs={"max_retries": 3},
-# )
+@shared_task(
+    name="power_bi.load_interface_vgr",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=5,
+    retry_kwargs={"max_retries": 3},
+)
 def load_interface_vgr_async(self, filtros: dict) -> dict:
     with LoadInterfaceVGR(**filtros) as task:
         log = task.run()
