@@ -196,6 +196,6 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_meraki_devices_inventario_async(self, api_key: str = False) -> Dict:
-    sync_task = LoadMerakiDeviceInventario(api_key=api_key)
+def load_meraki_devices_inventario_async(self) -> Dict:
+    sync_task = LoadMerakiDeviceInventario()
     return sync_task.run()

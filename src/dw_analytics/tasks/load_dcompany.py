@@ -73,6 +73,6 @@ class LoadDCompany:
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_dcompany_async(self, update_all: bool = False) -> Dict:
+def load_company_async(self, update_all: bool = False) -> Dict:
     task = LoadDCompany(update_all=update_all)
     return task.run()
