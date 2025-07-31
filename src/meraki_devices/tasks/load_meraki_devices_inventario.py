@@ -46,7 +46,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
 
     @property
     def _device_dataset(self) -> pl.DataFrame:
-        """Retorna o DataSet de incidentes do Service Now."""
+        """Retorna o dataset de dispositivos Meraki."""
         schema = self.generate_schema_from_model(model=Device)
         query_set = self.get_device_queryset().values(*schema.keys())
 
@@ -154,6 +154,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         }
 
     def _split_notes(self, notes: str) -> dict:
+        """Divide as notas em partes e retorna um dicionário com as partes numeradas."""
         if isinstance(notes, str):
             parts = notes.split("\n\n")
             return {
@@ -173,6 +174,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         )
 
     def _add_tecnologia_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Adiciona as colunas tecnologia_1, tecnologia_2 e tecnologia_3 ao DataFrame, baseando-se nas notas."""
         return df.with_columns(
             pl.when(pl.col("note_1").str.contains("IP DEDICADO"))
             .then(pl.lit("IP DEDICADO"))
@@ -195,6 +197,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         )
 
     def _add_operadora_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Adiciona as colunas nome_operadora_1, nome_operadora_2 e nome_operadora_3 ao DataFrame, pesquisando as operadoras nas notas."""
         return df.with_columns(
             [
                 pl.col("note_1")
@@ -210,6 +213,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         )
 
     def find_operadora(self, note):
+        """Busca o nome da operadora na string da nota, retornando o nome correto ou None."""
         if not isinstance(note, str):
             return None
         for op in self._lista_operadoras:
@@ -227,6 +231,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         )
 
     def _add_lp_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Adiciona as colunas LP_1, LP_2 e LP_3 ao DataFrame, extraindo o código LP das notas."""
         return df.with_columns(
             [
                 pl.col("note_1")
@@ -242,16 +247,21 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         )
 
     def get_lp(self, note):
+        """Extrai o código LP da string da nota, removendo traço final se houver, ou retorna None."""
         import re
 
         if not isinstance(note, str):
             return None
         match = re.search(r"LP:\s*([^\s]+)", note)
         if match:
-            return match.group(1)
+            codigo = match.group(1)
+            if codigo.endswith("-"):
+                codigo = codigo[:-1]
+            return codigo
         return None
 
     def _select_final_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Seleciona as colunas finais do DataFrame para o inventário de dispositivos Meraki."""
         return df.select(
             [
                 "name",
