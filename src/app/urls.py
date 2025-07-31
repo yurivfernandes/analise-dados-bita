@@ -25,4 +25,5 @@ urlpatterns = [
     path("api/dw-analytics/", include("dw_analytics.api.urls")),
     path("api/correios/", include("correios.api.urls")),
     path("api/meraki/", include("meraki_devices.api.urls")),
+    path("api/api_service_now/", include("api_service_now.api.urls")),
 ]
