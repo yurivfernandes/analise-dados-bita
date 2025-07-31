@@ -174,32 +174,24 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
 
     def _add_tecnologia_columns(self, df: pl.DataFrame) -> pl.DataFrame:
         return df.with_columns(
-            [
-                pl.when(
-                    pl.col("note_1").str.contains("IP DEDICADO", case=False)
-                )
-                .then("IP DEDICADO")
-                .when(pl.col("note_1").str.contains("BANDA LARGA", case=False))
-                .then("BANDA LARGA")
-                .otherwise(None)
-                .alias("tecnologia_1"),
-                pl.when(
-                    pl.col("note_2").str.contains("IP DEDICADO", case=False)
-                )
-                .then("IP DEDICADO")
-                .when(pl.col("note_2").str.contains("BANDA LARGA", case=False))
-                .then("BANDA LARGA")
-                .otherwise(None)
-                .alias("tecnologia_2"),
-                pl.when(
-                    pl.col("note_3").str.contains("IP DEDICADO", case=False)
-                )
-                .then("IP DEDICADO")
-                .when(pl.col("note_3").str.contains("BANDA LARGA", case=False))
-                .then("BANDA LARGA")
-                .otherwise(None)
-                .alias("tecnologia_3"),
-            ]
+            pl.when(pl.col("note_1").str.contains("IP DEDICADO"))
+            .then(pl.lit("IP DEDICADO"))
+            .when(pl.col("note_1").str.contains("BANDA LARGA"))
+            .then(pl.lit("BANDA LARGA"))
+            .otherwise(pl.lit(None))
+            .alias("tecnologia_1"),
+            pl.when(pl.col("note_2").str.contains("IP DEDICADO"))
+            .then(pl.lit("IP DEDICADO"))
+            .when(pl.col("note_2").str.contains("BANDA LARGA"))
+            .then(pl.lit("BANDA LARGA"))
+            .otherwise(None)
+            .alias("tecnologia_2"),
+            pl.when(pl.col("note_3").str.contains("IP DEDICADO"))
+            .then(pl.lit("IP DEDICADO"))
+            .when(pl.col("note_3").str.contains("BANDA LARGA"))
+            .then(pl.lit("BANDA LARGA"))
+            .otherwise(None)
+            .alias("tecnologia_3"),
         )
 
     def _add_operadora_columns(self, df: pl.DataFrame) -> pl.DataFrame:
