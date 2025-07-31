@@ -45,33 +45,6 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
             .fill_nan(None)
         )
 
-    def _add_velocidade_columns(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Adiciona as colunas velocidade_1, velocidade_2 e velocidade_3 ao DataFrame, extraindo o valor em Mbps das notas."""
-        return df.with_columns(
-            [
-                pl.col("note_1")
-                .map_elements(self._get_velocidade, return_dtype=pl.Int64)
-                .alias("velocidade_1"),
-                pl.col("note_2")
-                .map_elements(self._get_velocidade, return_dtype=pl.Int64)
-                .alias("velocidade_2"),
-                pl.col("note_3")
-                .map_elements(self._get_velocidade, return_dtype=pl.Int64)
-                .alias("velocidade_3"),
-            ]
-        )
-
-    def _get_velocidade(self, note):
-        """Extrai o valor numérico da velocidade em Mbps da string da nota. Retorna int ou None."""
-        import re
-
-        if not isinstance(note, str):
-            return None
-        match = re.search(r"(\d+)\s*mbps", note, re.IGNORECASE)
-        if match:
-            return int(match.group(1))
-        return None
-
     @property
     def _device_dataset(self) -> pl.DataFrame:
         """Retorna o dataset de dispositivos Meraki."""
@@ -352,8 +325,38 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                 "LP_1",
                 "LP_2",
                 "LP_3",
+                "velocidade_1",
+                "velocidade_2",
+                "velocidade_3",
             ]
         )
+
+    def _add_velocidade_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Adiciona as colunas velocidade_1, velocidade_2 e velocidade_3 ao DataFrame, extraindo o texto da velocidade em Mbps das notas."""
+        return df.with_columns(
+            [
+                pl.col("note_1")
+                .map_elements(self._get_velocidade, return_dtype=pl.String)
+                .alias("velocidade_1"),
+                pl.col("note_2")
+                .map_elements(self._get_velocidade, return_dtype=pl.String)
+                .alias("velocidade_2"),
+                pl.col("note_3")
+                .map_elements(self._get_velocidade, return_dtype=pl.String)
+                .alias("velocidade_3"),
+            ]
+        )
+
+    def _get_velocidade(self, note):
+        """Extrai o texto da velocidade em Mbps da string da nota. Retorna ex: '200 mbps' ou None."""
+        import re
+
+        if not isinstance(note, str):
+            return None
+        match = re.search(r"(\d+\s*mbps)", note, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        return None
 
 
 @shared_task(

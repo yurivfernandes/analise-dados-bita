@@ -26,7 +26,6 @@ class DeviceInventario(models.Model):
     note_2 = models.CharField(max_length=1000, null=True)
     note_3 = models.CharField(max_length=1000, null=True)
     note_4 = models.CharField(max_length=1000, null=True)
-
     tecnologia_1 = models.CharField(
         max_length=20, choices=TECNOLOGIA_CHOICES, null=True
     )
@@ -36,14 +35,15 @@ class DeviceInventario(models.Model):
     tecnologia_3 = models.CharField(
         max_length=20, choices=TECNOLOGIA_CHOICES, null=True
     )
-
     nome_operadora_1 = models.CharField(max_length=50, null=True)
     nome_operadora_2 = models.CharField(max_length=50, null=True)
     nome_operadora_3 = models.CharField(max_length=50, null=True)
-
     LP_1 = models.CharField(max_length=20, null=True)
     LP_2 = models.CharField(max_length=20, null=True)
     LP_3 = models.CharField(max_length=20, null=True)
+    velocidade_1 = models.CharField(max_length=50, null=True)
+    velocidade_2 = models.CharField(max_length=50, null=True)
+    velocidade_3 = models.CharField(max_length=50, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.model})"
