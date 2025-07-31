@@ -2,6 +2,11 @@ from django.db import models
 
 
 class DeviceInventario(models.Model):
+    TECNOLOGIA_CHOICES = [
+        ("IP DEDICADO", "IP DEDICADO"),
+        ("BANDA LARGA", "BANDA LARGA"),
+    ]
+
     name = models.CharField(max_length=100)
     serial = models.CharField(max_length=50)
     networkId = models.CharField(max_length=50, null=True)
@@ -21,6 +26,24 @@ class DeviceInventario(models.Model):
     note_2 = models.CharField(max_length=1000, null=True)
     note_3 = models.CharField(max_length=1000, null=True)
     note_4 = models.CharField(max_length=1000, null=True)
+
+    tecnologia_1 = models.CharField(
+        max_length=20, choices=TECNOLOGIA_CHOICES, null=True
+    )
+    tecnologia_2 = models.CharField(
+        max_length=20, choices=TECNOLOGIA_CHOICES, null=True
+    )
+    tecnologia_3 = models.CharField(
+        max_length=20, choices=TECNOLOGIA_CHOICES, null=True
+    )
+
+    nome_operadora_1 = models.CharField(max_length=50, null=True)
+    nome_operadora_2 = models.CharField(max_length=50, null=True)
+    nome_operadora_3 = models.CharField(max_length=50, null=True)
+
+    LP_1 = models.CharField(max_length=20, null=True)
+    LP_2 = models.CharField(max_length=20, null=True)
+    LP_3 = models.CharField(max_length=20, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.model})"

@@ -6,6 +6,9 @@ import polars as pl
 from celery import shared_task
 
 from app.utils import MixinGetDataset, Pipeline
+from power_bi.models.solar_nome_operadora_correto import (
+    SolarNomeOperadoraCorreto,
+)
 
 from ..models import Device, DeviceInventario
 from ..utils import MixinQuerys
@@ -34,28 +37,10 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                 .str.replace_all(r"\s+", "")
                 .alias("name")
             )
-            .select(
-                [
-                    "name",
-                    "serial",
-                    "networkId",
-                    "productType",
-                    "model",
-                    "address",
-                    "lat",
-                    "lng",
-                    "wan1Ip",
-                    "wan2Ip",
-                    "firmware",
-                    "organization_id",
-                    "lanIp",
-                    "sigla",
-                    "status_migrado",
-                    "note_1",
-                    "note_2",
-                    "note_3",
-                ]
-            )
+            .pipe(self._add_tecnologia_columns)
+            .pipe(self._add_operadora_columns)
+            .pipe(self._add_lp_columns)
+            .pipe(self._select_final_columns)
             .fill_nan(None)
         )
 
@@ -185,6 +170,126 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                     for n in df.select("notes").to_series().to_list()
                 ]
             )
+        )
+
+    def _add_tecnologia_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        return df.with_columns(
+            [
+                pl.when(
+                    pl.col("note_1").str.contains("IP DEDICADO", case=False)
+                )
+                .then("IP DEDICADO")
+                .when(pl.col("note_1").str.contains("BANDA LARGA", case=False))
+                .then("BANDA LARGA")
+                .otherwise(None)
+                .alias("tecnologia_1"),
+                pl.when(
+                    pl.col("note_2").str.contains("IP DEDICADO", case=False)
+                )
+                .then("IP DEDICADO")
+                .when(pl.col("note_2").str.contains("BANDA LARGA", case=False))
+                .then("BANDA LARGA")
+                .otherwise(None)
+                .alias("tecnologia_2"),
+                pl.when(
+                    pl.col("note_3").str.contains("IP DEDICADO", case=False)
+                )
+                .then("IP DEDICADO")
+                .when(pl.col("note_3").str.contains("BANDA LARGA", case=False))
+                .then("BANDA LARGA")
+                .otherwise(None)
+                .alias("tecnologia_3"),
+            ]
+        )
+
+    def _add_operadora_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        return df.with_columns(
+            [
+                pl.col("note_1")
+                .map_elements(self.find_operadora, return_dtype=pl.String)
+                .alias("nome_operadora_1"),
+                pl.col("note_2")
+                .map_elements(self.find_operadora, return_dtype=pl.String)
+                .alias("nome_operadora_2"),
+                pl.col("note_3")
+                .map_elements(self.find_operadora, return_dtype=pl.String)
+                .alias("nome_operadora_3"),
+            ]
+        )
+
+    def find_operadora(self, note):
+        if not isinstance(note, str):
+            return None
+        for op in self._lista_operadoras:
+            if op and op.lower() in note.lower():
+                return op
+        return None
+
+    @cached_property
+    def _lista_operadoras(self) -> list:
+        """Retorna uma lista de nome_correto das operadoras."""
+        return list(
+            SolarNomeOperadoraCorreto.objects.values_list(
+                "nome_correto", flat=True
+            )
+        )
+
+    def _add_lp_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        return df.with_columns(
+            [
+                pl.col("note_1")
+                .map_elements(self.get_lp, return_dtype=pl.String)
+                .alias("LP_1"),
+                pl.col("note_2")
+                .map_elements(self.get_lp, return_dtype=pl.String)
+                .alias("LP_2"),
+                pl.col("note_3")
+                .map_elements(self.get_lp, return_dtype=pl.String)
+                .alias("LP_3"),
+            ]
+        )
+
+    def get_lp(self, note):
+        import re
+
+        if not isinstance(note, str):
+            return None
+        match = re.search(r"LP:\s*([^\s]+)", note)
+        if match:
+            return match.group(1)
+        return None
+
+    def _select_final_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        return df.select(
+            [
+                "name",
+                "serial",
+                "networkId",
+                "productType",
+                "model",
+                "address",
+                "lat",
+                "lng",
+                "wan1Ip",
+                "wan2Ip",
+                "firmware",
+                "organization_id",
+                "lanIp",
+                "sigla",
+                "status_migrado",
+                "note_1",
+                "note_2",
+                "note_3",
+                "tecnologia_1",
+                "tecnologia_2",
+                "tecnologia_3",
+                "nome_operadora_1",
+                "nome_operadora_2",
+                "nome_operadora_3",
+                "LP_1",
+                "LP_2",
+                "LP_3",
+            ]
         )
 
 
