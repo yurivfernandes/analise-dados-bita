@@ -213,11 +213,18 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         )
 
     def find_operadora(self, note):
-        """Busca o nome da operadora na string da nota, retornando o nome correto ou None."""
+        """Busca o nome da operadora na string da nota, retornando o nome correto (palavra inteira) ou None."""
+        import re
+
         if not isinstance(note, str):
             return None
+        note_lower = note.lower()
         for op in self._lista_operadoras:
-            if op and op.lower() in note.lower():
+            if not op:
+                continue
+            # Regex para encontrar a operadora como palavra inteira, ignorando case
+            pattern = r"(?<!\w)" + re.escape(op.lower()) + r"(?!\w)"
+            if re.search(pattern, note_lower):
                 return op
         return None
 
