@@ -348,14 +348,14 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         )
 
     def _get_velocidade(self, note):
-        """Extrai o texto da velocidade em Mbps da string da nota. Retorna ex: '200 mbps' ou None."""
+        """Extrai o texto da velocidade em Mbps da string da nota, padronizando para 'NUM mbps'."""
         import re
 
         if not isinstance(note, str):
             return None
-        match = re.search(r"(\d+\s*mbps)", note, re.IGNORECASE)
+        match = re.search(r"(\d+)\s*mbps", note, re.IGNORECASE)
         if match:
-            return match.group(1).strip()
+            return f"{match.group(1)} mbps"
         return None
 
 
