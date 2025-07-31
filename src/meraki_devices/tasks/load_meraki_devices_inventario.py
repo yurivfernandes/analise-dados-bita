@@ -40,9 +40,37 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
             .pipe(self._add_tecnologia_columns)
             .pipe(self._add_operadora_columns)
             .pipe(self._add_lp_columns)
+            .pipe(self._add_velocidade_columns)
             .pipe(self._select_final_columns)
             .fill_nan(None)
         )
+
+    def _add_velocidade_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Adiciona as colunas velocidade_1, velocidade_2 e velocidade_3 ao DataFrame, extraindo o valor em Mbps das notas."""
+        return df.with_columns(
+            [
+                pl.col("note_1")
+                .map_elements(self._get_velocidade, return_dtype=pl.Int64)
+                .alias("velocidade_1"),
+                pl.col("note_2")
+                .map_elements(self._get_velocidade, return_dtype=pl.Int64)
+                .alias("velocidade_2"),
+                pl.col("note_3")
+                .map_elements(self._get_velocidade, return_dtype=pl.Int64)
+                .alias("velocidade_3"),
+            ]
+        )
+
+    def _get_velocidade(self, note):
+        """Extrai o valor numérico da velocidade em Mbps da string da nota. Retorna int ou None."""
+        import re
+
+        if not isinstance(note, str):
+            return None
+        match = re.search(r"(\d+)\s*mbps", note, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+        return None
 
     @property
     def _device_dataset(self) -> pl.DataFrame:
@@ -227,18 +255,18 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         return df.with_columns(
             [
                 pl.col("note_1")
-                .map_elements(self.find_operadora, return_dtype=pl.String)
+                .map_elements(self._find_operadora, return_dtype=pl.String)
                 .alias("nome_operadora_1"),
                 pl.col("note_2")
-                .map_elements(self.find_operadora, return_dtype=pl.String)
+                .map_elements(self._find_operadora, return_dtype=pl.String)
                 .alias("nome_operadora_2"),
                 pl.col("note_3")
-                .map_elements(self.find_operadora, return_dtype=pl.String)
+                .map_elements(self._find_operadora, return_dtype=pl.String)
                 .alias("nome_operadora_3"),
             ]
         )
 
-    def find_operadora(self, note):
+    def _find_operadora(self, note):
         """Busca o nome da operadora na string da nota, retornando o nome correto (palavra inteira) ou None."""
         import re
 
@@ -268,18 +296,18 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         return df.with_columns(
             [
                 pl.col("note_1")
-                .map_elements(self.get_lp, return_dtype=pl.String)
+                .map_elements(self._get_lp, return_dtype=pl.String)
                 .alias("LP_1"),
                 pl.col("note_2")
-                .map_elements(self.get_lp, return_dtype=pl.String)
+                .map_elements(self._get_lp, return_dtype=pl.String)
                 .alias("LP_2"),
                 pl.col("note_3")
-                .map_elements(self.get_lp, return_dtype=pl.String)
+                .map_elements(self._get_lp, return_dtype=pl.String)
                 .alias("LP_3"),
             ]
         )
 
-    def get_lp(self, note):
+    def _get_lp(self, note):
         """Extrai o código LP da string da nota, removendo traço final se houver, ou retorna None."""
         import re
 
