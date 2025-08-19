@@ -6,6 +6,12 @@ from .views import *
 router = DefaultRouter()
 
 
-urlpatterns = []
+urlpatterns = [
+    path(
+        "load-contract-sla/",
+        LoadContractSLAView.as_view(),
+        name="load-contract-sla",
+    )
+]
 
 urlpatterns += router.urls

@@ -17,8 +17,11 @@ class MixinGetDataset:
         """Gera um schema de campos com todos os campos da model"""
         schema = {}
         for field in model._meta.get_fields():
-            field_type = self.get_polars_type(field=field)
-            schema[field.name] = {"rename": field.name, "type": field_type}
+            field_type_schema = self.get_polars_type(field=field)
+            schema[field.name] = {
+                "rename": field.name,
+                "type": field_type_schema,
+            }
         return schema
 
     def get_polars_type(self, field: models.fields):
