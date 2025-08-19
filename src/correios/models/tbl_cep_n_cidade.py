@@ -53,4 +53,5 @@ class TblCepNCidade(models.Model):
     )
 
     class Meta:
+        managed = False
         db_table = "tbl_cep_n_cidade"
