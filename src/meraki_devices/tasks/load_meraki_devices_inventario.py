@@ -402,32 +402,117 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
             )
             enderecos.extend(list(qs))
 
-        return df.join(pl.DataFrame(enderecos), on="cep", how="left")
+        # Faz o join com os endereços encontrados na tabela dos Correios
+        df_joined = df.join(pl.DataFrame(enderecos), on="cep", how="left")
 
-    def _get_endereco_por_latlng(self, df: pl.DataFrame) -> pl.DataFrame:
-        df_enderecos_faltantes = df.drop_nulls(subset="cep").select(
-            ["lat", "lng"]
+        # Para os registros que ainda não possuem CEP, tenta obter via lat/lng
+        try:
+            endereco_dicts = self._get_endereco_por_latlng(df_joined)
+            # Anexa a coluna `endereco_dict` (lista alinhada com as linhas do DF)
+            return df_joined.with_columns(
+                pl.Series("endereco_dict", endereco_dicts)
+            )
+        except (
+            requests.RequestException,
+            RuntimeError,
+            ValueError,
+            TypeError,
+        ):
+            # Em caso de falha na chamada externa, devolve o dataframe sem a coluna adicional
+            return df_joined
+
+    def _get_endereco_por_latlng(self, df: pl.DataFrame) -> list:
+        """
+        Retorna uma lista de dicionários (ou None) alinhada às linhas do `df`.
+        Para linhas que já possuem `cep` retorna None (pois o join já trouxe os dados);
+        para linhas sem `cep`, tenta reverse geocoding usando Nominatim com
+        caching por coordenada, retries e rate-limit respeitado.
+        """
+        import time
+
+        # Seleciona apenas as linhas que realmente precisam de reverse geocoding
+        mask = (
+            pl.col("cep").is_null()
+            & pl.col("lat").is_not_null()
+            & pl.col("lng").is_not_null()
         )
-        for end in df_enderecos_faltantes:
+
+        df_missing = df.filter(mask).select(["lat", "lng"]).unique()
+
+        # Normaliza chaves como strings arredondadas para evitar problemas de precisão
+        def _key(lat, lng):
             try:
-                r = requests.get(
-                    f"https://nominatim.openstreetmap.org/reverse?format=json&lat={end['lat']}&lon={end['lng']}&addressdetails=1"
-                )
-                if r.status_code == 200:
-                    data = r.json().get("address", {})
-                    return {
-                        "endereco": data.get("road"),
-                        "bairro": data.get("suburb")
-                        or data.get("neighbourhood"),
-                        "cidade": data.get("city")
-                        or data.get("town")
-                        or data.get("village"),
-                        "estado": data.get("state"),
-                        "cep": data.get("postcode"),
-                    }
-            except Exception:
-                pass
-        return {}
+                return (round(float(lat), 6), round(float(lng), 6))
+            except (ValueError, TypeError):
+                return (str(lat), str(lng))
+
+        coords = [(_key(r["lat"], r["lng"])) for r in df_missing.to_dicts()]
+
+        headers = {
+            "User-Agent": "analise-dados-bita/1.0 (contato@exemplo.com)",
+        }
+
+        mapping = {}
+        for lat, lng in coords:
+            # pula se já temos no cache
+            if (lat, lng) in mapping:
+                continue
+
+            # tenta até 3 vezes com backoff simples
+            result = None
+            for attempt in range(3):
+                try:
+                    r = requests.get(
+                        "https://nominatim.openstreetmap.org/reverse",
+                        params={
+                            "format": "json",
+                            "lat": lat,
+                            "lon": lng,
+                            "addressdetails": 1,
+                        },
+                        headers=headers,
+                        timeout=5,
+                    )
+                    if r.status_code == 200:
+                        data = r.json().get("address", {})
+                        result = {
+                            "endereco": data.get("road")
+                            or data.get("pedestrian")
+                            or data.get("footway"),
+                            "bairro": data.get("suburb")
+                            or data.get("neighbourhood")
+                            or data.get("quarter"),
+                            "cidade": data.get("city")
+                            or data.get("town")
+                            or data.get("village")
+                            or data.get("municipality"),
+                            "estado": data.get("state"),
+                            "cep": (data.get("postcode") or None),
+                        }
+                        break
+                except (requests.RequestException, ValueError, TypeError):
+                    # falha silenciosa na tentativa; aguarda e tenta novamente
+                    time.sleep(1 + attempt)
+            # salva mesmo que None (para não tentar novamente desnecessariamente)
+            mapping[(lat, lng)] = result
+
+            # Respeita a política de uso do Nominatim: não sobrecarregar com muitas reqs
+            time.sleep(1)
+
+        # Agora monta a lista alinhada com as linhas do df
+        endereco_list = []
+        for row in df.to_dicts():
+            if row.get("cep"):
+                endereco_list.append(None)
+                continue
+            lat = row.get("lat")
+            lng = row.get("lng")
+            if lat is None or lng is None:
+                endereco_list.append(None)
+                continue
+            endereco_list.append(mapping.get(_key(lat, lng)))
+
+        return endereco_list
 
     def _add_endereco_dict_columns(self, df: pl.DataFrame) -> pl.DataFrame:
         """Expande endereco_dict para as colunas endereco, bairro, cidade, estado."""
@@ -468,6 +553,6 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_meraki_devices_inventario_async(self) -> Dict:
+def load_meraki_devices_inventario_async(_task) -> Dict:
     sync_task = LoadMerakiDeviceInventario()
     return sync_task.run()
