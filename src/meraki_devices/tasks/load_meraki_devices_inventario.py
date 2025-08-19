@@ -7,9 +7,11 @@ import requests
 from celery import shared_task
 
 from app.utils import MixinGetDataset, Pipeline
+from correios.models import TblCepNLogradouro
 from power_bi.models.solar_nome_operadora_correto import (
     SolarNomeOperadoraCorreto,
 )
+
 from ..models import Device, DeviceInventario
 from ..utils import MixinQuerys
 
@@ -386,30 +388,29 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         return None
 
     def _add_endereco_columns(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Adiciona coluna de endereco_dict ao DataFrame."""
-        cep_list = set(
-            df.drop_nulls(subset="cep").select("cep").to_series().to_list()
-        )
-        for cep in cep_list:
-            try:
-                r = requests.get(f"https://viacep.com.br/ws/{cep}/json/")
-                if r.status_code == 200:
-                    data = r.json()
-                    if "erro" not in data:
-                        return {
-                            "endereco": data.get("logradouro"),
-                            "bairro": data.get("bairro"),
-                            "cidade": data.get("localidade"),
-                            "estado": data.get("uf"),
-                            "cep": cep,
-                        }
-            except Exception:
-                pass
-        return df
+        """Adiciona coluna de endereco_dict ao DataFrame usando a tabela de correios, via list comprehension."""
+        ceps = df.drop_nulls(subset='cep').select("cep").to_series().to_list()
+        qs = TblCepNLogradouro.objects.filter(cep__in=filter(None, ceps))
+        cep_to_obj = {obj.cep: obj for obj in qs}
+        endereco_dicts = [
+            (
+                {
+                    "endereco": obj.logradouro,
+                    "bairro": obj.bairro.nome if obj and obj.bairro else None,
+                    "cidade": obj.cidade.nome if obj and obj.cidade else None,
+                    "estado": obj.estado if obj else None,
+                    "cep": obj.cep if obj else cep,
+                }
+                if (obj := cep_to_obj.get(cep))
+                else {}
+            )
+            if cep
+            else {}
+            for cep in ceps
+        ]
+        return df.with_columns([pl.Series("endereco_dict", endereco_dicts)])
 
     def _get_endereco_por_latlng(self, lat, lng) -> dict:
-        import requests
-
         if lat is None or lng is None:
             return {}
         try:
@@ -472,5 +473,4 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
 )
 def load_meraki_devices_inventario_async(self) -> Dict:
     sync_task = LoadMerakiDeviceInventario()
-    return sync_task.run()
     return sync_task.run()
