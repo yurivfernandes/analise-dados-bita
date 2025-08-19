@@ -390,55 +390,43 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
     def _add_endereco_columns(self, df: pl.DataFrame) -> pl.DataFrame:
         """Adiciona coluna de endereco_dict ao DataFrame usando a tabela de correios, via list comprehension."""
         ceps = df.drop_nulls(subset="cep").select("cep").to_series().to_list()
-        # Quebra a consulta em lotes de 1000 ceps
         enderecos = []
         for i in range(0, len(ceps), 1000):
             lote = [c for c in ceps[i : i + 1000] if c]
-            for obj in TblCepNLogradouro.objects.filter(cep__in=lote):
-                enderecos.append(
-                    {
-                        "cep": obj.cep,
-                        "endereco": obj.logradouro,
-                        "bairro": obj.bairro.nome if obj.bairro else None,
-                        "cidade": obj.cidade.nome if obj.cidade else None,
-                        "estado": obj.estado,
-                    }
-                )
-        df_enderecos = (
-            pl.DataFrame(enderecos)
-            if enderecos
-            else pl.DataFrame(
-                {
-                    "cep": [],
-                    "endereco": [],
-                    "bairro": [],
-                    "cidade": [],
-                    "estado": [],
-                }
+            qs = TblCepNLogradouro.objects.filter(cep__in=lote).values(
+                "logradouro",
+                "bairro__bairro",
+                "cidade__cidade",
+                "estado",
+                "cep",
             )
-        )
-        return df.join(df_enderecos, on="cep", how="left")
+            enderecos.extend(list(qs))
 
-    def _get_endereco_por_latlng(self, lat, lng) -> dict:
-        if lat is None or lng is None:
-            return {}
-        try:
-            r = requests.get(
-                f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lng}&addressdetails=1"
-            )
-            if r.status_code == 200:
-                data = r.json().get("address", {})
-                return {
-                    "endereco": data.get("road"),
-                    "bairro": data.get("suburb") or data.get("neighbourhood"),
-                    "cidade": data.get("city")
-                    or data.get("town")
-                    or data.get("village"),
-                    "estado": data.get("state"),
-                    "cep": data.get("postcode"),
-                }
-        except Exception:
-            pass
+        return df.join(pl.DataFrame(enderecos), on="cep", how="left")
+
+    def _get_endereco_por_latlng(self, df: pl.DataFrame) -> pl.DataFrame:
+        df_enderecos_faltantes = df.drop_nulls(subset="cep").select(
+            ["lat", "lng"]
+        )
+        for end in df_enderecos_faltantes:
+            try:
+                r = requests.get(
+                    f"https://nominatim.openstreetmap.org/reverse?format=json&lat={end['lat']}&lon={end['lng']}&addressdetails=1"
+                )
+                if r.status_code == 200:
+                    data = r.json().get("address", {})
+                    return {
+                        "endereco": data.get("road"),
+                        "bairro": data.get("suburb")
+                        or data.get("neighbourhood"),
+                        "cidade": data.get("city")
+                        or data.get("town")
+                        or data.get("village"),
+                        "estado": data.get("state"),
+                        "cep": data.get("postcode"),
+                    }
+            except Exception:
+                pass
         return {}
 
     def _add_endereco_dict_columns(self, df: pl.DataFrame) -> pl.DataFrame:
