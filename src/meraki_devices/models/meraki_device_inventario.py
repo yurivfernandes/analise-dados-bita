@@ -26,6 +26,11 @@ class DeviceInventario(models.Model):
     note_2 = models.CharField(max_length=1000, null=True)
     note_3 = models.CharField(max_length=1000, null=True)
     note_4 = models.CharField(max_length=1000, null=True)
+    cep = models.CharField(max_length=10, null=True)
+    endereco = models.CharField(max_length=255, null=True)
+    bairro = models.CharField(max_length=100, null=True)
+    cidade = models.CharField(max_length=100, null=True)
+    estado = models.CharField(max_length=2, null=True)
     tecnologia_1 = models.CharField(
         max_length=20, choices=TECNOLOGIA_CHOICES, null=True
     )

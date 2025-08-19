@@ -41,6 +41,8 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
             .pipe(self._add_operadora_columns)
             .pipe(self._add_lp_columns)
             .pipe(self._add_velocidade_columns)
+            .pipe(self._add_endereco_columns)
+            .pipe(self._add_endereco_dict_columns)
             .pipe(self._select_final_columns)
             .fill_nan(None)
         )
@@ -328,6 +330,11 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                 "velocidade_1",
                 "velocidade_2",
                 "velocidade_3",
+                "cep",
+                "endereco",
+                "bairro",
+                "cidade",
+                "estado",
             ]
         )
 
@@ -357,6 +364,111 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         if match:
             return f"{match.group(1)} mbps"
         return None
+
+    def _add_endereco_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Adiciona coluna cep e endereco_dict ao DataFrame."""
+        return df.with_columns(
+            [
+                pl.col("address")
+                .map_elements(self._extract_cep, return_dtype=pl.String)
+                .alias("cep"),
+                pl.struct(["cep", "lat", "lng"])
+                .map_elements(
+                    lambda x: self._get_endereco_por_cep(x["cep"])
+                    if x["cep"]
+                    else self._get_endereco_por_latlng(x["lat"], x["lng"]),
+                    return_dtype=pl.Object,
+                )
+                .alias("endereco_dict"),
+            ]
+        )
+
+    def _add_endereco_dict_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Expande endereco_dict para as colunas endereco, bairro, cidade, estado."""
+        return df.with_columns(
+            [
+                pl.col("endereco_dict")
+                .map_elements(
+                    lambda d: d.get("endereco") if d else None,
+                    return_dtype=pl.String,
+                )
+                .alias("endereco"),
+                pl.col("endereco_dict")
+                .map_elements(
+                    lambda d: d.get("bairro") if d else None,
+                    return_dtype=pl.String,
+                )
+                .alias("bairro"),
+                pl.col("endereco_dict")
+                .map_elements(
+                    lambda d: d.get("cidade") if d else None,
+                    return_dtype=pl.String,
+                )
+                .alias("cidade"),
+                pl.col("endereco_dict")
+                .map_elements(
+                    lambda d: d.get("estado") if d else None,
+                    return_dtype=pl.String,
+                )
+                .alias("estado"),
+            ]
+        )
+
+    def _extract_cep(self, address: str) -> str:
+        import re
+
+        if not isinstance(address, str):
+            return None
+        # Busca CEP com ou sem traço
+        match = re.search(r"(\d{5}-?\d{3})", address)
+        if match:
+            return match.group(1).replace("-", "")
+        return None
+
+    def _get_endereco_por_cep(self, cep: str) -> dict:
+        import requests
+
+        if not cep:
+            return {}
+        try:
+            r = requests.get(f"https://viacep.com.br/ws/{cep}/json/")
+            if r.status_code == 200:
+                data = r.json()
+                if "erro" not in data:
+                    return {
+                        "endereco": data.get("logradouro"),
+                        "bairro": data.get("bairro"),
+                        "cidade": data.get("localidade"),
+                        "estado": data.get("uf"),
+                        "cep": cep,
+                    }
+        except Exception:
+            pass
+        return {}
+
+    def _get_endereco_por_latlng(self, lat, lng) -> dict:
+        import requests
+
+        if lat is None or lng is None:
+            return {}
+        try:
+            r = requests.get(
+                f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lng}&addressdetails=1"
+            )
+            if r.status_code == 200:
+                data = r.json().get("address", {})
+                return {
+                    "endereco": data.get("road"),
+                    "bairro": data.get("suburb") or data.get("neighbourhood"),
+                    "cidade": data.get("city")
+                    or data.get("town")
+                    or data.get("village"),
+                    "estado": data.get("state"),
+                    "cep": data.get("postcode"),
+                }
+        except Exception:
+            pass
+        return {}
 
 
 @shared_task(
