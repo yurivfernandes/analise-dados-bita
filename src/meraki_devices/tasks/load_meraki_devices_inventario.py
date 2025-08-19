@@ -391,28 +391,33 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
         """Adiciona coluna de endereco_dict ao DataFrame usando a tabela de correios, via list comprehension."""
         ceps = df.drop_nulls(subset="cep").select("cep").to_series().to_list()
         # Quebra a consulta em lotes de 1000 ceps
-        qs_dict = {}
+        enderecos = []
         for i in range(0, len(ceps), 1000):
-            lote = ceps[i : i + 1000]
+            lote = [c for c in ceps[i : i + 1000] if c]
             for obj in TblCepNLogradouro.objects.filter(cep__in=lote):
-                qs_dict[obj.cep] = obj
-        endereco_dicts = [
-            (
+                enderecos.append(
+                    {
+                        "cep": obj.cep,
+                        "endereco": obj.logradouro,
+                        "bairro": obj.bairro.nome if obj.bairro else None,
+                        "cidade": obj.cidade.nome if obj.cidade else None,
+                        "estado": obj.estado,
+                    }
+                )
+        df_enderecos = (
+            pl.DataFrame(enderecos)
+            if enderecos
+            else pl.DataFrame(
                 {
-                    "endereco": obj.logradouro,
-                    "bairro": obj.bairro.nome if obj and obj.bairro else None,
-                    "cidade": obj.cidade.nome if obj and obj.cidade else None,
-                    "estado": obj.estado if obj else None,
-                    "cep": obj.cep if obj else cep,
+                    "cep": [],
+                    "endereco": [],
+                    "bairro": [],
+                    "cidade": [],
+                    "estado": [],
                 }
-                if (obj := qs_dict.get(cep))
-                else {}
             )
-            if cep
-            else {}
-            for cep in ceps
-        ]
-        return df.with_columns([pl.Series("endereco_dict", endereco_dicts)])
+        )
+        return df.join(df_enderecos, on="cep", how="left")
 
     def _get_endereco_por_latlng(self, lat, lng) -> dict:
         if lat is None or lng is None:
