@@ -390,9 +390,12 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
     def _add_endereco_columns(self, df: pl.DataFrame) -> pl.DataFrame:
         """Adiciona coluna de endereco_dict ao DataFrame usando a tabela de correios, via list comprehension."""
         ceps = df.drop_nulls(subset="cep").select("cep").to_series().to_list()
-        qs = TblCepNLogradouro.objects.filter(cep__in=ceps).values(
-            "logradouro", "bairro", "cidade", "estado", "cep"
-        )
+        # Quebra a consulta em lotes de 1000 ceps
+        qs_dict = {}
+        for i in range(0, len(ceps), 1000):
+            lote = ceps[i : i + 1000]
+            for obj in TblCepNLogradouro.objects.filter(cep__in=lote):
+                qs_dict[obj.cep] = obj
         endereco_dicts = [
             (
                 {
@@ -402,7 +405,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
                     "estado": obj.estado if obj else None,
                     "cep": obj.cep if obj else cep,
                 }
-                if (obj := qs.get(cep))
+                if (obj := qs_dict.get(cep))
                 else {}
             )
             if cep
