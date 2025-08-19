@@ -3,13 +3,13 @@ from functools import cached_property
 from typing import Dict
 
 import polars as pl
+import requests
 from celery import shared_task
 
 from app.utils import MixinGetDataset, Pipeline
 from power_bi.models.solar_nome_operadora_correto import (
     SolarNomeOperadoraCorreto,
 )
-
 from ..models import Device, DeviceInventario
 from ..utils import MixinQuerys
 
@@ -41,6 +41,7 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
             .pipe(self._add_operadora_columns)
             .pipe(self._add_lp_columns)
             .pipe(self._add_velocidade_columns)
+            .pipe(self._extract_cep_from_adress)
             .pipe(self._add_endereco_columns)
             .pipe(self._add_endereco_dict_columns)
             .pipe(self._select_final_columns)
@@ -365,23 +366,70 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
             return f"{match.group(1)} mbps"
         return None
 
-    def _add_endereco_columns(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Adiciona coluna cep e endereco_dict ao DataFrame."""
+    def _extract_cep_from_adress(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Extrai o cep da coluna address"""
         return df.with_columns(
-            [
-                pl.col("address")
-                .map_elements(self._extract_cep, return_dtype=pl.String)
-                .alias("cep"),
-                pl.struct(["cep", "lat", "lng"])
-                .map_elements(
-                    lambda x: self._get_endereco_por_cep(x["cep"])
-                    if x["cep"]
-                    else self._get_endereco_por_latlng(x["lat"], x["lng"]),
-                    return_dtype=pl.Object,
-                )
-                .alias("endereco_dict"),
-            ]
+            pl.col("address")
+            .map_elements(self._extract_cep, return_dtype=pl.String)
+            .alias("cep")
         )
+
+    def _extract_cep(self, address: str) -> str:
+        import re
+
+        if not isinstance(address, str):
+            return None
+        # Busca CEP com ou sem traço
+        match = re.search(r"(\d{5}-?\d{3})", address)
+        if match:
+            return match.group(1).replace("-", "")
+        return None
+
+    def _add_endereco_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Adiciona coluna de endereco_dict ao DataFrame."""
+        cep_list = set(
+            df.drop_nulls(subset="cep").select("cep").to_series().to_list()
+        )
+        for cep in cep_list:
+            try:
+                r = requests.get(f"https://viacep.com.br/ws/{cep}/json/")
+                if r.status_code == 200:
+                    data = r.json()
+                    if "erro" not in data:
+                        return {
+                            "endereco": data.get("logradouro"),
+                            "bairro": data.get("bairro"),
+                            "cidade": data.get("localidade"),
+                            "estado": data.get("uf"),
+                            "cep": cep,
+                        }
+            except Exception:
+                pass
+        return df
+
+    def _get_endereco_por_latlng(self, lat, lng) -> dict:
+        import requests
+
+        if lat is None or lng is None:
+            return {}
+        try:
+            r = requests.get(
+                f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lng}&addressdetails=1"
+            )
+            if r.status_code == 200:
+                data = r.json().get("address", {})
+                return {
+                    "endereco": data.get("road"),
+                    "bairro": data.get("suburb") or data.get("neighbourhood"),
+                    "cidade": data.get("city")
+                    or data.get("town")
+                    or data.get("village"),
+                    "estado": data.get("state"),
+                    "cep": data.get("postcode"),
+                }
+        except Exception:
+            pass
+        return {}
 
     def _add_endereco_dict_columns(self, df: pl.DataFrame) -> pl.DataFrame:
         """Expande endereco_dict para as colunas endereco, bairro, cidade, estado."""
@@ -414,62 +462,6 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
             ]
         )
 
-    def _extract_cep(self, address: str) -> str:
-        import re
-
-        if not isinstance(address, str):
-            return None
-        # Busca CEP com ou sem traço
-        match = re.search(r"(\d{5}-?\d{3})", address)
-        if match:
-            return match.group(1).replace("-", "")
-        return None
-
-    def _get_endereco_por_cep(self, cep: str) -> dict:
-        import requests
-
-        if not cep:
-            return {}
-        try:
-            r = requests.get(f"https://viacep.com.br/ws/{cep}/json/")
-            if r.status_code == 200:
-                data = r.json()
-                if "erro" not in data:
-                    return {
-                        "endereco": data.get("logradouro"),
-                        "bairro": data.get("bairro"),
-                        "cidade": data.get("localidade"),
-                        "estado": data.get("uf"),
-                        "cep": cep,
-                    }
-        except Exception:
-            pass
-        return {}
-
-    def _get_endereco_por_latlng(self, lat, lng) -> dict:
-        import requests
-
-        if lat is None or lng is None:
-            return {}
-        try:
-            r = requests.get(
-                f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lng}&addressdetails=1"
-            )
-            if r.status_code == 200:
-                data = r.json().get("address", {})
-                return {
-                    "endereco": data.get("road"),
-                    "bairro": data.get("suburb") or data.get("neighbourhood"),
-                    "cidade": data.get("city")
-                    or data.get("town")
-                    or data.get("village"),
-                    "estado": data.get("state"),
-                    "cep": data.get("postcode"),
-                }
-        except Exception:
-            pass
-        return {}
-
 
 @shared_task(
     name="meraki.load_meraki_devices_inventario",
@@ -480,4 +472,5 @@ class LoadMerakiDeviceInventario(MixinGetDataset, MixinQuerys, Pipeline):
 )
 def load_meraki_devices_inventario_async(self) -> Dict:
     sync_task = LoadMerakiDeviceInventario()
+    return sync_task.run()
     return sync_task.run()

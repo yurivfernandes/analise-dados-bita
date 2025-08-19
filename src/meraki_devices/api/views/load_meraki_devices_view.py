@@ -17,10 +17,10 @@ class LoadMerakiDevicesView(APIView):
     def post(self, request, *args, **kwargs) -> Response:
         patch_requests_ssl()
         log = {}
-        with LoadMerakiDevices(
-            api_key=self.get_env_or_404(var_name="API_KEY_MERAKI")
-        ) as load:
-            log["log_meraki_devices"] = load.run()
+        # with LoadMerakiDevices(
+        #     api_key=self.get_env_or_404(var_name="API_KEY_MERAKI")
+        # ) as load:
+        #     log["log_meraki_devices"] = load.run()
         with LoadMerakiDeviceInventario() as load:
             log["log_meraki_device_inventario"] = load.run()
         return Response(log)
