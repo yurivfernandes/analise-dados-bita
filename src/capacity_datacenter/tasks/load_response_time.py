@@ -94,10 +94,12 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
                 if not result:
                     continue
 
-                for row in result:
-                    collected_rows.append(
+                collected_rows.extend(
+                    [
                         tuple(str(v) if v is not None else None for v in row)
-                    )
+                        for row in result
+                    ]
+                )
 
             window_start = window_end
 
