@@ -14,3 +14,4 @@ class CustomPollerAssignment(models.Model):
         db_table = "d_custom_poller_assignment"
         verbose_name = "Dim Custom Poller Assignment"
         verbose_name_plural = "Dim Custom Poller Assignments"
+        

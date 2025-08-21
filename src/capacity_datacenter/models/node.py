@@ -7,7 +7,7 @@ class Node(models.Model):
     id_vgr = models.CharField(max_length=7, null=True)
     caption = models.CharField(max_length=255, null=True)
     description = models.TextField(null=True)
-    automatizacao = models.CharField(max_length=20, null=True)
+    automatizacao = models.CharField(max_length=100, null=True)
     redundancia = models.CharField(max_length=20, null=True)
 
     def __str__(self):

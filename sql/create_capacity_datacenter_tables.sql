@@ -80,3 +80,5 @@ END
 GO
 
 -- Fim do script
+
+django.db.utils.ProgrammingError: ('42000', "[42000] [Microsoft][SQL Server Native Client 11.0][SQL Server]String or binary data would be truncated in table 'CAPACITY_DATACENTER.dbo.d_node', column 'automatizacao'. Truncated value: 'PAB_TR_RONDONIA_1294'. (2628) (SQLFetch); [42000] [Microsoft][SQL Server Native Client 11.0][SQL Server]The statement has been terminated. (3621)")
