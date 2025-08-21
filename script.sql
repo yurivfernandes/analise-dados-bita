@@ -20,20 +20,12 @@ FROM OPENQUERY(
     [172.21.3.221],
     '
     SELECT 
-        interfaces.NodeId,
-        interfaces.InterfaceID,
-        interfaces.InterfaceName,
-        interfaces.Caption,
-        interfaces.ID_VGR
+        interfaces.*
     FROM [BR_TD_VITAIT].dbo.[Interfaces] interfaces
     INNER JOIN [BR_TD_VITAIT].dbo.[Nodes] nodes
         ON interfaces.NodeID = nodes.NodeID
     WHERE nodes.Nome_do_cliente LIKE ''%BRADESCO%''
-    AND (
-        interfaces.Caption LIKE ''%BANDA LARGA%''
-        OR interfaces.Caption LIKE ''%BANDA_LARGA%''
-        OR interfaces.Caption LIKE ''%IP DEDICADO%''
-    )
+	AND Tipo_Interface = ''WAN''
     '
 ) AS interfaces
 
