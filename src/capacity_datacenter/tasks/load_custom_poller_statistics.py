@@ -115,21 +115,17 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                     "CustomPollerAssignmentID": "custom_poller_assignment_id",
                     "NodeID": "node_id",
                     "RowID": "row_id",
-                    "DateTime": "date_time",
+                    "DateTime": "date",
                     "RawStatus": "raw_status",
                     "Weight": "weight",
                 }
             )
             .with_columns(
                 [
-                    pl.col("date_time").str.strptime(
-                        pl.Datetime, fmt="%Y-%m-%d %H:%M:%S", strict=False
-                    ),
                     pl.col("weight").cast(pl.Float64),
                 ]
             )
-            .with_columns(pl.col("date_time").dt.date().alias("date"))
-            .group_by(["custom_poller_assignment_id", "date"])
+            .groupby(["custom_poller_assignment_id", "date"])
             .agg(
                 [
                     pl.col("weight").mean().alias("avg_weight"),

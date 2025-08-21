@@ -72,7 +72,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
                 in_list = ",".join(f"'{self._esc(n)}'" for n in batch)
 
                 inner_query = (
-                    "SELECT\n                        resp.NodeID,\n                        resp.DateTime,\n                        resp.AvgResponseTime,\n                        resp.PercentLoss\n                    FROM [BR_TD_VITAIT].dbo.[ResponseTime] resp\n                    WHERE resp.NodeID IN ("
+                    "SELECT\n                        resp.NodeID,\n                        CONVERT(VARCHAR(10), resp.DateTime, 23) AS DateTime,\n                        resp.AvgResponseTime,\n                        resp.PercentLoss\n                    FROM [BR_TD_VITAIT].dbo.[ResponseTime] resp\n                    WHERE resp.NodeID IN ("
                     + in_list
                     + ") AND resp.DateTime >= '"
                     + window_start.strftime("%Y-%m-%d %H:%M:%S")
@@ -116,22 +116,18 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             .rename(
                 {
                     "NodeID": "node_id",
-                    "DateTime": "date_time",
+                    "DateTime": "date",
                     "AvgResponseTime": "avg_response_time",
                     "PercentLoss": "percent_loss",
                 }
             )
             .with_columns(
                 [
-                    pl.col("date_time").str.strptime(
-                        pl.Datetime, fmt="%Y-%m-%d %H:%M:%S", strict=False
-                    ),
                     pl.col("avg_response_time").cast(pl.Float64),
                     pl.col("percent_loss").cast(pl.Float64),
                 ]
             )
-            .with_columns(pl.col("date_time").dt.date().alias("date"))
-            .group_by(["node_id", "date"])
+            .groupby(["node_id", "date"])
             .agg(
                 [
                     pl.col("avg_response_time")
