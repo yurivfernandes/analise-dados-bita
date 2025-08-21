@@ -11,7 +11,7 @@ from app.utils import MixinGetDataset, Pipeline
 from ..models import Node, ResponseTime
 
 
-class LoadCapacityDatacenter(MixinGetDataset, Pipeline):
+class LoadResponseTime(MixinGetDataset, Pipeline):
     """Classe que busca os dados do meraki"""
 
     def __init__(self, days_back=None):
@@ -130,8 +130,8 @@ class LoadCapacityDatacenter(MixinGetDataset, Pipeline):
                     pl.col("percent_loss").cast(pl.Float64),
                 ]
             )
-            .with_column(pl.col("date_time").dt.date().alias("date"))
-            .groupby(["node_id", "date"])
+            .with_columns(pl.col("date_time").dt.date().alias("date"))
+            .group_by(["node_id", "date"])
             .agg(
                 [
                     pl.col("avg_response_time")
@@ -158,12 +158,12 @@ class LoadCapacityDatacenter(MixinGetDataset, Pipeline):
 
 
 @shared_task(
-    name="capacity_datacenter.load_capacity_datacenter_async",
+    name="capacity_datacenter.load_response_time_async",
     bind=True,
     autoretry_for=(Exception,),
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_capacity_datacenter_async(_task) -> Dict:
-    sync_task = LoadCapacityDatacenter()
+def load_response_time_async(_task) -> Dict:
+    sync_task = LoadResponseTime()
     return sync_task.run()

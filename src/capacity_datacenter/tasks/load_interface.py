@@ -52,9 +52,9 @@ class LoadInterface(MixinGetDataset, Pipeline):
             FROM [BR_TD_VITAIT].dbo.[Interfaces] interfaces
             INNER JOIN [BR_TD_VITAIT].dbo.[Nodes] nodes
                 ON interfaces.NodeID = nodes.NodeID
-            WHERE nodes.Nome_do_cliente LIKE ''%BRADESCO%'''
+            WHERE nodes.Nome_do_cliente LIKE ''%BRADESCO%''
             AND Tipo_Interface = ''WAN''
-        ) AS interfaces
+        ') AS interfaces
         """
 
         with connection.cursor() as cursor:
@@ -85,7 +85,6 @@ class LoadInterface(MixinGetDataset, Pipeline):
                 "ID_VGR": "id_vgr",
             }
         )
-
 
 
 @shared_task(
