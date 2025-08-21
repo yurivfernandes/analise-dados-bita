@@ -38,7 +38,7 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             return pl.DataFrame()
 
         # batch assignment ids
-        batch_size = 500
+        batch_size = 180
         batches = [
             self._assignment_id_list[i : i + batch_size]
             for i in range(0, len(self._assignment_id_list), batch_size)
@@ -66,7 +66,7 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                 in_list = ",".join(f"'{self._esc(a)}'" for a in batch)
 
                 inner_query = (
-                    "SELECT\n                        poller.CustomPollerAssignmentID,\n                        poller.NodeID,\n                        poller.RowID,\n                        poller.DateTime,\n                        poller.RawStatus,\n                        poller.Weight\n                    FROM [BR_TD_VITAIT].dbo.[CustomPollerStatistics_CS] poller\n                    WHERE poller.CustomPollerAssignmentID IN ("
+                    "SELECT\n                        poller.CustomPollerAssignmentID,\n                        poller.RowID,\n                        CONVERT(VARCHAR(10), poller.DateTime, 23) AS DateTime,\n                        poller.RawStatus,\n                        poller.Weight\n                    FROM [BR_TD_VITAIT].dbo.[CustomPollerStatistics_CS] poller\n                    WHERE poller.CustomPollerAssignmentID IN ("
                     + in_list
                     + ") AND poller.DateTime >= '"
                     + window_start.strftime("%Y-%m-%d %H:%M:%S")
@@ -77,7 +77,7 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
                 inner_for_openquery = inner_query.replace("'", "''")
                 full_query = (
-                    "SELECT CustomPollerAssignmentID, NodeID, RowID, DateTime, RawStatus, Weight FROM OPENQUERY([172.21.3.221], '"
+                    "SELECT CustomPollerAssignmentID,  RowID, DateTime, RawStatus, Weight FROM OPENQUERY([172.21.3.221], '"
                     + inner_for_openquery
                     + "') AS poller"
                 )
@@ -101,7 +101,6 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
         schema = {
             "CustomPollerAssignmentID": pl.String,
-            "NodeID": pl.String,
             "RowID": pl.String,
             "DateTime": pl.String,
             "RawStatus": pl.String,
@@ -113,7 +112,6 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             .rename(
                 {
                     "CustomPollerAssignmentID": "custom_poller_assignment_id",
-                    "NodeID": "node_id",
                     "RowID": "row_id",
                     "DateTime": "date",
                     "RawStatus": "raw_status",
@@ -125,11 +123,11 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                     pl.col("weight").cast(pl.Float64),
                 ]
             )
-            .groupby(["custom_poller_assignment_id", "date"])
+            .group_by(["custom_poller_assignment_id", "date"])
             .agg(
                 [
-                    pl.col("weight").mean().round(2).alias("avg_weight"),
-                    pl.count().alias("count"),
+                    pl.col("weight").mean().round(2).alias("weight"),
+                    pl.col("weight").mean().round(2).alias("raw_status"),
                 ]
             )
             .sort(["custom_poller_assignment_id", "date"])

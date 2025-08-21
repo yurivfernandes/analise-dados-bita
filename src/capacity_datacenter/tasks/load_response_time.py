@@ -127,7 +127,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
                     pl.col("percent_loss").cast(pl.Float64),
                 ]
             )
-            .groupby(["node_id", "date"])
+            .group_by(["node_id", "date"])
             .agg(
                 [
                     pl.col("avg_response_time").mean().round(2).alias(
