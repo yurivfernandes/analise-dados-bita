@@ -1,7 +1,8 @@
 from django.db import models
+from .mixins import AuditMixin
 
 
-class CustomPollerAssignment(models.Model):
+class CustomPollerAssignment(AuditMixin, models.Model):
     """Model para representar CustomPollerAssignment da query externa."""
 
     custom_poller_assignment_id = models.CharField(max_length=100, null=True)

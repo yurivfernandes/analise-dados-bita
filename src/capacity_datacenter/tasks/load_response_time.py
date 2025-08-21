@@ -130,10 +130,10 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             .groupby(["node_id", "date"])
             .agg(
                 [
-                    pl.col("avg_response_time")
-                    .mean()
-                    .alias("avg_response_time"),
-                    pl.col("percent_loss").mean().alias("percent_loss"),
+                    pl.col("avg_response_time").mean().round(2).alias(
+                        "avg_response_time"
+                    ),
+                    pl.col("percent_loss").mean().round(2).alias("percent_loss"),
                 ]
             )
             .sort(["node_id", "date"])

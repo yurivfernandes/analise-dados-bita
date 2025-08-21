@@ -18,9 +18,12 @@ BEGIN
         [node_id] VARCHAR(10) NULL,
         [id_vgr] VARCHAR(7) NULL,
         [caption] VARCHAR(255) NULL,
-        [description] VARCHAR(MAX) NULL,
-        [automatizacao] VARCHAR(20) NULL,
-        [redundancia] VARCHAR(20) NULL
+    [description] VARCHAR(MAX) NULL,
+    [automatizacao] VARCHAR(255) NULL,
+    [redundancia] VARCHAR(100) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [user] VARCHAR(255) NULL
     );
 END
 GO
@@ -33,7 +36,10 @@ BEGIN
         [interface_id] VARCHAR(100) NULL,
         [interface_name] VARCHAR(255) NULL,
         [caption] VARCHAR(255) NULL,
-        [id_vgr] VARCHAR(100) NULL
+    [id_vgr] VARCHAR(100) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [user] VARCHAR(255) NULL
     );
     CREATE NONCLUSTERED INDEX IX_d_interface_node_id ON [dbo].[d_interface]([node_id]);
 END
@@ -46,6 +52,9 @@ BEGIN
         [custom_poller_assignment_id] VARCHAR(100) NULL,
         [node_id] VARCHAR(100) NULL
     );
+    -- adicionar colunas de auditoria se estiver criando nova tabela
+    ALTER TABLE [dbo].[d_custom_poller_assignment] ADD [created_at] DATETIME2 NULL, [updated_at] DATETIME2 NULL, [user] VARCHAR(255) NULL;
+    -- remover se já existirem falharia; o script de alteração condicional lida com tabelas existentes
     CREATE NONCLUSTERED INDEX IX_d_custom_poller_assignment_node_id ON [dbo].[d_custom_poller_assignment]([node_id]);
 END
 GO
@@ -59,6 +68,7 @@ BEGIN
         [avg_response_time] VARCHAR(100) NULL,
         [percent_loss] VARCHAR(100) NULL
     );
+    ALTER TABLE [dbo].[f_response_time] ADD [created_at] DATETIME2 NULL, [updated_at] DATETIME2 NULL, [user] VARCHAR(255) NULL;
     CREATE NONCLUSTERED INDEX IX_f_response_time_node_id ON [dbo].[f_response_time]([node_id]);
 END
 GO
@@ -74,6 +84,7 @@ BEGIN
         [raw_status] VARCHAR(255) NULL,
         [weight] VARCHAR(100) NULL
     );
+    ALTER TABLE [dbo].[f_custom_poller_statistics] ADD [created_at] DATETIME2 NULL, [updated_at] DATETIME2 NULL, [user] VARCHAR(255) NULL;
     CREATE NONCLUSTERED INDEX IX_f_custom_poller_statistics_node_id ON [dbo].[f_custom_poller_statistics]([node_id]);
     CREATE NONCLUSTERED INDEX IX_f_custom_poller_statistics_cpa_id ON [dbo].[f_custom_poller_statistics]([custom_poller_assignment_id]);
 END

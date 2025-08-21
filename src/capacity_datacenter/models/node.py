@@ -1,7 +1,8 @@
 from django.db import models
+from .mixins import AuditMixin
 
 
-class Node(models.Model):
+class Node(AuditMixin, models.Model):
     nome_do_cliente = models.CharField(max_length=255, null=True)
     node_id = models.CharField(max_length=10, null=True)
     id_vgr = models.CharField(max_length=7, null=True)

@@ -1,13 +1,14 @@
 from django.db import models
+from .mixins import AuditMixin
 
 
-class CustomPollerStatistics(models.Model):
+class CustomPollerStatistics(AuditMixin, models.Model):
     """Model representando CustomPollerStatistics_CS da query externa."""
 
     custom_poller_assignment_id = models.CharField(max_length=100, null=True)
     node_id = models.CharField(max_length=100, null=True)
     row_id = models.CharField(max_length=100, null=True)
-    date_time = models.CharField(max_length=100, null=True)
+    date = models.DateField()
     raw_status = models.CharField(max_length=255, null=True)
     weight = models.CharField(max_length=100, null=True)
 

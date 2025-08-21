@@ -1,9 +1,10 @@
 from django.db import models
+from .mixins import AuditMixin
 
 
-class ResponseTime(models.Model):
+class ResponseTime(AuditMixin, models.Model):
     node_id = models.CharField(max_length=100, null=True)
-    date_time = models.CharField(max_length=100, null=True)
+    date = models.DateField()
     avg_response_time = models.CharField(max_length=100, null=True)
     percent_loss = models.CharField(max_length=100, null=True)
 

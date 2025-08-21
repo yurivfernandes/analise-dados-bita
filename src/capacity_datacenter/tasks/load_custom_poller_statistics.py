@@ -128,7 +128,7 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             .groupby(["custom_poller_assignment_id", "date"])
             .agg(
                 [
-                    pl.col("weight").mean().alias("avg_weight"),
+                    pl.col("weight").mean().round(2).alias("avg_weight"),
                     pl.count().alias("count"),
                 ]
             )

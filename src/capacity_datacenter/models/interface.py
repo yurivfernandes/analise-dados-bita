@@ -1,7 +1,8 @@
 from django.db import models
+from .mixins import AuditMixin
 
 
-class Interface(models.Model):
+class Interface(AuditMixin, models.Model):
     node_id = models.CharField(max_length=100, null=True)
     interface_id = models.CharField(max_length=100, null=True)
     interface_name = models.CharField(max_length=255, null=True)
