@@ -154,6 +154,18 @@ DATABASES = {
             "Trusted_Connection": "yes",
         },
     },
+    "capacity_datacenter": {
+        "ENGINE": "mssql",
+        "NAME": os.getenv("DB_NAME_CAPACITY_DATACENTER"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT", "1433"),
+        "OPTIONS": {
+            "driver": os.getenv("DB_DRIVER", "SQL Server Native Client 11.0"),
+            "Trusted_Connection": "yes",
+        },
+    },
     # "api_service_now": {
     #     "ENGINE": "mssql",
     #     "NAME": os.getenv("DB_NAME_API_SERVICE_NOW"),
