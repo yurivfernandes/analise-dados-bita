@@ -1,115 +1,89 @@
-SELECT *  
-FROM OPENQUERY(  
-    [172.21.1.5],  
-    '  
-    SELECT *  
-    FROM DB_SERVICENOW.dbo.ast_contract AS contract
+SELECT *
+FROM OPENQUERY(
+    [172.21.3.221],     
     '
-) AS contract
+	SELECT
+		Nodes.Nome_do_Cliente,
+		Nodes.NodeID,
+		Nodes.ID_VGR,
+		Nodes.Caption,
+		Nodes.Description,
+		Nodes.Automatizacao,
+		Nodes.Redundancia
+    FROM [BR_TD_VITAIT].dbo.[Nodes] nodes
+	WHERE nodes.Nome_do_cliente like ''%BRAD%''
+	'
+) AS Nodes
 
-insert into ast_contract
+SELECT *
+FROM OPENQUERY(
+    [172.21.3.221],
+    '
+    SELECT 
+        interfaces.NodeId,
+        interfaces.InterfaceID,
+        interfaces.InterfaceName,
+        interfaces.Caption,
+        interfaces.ID_VGR
+    FROM [BR_TD_VITAIT].dbo.[Interfaces] interfaces
+    INNER JOIN [BR_TD_VITAIT].dbo.[Nodes] nodes
+        ON interfaces.NodeID = nodes.NodeID
+    WHERE nodes.Nome_do_cliente LIKE ''%BRADESCO%''
+    AND (
+        interfaces.Caption LIKE ''%BANDA LARGA%''
+        OR interfaces.Caption LIKE ''%BANDA_LARGA%''
+        OR interfaces.Caption LIKE ''%IP DEDICADO%''
+    )
+    '
+) AS interfaces
 
-CREATE TABLE d_contract_projetos (
-	account nvarchar(540),
-	dv_account nvarchar(4000),
-	active bit,
-	applicable_taxes nvarchar(40),
-	dv_applicable_taxes nvarchar(4000),
-	application_model nvarchar(255),
-	dv_application_model nvarchar(4000),
-	approval_history nvarchar(4000),
-	approver nvarchar(151),
-	dv_approver nvarchar(4000),
-	business_owner nvarchar(151),
-	dv_business_owner nvarchar(4000),
-	commitment numeric(18,2),
-	consumer nvarchar(152),
-	dv_consumer nvarchar(4000),
-	contract_administrator nvarchar(151),
-	dv_contract_administrator nvarchar(4000),
-	contract_composite nvarchar(300),
-	contract_model nvarchar(255),
-	dv_contract_model nvarchar(4000),
-	cost_adjustment numeric(18,2),
-	cost_adjustment_percentage numeric(18,2),
-	cost_adjustment_reason nvarchar(40),
-	cost_adjustment_type nvarchar(40),
-	dv_cost_adjustment_type nvarchar(4000),
-	cost_center nvarchar(100),
-	dv_cost_center nvarchar(4000),
-	cost_per_unit numeric(18,2),
-	description nvarchar(4000),
-	discount numeric(18,2),
-	ends date,
-	expiration nvarchar(40),
-	dv_expiration nvarchar(4000),
-	invoice_payment_terms nvarchar(40),
-	dv_invoice_payment_terms nvarchar(4000),
-	license_quantity_entitled int,
-	license_type nvarchar(40),
-	dv_license_type nvarchar(4000),
-	life_cycle_stage nvarchar(100),
-	dv_life_cycle_stage nvarchar(4000),
-	life_cycle_stage_status nvarchar(100),
-	dv_life_cycle_stage_status nvarchar(4000),
-	lifetime_cost numeric(18,2),
-	location nvarchar(300),
-	dv_location nvarchar(4000),
-	monthly_cost numeric(18,2),
-	number nvarchar(40),
-	parent_contract nvarchar(40),
-	dv_parent_contract nvarchar(4000),
-	payment_amount numeric(18,2),
-	payment_schedule nvarchar(40),
-	dv_payment_schedule nvarchar(4000),
-	po_number nvarchar(40),
-	process nvarchar(40),
-	dv_process nvarchar(4000),
-	process_non_contractual_slas bit,
-	ratecard bit,
-	renewable bit,
-	renewal_contact nvarchar(151),
-	dv_renewal_contact nvarchar(4000),
-	renewal_date date,
-	renewal_end_date date,
-	renewal_options nvarchar(40),
-	dv_renewal_options nvarchar(4000),
-	sales_tax bit,
-	short_description nvarchar(100),
-	starts date,
-	state nvarchar(40),
-	dv_state nvarchar(4000),
-	sub_total_cost numeric(18,2),
-	substate nvarchar(40),
-	dv_substate nvarchar(4000),
-	sys_class_name nvarchar(80),
-	dv_sys_class_name nvarchar(4000),
-	sys_created_by nvarchar(40),
-	sys_created_on datetime2,
-	sys_domain nvarchar(32),
-	sys_domain_path nvarchar(255),
-	sys_id nvarchar(32),
-	sys_mod_count int,
-	sys_tags ntext,
-	sys_updated_by nvarchar(40),
-	sys_updated_on datetime2,
-	tax_cost numeric(18,2),
-	tax_exempt bit,
-	tax_rate numeric(18,2),
-	terms_and_conditions ntext,
-	total_cost numeric(18,2),
-	u_approve_post_labor nvarchar(40),
-	dv_u_approve_post_labor nvarchar(4000),
-	u_configuration_item nvarchar(255),
-	dv_u_configuration_item nvarchar(4000),
-	u_dias_spare int,
-	u_modelo nvarchar(255),
-	dv_u_modelo nvarchar(4000),
-	u_origem nvarchar(40),
-	u_sinalizacao_integracao nvarchar(40),
-	vendor nvarchar(500),
-	dv_vendor nvarchar(4000),
-	vendor_account nvarchar(40),
-	vendor_contract nvarchar(40),
-	yearly_cost numeric(18,2)
-);
+SELECT *
+FROM OPENQUERY(
+    [172.21.3.221],     
+    '
+	SELECT 
+		resp.NodeID,
+		resp.DateTime,
+		resp.AvgResponseTime,
+		resp.PercentLoss
+    FROM [BR_TD_VITAIT].dbo.[ResponseTime] resp
+	LEFT JOIN [BR_TD_VITAIT].dbo.[Nodes] nodes
+		ON resp.NodeID = nodes.NodeID
+	WHERE nodes.Nome_do_cliente like ''%BRADESCO%''
+	'
+) AS ResponseTime
+
+SELECT *
+FROM OPENQUERY(
+    [172.21.3.221],     
+    '
+	SELECT
+		poller.CustomPollerAssignmentID,
+		poller.NodeID
+    FROM [BR_TD_VITAIT].dbo.[CustomPollerAssignment] poller
+	LEFT JOIN [BR_TD_VITAIT].dbo.[Nodes] nodes
+		ON poller.NodeID = nodes.NodeID
+	WHERE nodes.Nome_do_cliente like ''%BRADESCO%''
+	'
+) AS CustomPollerAssignmentID
+ 
+SELECT *
+FROM OPENQUERY(
+    [172.21.3.221],     
+    '
+	SELECT
+		poller.CustomPollerAssignmentID,
+		poller.NodeID,
+		poller.RowID,
+		poller.DateTime,
+		poller.RawStatus,
+		poller.Weight
+    FROM [BR_TD_VITAIT].dbo.[CustomPollerStatistics_CS] poller
+	LEFT JOIN [BR_TD_VITAIT].dbo.[CustomPollerAssignment] assignment
+		on poller.CustomPollerAssignmentID = assignment.CustomPollerAssignmentID
+	LEFT JOIN [BR_TD_VITAIT].dbo.[Nodes] nodes
+		ON assignment.NodeID = nodes.NodeID
+	WHERE nodes.Nome_do_cliente like ''%BRADESCO%''
+	'
+) AS CustomPollerStatistics_CS
+
