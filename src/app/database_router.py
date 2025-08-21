@@ -20,6 +20,8 @@ class MultiDBRouter:
             return "default"
         elif model._meta.app_label == "api_service_now":
             return "api_service_now"
+        elif model._meta.app_label == "capacity_datacenter":
+            return "capacity_datacenter"
         return None
 
     def db_for_write(self, model, **hints):
@@ -36,6 +38,8 @@ class MultiDBRouter:
             return "default"
         elif model._meta.app_label == "api_service_now":
             return "api_service_now"
+        elif model._meta.app_label == "capacity_datacenter":
+            return "capacity_datacenter"
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -58,4 +62,6 @@ class MultiDBRouter:
             return db == "default"
         elif app_label == "api_service_now":
             return db == "api_service_now"
+        elif app_label == "capacity_datacenter":
+            return db == "capacity_datacenter"
         return True
