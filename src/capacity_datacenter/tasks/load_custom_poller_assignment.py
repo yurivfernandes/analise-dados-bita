@@ -12,10 +12,9 @@ from django.db import connection
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import CustomPollerAssignment
-from ..utils import MixinQuerys
 
 
-class LoadCustomPollerAssignment(MixinGetDataset, MixinQuerys, Pipeline):
+class LoadCustomPollerAssignment(MixinGetDataset, Pipeline):
     """Classe que busca os dados do meraki"""
 
     def __init__(self):

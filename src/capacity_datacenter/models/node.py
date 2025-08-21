@@ -14,6 +14,6 @@ class Node(models.Model):
         return f"{self.nome_do_cliente} - {self.node_id}"
 
     class Meta:
-        db_table = "d_capacity_node"
+        db_table = "d_node"
         verbose_name = "Dim Node (Capacity)"
         verbose_name_plural = "Dim Nodes (Capacity)"

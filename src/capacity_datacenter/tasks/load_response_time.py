@@ -9,10 +9,9 @@ from django.db import connection
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import Node, ResponseTime
-from ..utils import MixinQuerys
 
 
-class LoadCapacityDatacenter(MixinGetDataset, MixinQuerys, Pipeline):
+class LoadCapacityDatacenter(MixinGetDataset, Pipeline):
     """Classe que busca os dados do meraki"""
 
     def __init__(self, days_back=None):

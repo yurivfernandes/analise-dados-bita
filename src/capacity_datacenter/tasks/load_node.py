@@ -12,10 +12,9 @@ from django.db import connection
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import Node
-from ..utils import MixinQuerys
 
 
-class LoadNode(MixinGetDataset, MixinQuerys, Pipeline):
+class LoadNode(MixinGetDataset, Pipeline):
     """Classe que busca os dados do Solar"""
 
     def __init__(self):

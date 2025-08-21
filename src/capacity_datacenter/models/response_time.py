@@ -11,6 +11,6 @@ class ResponseTime(models.Model):
         return f"{self.node_id} @ {self.date_time} -> avg {self.avg_response_time}"
 
     class Meta:
-        db_table = "f_capacity_response_time"
+        db_table = "f_response_time"
         verbose_name = "Fato Response Time (Capacity)"
         verbose_name_plural = "Fato Response Times (Capacity)"

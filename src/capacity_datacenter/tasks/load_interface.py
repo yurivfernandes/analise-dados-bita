@@ -12,10 +12,9 @@ from django.db import connection
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import Interface
-from ..utils import MixinQuerys
 
 
-class LoadInterface(MixinGetDataset, MixinQuerys, Pipeline):
+class LoadInterface(MixinGetDataset, Pipeline):
     """Classe que busca os dados do meraki"""
 
     def __init__(self):

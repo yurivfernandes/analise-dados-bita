@@ -9,10 +9,9 @@ from django.db import connection
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import CustomPollerAssignment, CustomPollerStatistics, Node
-from ..utils import MixinQuerys
 
 
-class LoadCustompollerStatistics(MixinGetDataset, MixinQuerys, Pipeline):
+class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
     """Classe que busca os dados do custom poller statistics"""
 
     def __init__(self, days_back=None):

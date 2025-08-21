@@ -15,6 +15,6 @@ class CustomPollerStatistics(models.Model):
         return f"CPS {self.custom_poller_assignment_id} - Row {self.row_id}"
 
     class Meta:
-        db_table = "f_capacity_custom_poller_statistics"
+        db_table = "f_custom_poller_statistics"
         verbose_name = "Fato Custom Poller Statistics"
         verbose_name_plural = "Fato Custom Poller Statistics"

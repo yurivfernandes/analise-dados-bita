@@ -12,6 +12,6 @@ class Interface(models.Model):
         return f"{self.node_id} - {self.interface_id} ({self.caption})"
 
     class Meta:
-        db_table = "d_capacity_interface"
+        db_table = "d_interface"
         verbose_name = "Dim Interface (Capacity)"
         verbose_name_plural = "Dim Interfaces (Capacity)"
