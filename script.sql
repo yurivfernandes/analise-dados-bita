@@ -1,3 +1,14 @@
+SELECT *  
+FROM OPENQUERY(  
+    [172.21.1.5],  
+    '  
+    SELECT *  
+    FROM DB_SERVICENOW.dbo.ast_contract AS contract
+    '
+) AS contract
+
+insert into ast_contract
+
 CREATE TABLE d_contract_projetos (
 	account nvarchar(540),
 	dv_account nvarchar(4000),

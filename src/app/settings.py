@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "service_now",
     "meraki_devices",
     "api_service_now",
+    "capacity_datacenter",
 ]
 
 MIDDLEWARE = [
