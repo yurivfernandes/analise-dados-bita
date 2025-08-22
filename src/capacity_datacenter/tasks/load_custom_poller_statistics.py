@@ -31,13 +31,15 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
         # Agrupar por node_id e date (mapeando custom_poller_assignment_id -> node_id)
         self.dataset = (
             self._custom_poller_statistics_dataset.with_columns(
-                [pl.col("weight").cast(pl.Float64)]
+                pl.col("weight").cast(pl.Float64),
+                pl.col("raw_status").cast(pl.Float64),
+                pl.col("date").cast(pl.Date),
             )
             .group_by(["node_id", "date"])
             .agg(
                 [
                     pl.col("weight").mean().round(2).alias("weight"),
-                    pl.col("RawStatus").mean().round(2).alias("raw_status"),
+                    pl.col("raw_status").mean().round(2).alias("raw_status"),
                 ]
             )
             .sort(["node_id", "date"])
@@ -106,7 +108,6 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                 collected_rows.extend(
                     [
                         (
-                            str(row[0]) if row[0] is not None else None,
                             mapping.get(str(row[0]))
                             if row[0] is not None
                             else None,
@@ -118,9 +119,9 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                         for row in result
                     ]
                 )
-
+            print(f"Tamanho do dataset:{len(collected_rows)}")
             window_start = window_end
-
+        print(f"Tamanho final do dataset:{len(collected_rows)}")
         if not collected_rows:
             return pl.DataFrame()
 
