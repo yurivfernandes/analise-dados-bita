@@ -67,10 +67,6 @@ class LoadNode(MixinGetDataset, Pipeline):
             return pl.DataFrame()
 
         # Build DataFrame using row-orient construction; ensure values are strings where sensible
-        data = [
-            tuple(str(v) if v is not None else None for v in row)
-            for row in result
-        ]
         schema = {
             "Nome_do_Cliente": pl.String,
             "NodeID": pl.String,
@@ -81,7 +77,9 @@ class LoadNode(MixinGetDataset, Pipeline):
             "Redundancia": pl.String,
         }
 
-        return pl.DataFrame(data=data, schema=schema, orient="row").rename(
+        return pl.DataFrame(
+            data=list(result), schema=schema, orient="row"
+        ).rename(
             {
                 "Nome_do_Cliente": "nome_do_cliente",
                 "NodeID": "node_id",

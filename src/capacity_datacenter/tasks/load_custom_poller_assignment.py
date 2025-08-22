@@ -58,16 +58,14 @@ class LoadCustomPollerAssignment(MixinGetDataset, Pipeline):
         if not result:
             return pl.DataFrame()
 
-        data = [
-            tuple(str(v) if v is not None else None for v in row)
-            for row in result
-        ]
         schema = {
             "CustomPollerAssignmentID": pl.String,
             "NodeID": pl.String,
         }
 
-        return pl.DataFrame(data=data, schema=schema, orient="row").rename(
+        return pl.DataFrame(
+            data=list(result), schema=schema, orient="row"
+        ).rename(
             {
                 "CustomPollerAssignmentID": "custom_poller_assignment_id",
                 "NodeID": "node_id",

@@ -94,12 +94,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
                 if not result:
                     continue
 
-                collected_rows.extend(
-                    [
-                        tuple(str(v) if v is not None else None for v in row)
-                        for row in result
-                    ]
-                )
+                collected_rows.extend(result)
 
             window_start = window_end
 
@@ -132,10 +127,14 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             .group_by(["node_id", "date"])
             .agg(
                 [
-                    pl.col("avg_response_time").mean().round(2).alias(
-                        "avg_response_time"
-                    ),
-                    pl.col("percent_loss").mean().round(2).alias("percent_loss"),
+                    pl.col("avg_response_time")
+                    .mean()
+                    .round(2)
+                    .alias("avg_response_time"),
+                    pl.col("percent_loss")
+                    .mean()
+                    .round(2)
+                    .alias("percent_loss"),
                 ]
             )
             .sort(["node_id", "date"])

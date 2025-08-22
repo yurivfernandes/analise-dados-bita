@@ -104,45 +104,35 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                 if not result:
                     continue
 
-                mapping = self._assignment_id_map
-                collected_rows.extend(
-                    [
-                        (
-                            mapping.get(str(row[0]))
-                            if row[0] is not None
-                            else None,
-                            str(row[1]) if row[1] is not None else None,
-                            str(row[2]) if row[2] is not None else None,
-                            str(row[3]) if row[3] is not None else None,
-                            str(row[4]) if row[4] is not None else None,
-                        )
-                        for row in result
-                    ]
-                )
+                collected_rows.extend(result)
             print(f"Tamanho do dataset:{len(collected_rows)}")
             window_start = window_end
-        print(f"Tamanho final do dataset:{len(collected_rows)}")
+        print(
+            f"Tamanho final do dataset antes de agrupar:{len(collected_rows)}"
+        )
         if not collected_rows:
             return pl.DataFrame()
 
         schema = {
-            "NodeID": pl.String,
+            "CustomPollerAssignmentID": pl.String,
             "RowID": pl.String,
             "DateTime": pl.String,
             "RawStatus": pl.String,
             "Weight": pl.String,
         }
 
-        return pl.DataFrame(
-            data=collected_rows, schema=schema, orient="row"
-        ).rename(
-            {
-                "NodeID": "node_id",
-                "RowID": "row_id",
-                "DateTime": "date",
-                "RawStatus": "raw_status",
-                "Weight": "weight",
-            }
+        return (
+            pl.DataFrame(data=collected_rows, schema=schema, orient="row")
+            .map_elements(self._assignment_id_map, return_dtype=pl.String)
+            .rename(
+                {
+                    "NodeID": "node_id",
+                    "RowID": "row_id",
+                    "DateTime": "date",
+                    "RawStatus": "raw_status",
+                    "Weight": "weight",
+                }
+            )
         )
 
     @cached_property
