@@ -28,7 +28,20 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
     def extract_and_transform_dataset(self) -> pl.DataFrame:
         """Extrai e transforma o dataset principal."""
-        self.dataset = self._custom_poller_statistics_dataset
+        # Agrupar por node_id e date (mapeando custom_poller_assignment_id -> node_id)
+        self.dataset = (
+            self._custom_poller_statistics_dataset.with_columns(
+                [pl.col("weight").cast(pl.Float64)]
+            )
+            .group_by(["node_id", "date"])
+            .agg(
+                [
+                    pl.col("weight").mean().round(2).alias("weight"),
+                    pl.col("RawStatus").mean().round(2).alias("raw_status"),
+                ]
+            )
+            .sort(["node_id", "date"])
+        )
 
     @property
     def _custom_poller_statistics_dataset(self) -> pl.DataFrame:
@@ -89,9 +102,19 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                 if not result:
                     continue
 
+                mapping = self._assignment_id_map
                 collected_rows.extend(
                     [
-                        tuple(str(v) if v is not None else None for v in row)
+                        (
+                            str(row[0]) if row[0] is not None else None,
+                            mapping.get(str(row[0]))
+                            if row[0] is not None
+                            else None,
+                            str(row[1]) if row[1] is not None else None,
+                            str(row[2]) if row[2] is not None else None,
+                            str(row[3]) if row[3] is not None else None,
+                            str(row[4]) if row[4] is not None else None,
+                        )
                         for row in result
                     ]
                 )
@@ -102,38 +125,41 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             return pl.DataFrame()
 
         schema = {
-            "CustomPollerAssignmentID": pl.String,
+            "NodeID": pl.String,
             "RowID": pl.String,
             "DateTime": pl.String,
             "RawStatus": pl.String,
             "Weight": pl.String,
         }
 
-        return (
-            pl.DataFrame(data=collected_rows, schema=schema, orient="row")
-            .rename(
-                {
-                    "CustomPollerAssignmentID": "custom_poller_assignment_id",
-                    "RowID": "row_id",
-                    "DateTime": "date",
-                    "RawStatus": "raw_status",
-                    "Weight": "weight",
-                }
-            )
-            .with_columns(
-                [
-                    pl.col("weight").cast(pl.Float64),
-                ]
-            )
-            .group_by(["custom_poller_assignment_id", "date"])
-            .agg(
-                [
-                    pl.col("weight").mean().round(2).alias("weight"),
-                    pl.col("weight").mean().round(2).alias("raw_status"),
-                ]
-            )
-            .sort(["custom_poller_assignment_id", "date"])
+        return pl.DataFrame(
+            data=collected_rows, schema=schema, orient="row"
+        ).rename(
+            {
+                "NodeID": "node_id",
+                "RowID": "row_id",
+                "DateTime": "date",
+                "RawStatus": "raw_status",
+                "Weight": "weight",
+            }
         )
+
+    @cached_property
+    def _assignment_id_map(self) -> dict:
+        """Retorna um dicionário {assignment_id: node_id} filtrado por cliente (BRADESCO)."""
+        if not self._node_id_list:
+            return {}
+        batch_size = 500
+        mapping = {}
+        for i in range(0, len(self._node_id_list), batch_size):
+            batch = self._node_id_list[i : i + batch_size]
+            qs = CustomPollerAssignment.objects.filter(
+                node_id__in=batch
+            ).values_list("custom_poller_assignment_id", "node_id")
+            for aid, node in qs:
+                if aid is not None:
+                    mapping[str(aid)] = node
+        return mapping
 
     @cached_property
     def _assignment_id_list(self) -> list:
