@@ -78,13 +78,15 @@ BEGIN
     CREATE TABLE [dbo].[f_custom_poller_statistics](
         [id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
         [custom_poller_assignment_id] VARCHAR(100) NULL,
-        [node_id] VARCHAR(100) NULL,
+        [node_id] VARCHAR(10) NULL,
         [row_id] VARCHAR(100) NULL,
-        [date_time] VARCHAR(100) NULL,
-        [raw_status] VARCHAR(255) NULL,
-        [weight] VARCHAR(100) NULL
+        [date] DATE NULL,
+        [raw_status] FLOAT NULL,
+        [weight] FLOAT NULL
     );
+    -- adiciona colunas de auditoria
     ALTER TABLE [dbo].[f_custom_poller_statistics] ADD [created_at] DATETIME2 NULL, [updated_at] DATETIME2 NULL, [user] VARCHAR(255) NULL;
+    -- índices de acesso frequente
     CREATE NONCLUSTERED INDEX IX_f_custom_poller_statistics_node_id ON [dbo].[f_custom_poller_statistics]([node_id]);
     CREATE NONCLUSTERED INDEX IX_f_custom_poller_statistics_cpa_id ON [dbo].[f_custom_poller_statistics]([custom_poller_assignment_id]);
 END
