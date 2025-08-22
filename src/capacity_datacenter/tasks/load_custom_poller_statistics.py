@@ -123,16 +123,20 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
         return (
             pl.DataFrame(data=collected_rows, schema=schema, orient="row")
-            .map_elements(self._assignment_id_map, return_dtype=pl.String)
+            .with_columns(
+                pl.col("CustomPollerAssignmentID")
+                .map_elements(self._assignment_id_map, return_dtype=pl.String)
+                .alias("node_id")
+            )
             .rename(
                 {
-                    "NodeID": "node_id",
                     "RowID": "row_id",
                     "DateTime": "date",
                     "RawStatus": "raw_status",
                     "Weight": "weight",
                 }
             )
+            .select(["node_id", "row_id", "date", "raw_status", "weight"])
         )
 
     @cached_property
