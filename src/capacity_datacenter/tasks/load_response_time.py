@@ -37,7 +37,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             self.load(dataset=self.dataset, model=ResponseTime, filtro=filtro)
 
         finally:
-            self.log["end_time"] = timezone.now()
+            self.log["end_time"] = _tz.now()
             self.log["finished_at"] = self.log.get(
                 "end_time", self.log.get("finished_at")
             )
@@ -72,13 +72,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
     def extract_and_transform_dataset(self) -> pl.DataFrame:
         """Extrai e transforma o dataset principal."""
         self.dataset = (
-            self.response_time_dataset.with_columns(
-                [
-                    pl.col("avg_response_time").cast(pl.Float64),
-                    pl.col("percent_loss").cast(pl.Float64),
-                ]
-            )
-            .group_by(["node_id", "date"])
+            self.response_time_dataset.group_by(["node_id", "date"])
             .agg(
                 [
                     pl.col("avg_response_time")
@@ -108,7 +102,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
         ]
         if self.days_back is not None:
             days_back = int(self.days_back)
-            end_day = datetime.now().date() - timedelta(days=2)
+            end_day = datetime.now().date() - timedelta(days=3)
             end_dt = datetime(
                 end_day.year, end_day.month, end_day.day
             ) + timedelta(days=1)
@@ -116,11 +110,11 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             self.log["start_range_date"] = start_dt.date()
             self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
         else:
-            target_day = datetime.now().date() - timedelta(days=2)
+            target_day = datetime.now().date() - timedelta(days=3)
             start_dt = datetime(
                 target_day.year, target_day.month, target_day.day
             )
-            end_dt = start_dt + timedelta(days=1)
+            end_dt = start_dt + timedelta(days=2)
             self.log["start_range_date"] = start_dt.date()
             self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
 
