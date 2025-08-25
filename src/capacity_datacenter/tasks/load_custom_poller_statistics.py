@@ -5,6 +5,7 @@ from typing import Dict
 import polars as pl
 from celery import shared_task
 from django.db import connection
+from django.utils import timezone
 
 from app.utils import MixinGetDataset, Pipeline
 
@@ -17,13 +18,34 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
     def __init__(self, days_back=None):
         super().__init__()
         self.days_back = days_back
-
-    def run(self) -> None:
-        """Método principal da classe"""
-        self.extract_and_transform_dataset()
-        self.load(
-            dataset=self.dataset, model=CustomPollerStatistics, filtro={}
+        self.log["start_time"] = timezone.now()
+        self.log["started_at"] = self.log.get(
+            "start_time", self.log.get("started_at")
         )
+
+    def run(self) -> Dict:
+        """Método principal da classe"""
+
+        try:
+            self.extract_and_transform_dataset()
+            self.load(
+                dataset=self.dataset, model=CustomPollerStatistics, filtro={}
+            )
+        finally:
+            self.log["end_time"] = timezone.now()
+            self.log["finished_at"] = self.log.get(
+                "end_time", self.log.get("finished_at")
+            )
+            start = self.log.get("start_time") or self.log.get("started_at")
+            end = self.log.get("end_time") or self.log.get("finished_at")
+            if start and end:
+                self.log["duration_seconds"] = round(
+                    (end - start).total_seconds(), 2
+                )
+                self.log["duration"] = self.log["duration_seconds"]
+            else:
+                self.log["duration_seconds"] = None
+
         return self.log
 
     def extract_and_transform_dataset(self) -> pl.DataFrame:
