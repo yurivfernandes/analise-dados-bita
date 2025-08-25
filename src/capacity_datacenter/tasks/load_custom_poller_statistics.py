@@ -9,7 +9,12 @@ from django.utils import timezone
 
 from app.utils import MixinGetDataset, Pipeline
 
-from ..models import CustomPollerAssignment, CustomPollerStatistics, Node
+from ..models import (
+    CustomPollerAssignment,
+    CustomPollerStatistics,
+    Node,
+    TaskLog,
+)
 
 
 class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
@@ -18,6 +23,7 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
     def __init__(self, days_back=None):
         super().__init__()
         self.days_back = days_back
+        # marcar início da execução da task
         self.log["start_time"] = timezone.now()
         self.log["started_at"] = self.log.get(
             "start_time", self.log.get("started_at")
@@ -28,8 +34,17 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
         try:
             self.extract_and_transform_dataset()
+            # preparar filtro por data com base no intervalo utilizado
+            start = self.log.get("start_range_date")
+            end = self.log.get("end_range_date")
+            filtro = {}
+            if start and end:
+                filtro = {"date__gte": start, "date__lte": end}
+
             self.load(
-                dataset=self.dataset, model=CustomPollerStatistics, filtro={}
+                dataset=self.dataset,
+                model=CustomPollerStatistics,
+                filtro=filtro,
             )
         finally:
             self.log["end_time"] = timezone.now()
@@ -46,11 +61,26 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             else:
                 self.log["duration_seconds"] = None
 
+        serializable_log = {}
+        for k, v in self.log.items():
+            try:
+                if hasattr(v, "isoformat"):
+                    serializable_log[k] = v.isoformat()
+                else:
+                    serializable_log[k] = v
+            except Exception:
+                serializable_log[k] = str(v)
+        self.log["transformed_rows_count"] = len(self.dataset)
+        TaskLog.objects.create(
+            task_name=self.__class__.__name__,
+            run_at=self.log.get("start_time"),
+            log=serializable_log,
+        )
+
         return self.log
 
     def extract_and_transform_dataset(self) -> pl.DataFrame:
         """Extrai e transforma o dataset principal."""
-        # Agrupar por node_id e date (mapeando custom_poller_assignment_id -> node_id)
         self.dataset = (
             self._custom_poller_statistics_dataset.with_columns(
                 pl.col("weight").cast(pl.Float64),
@@ -74,24 +104,29 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
         if not self._assignment_id_list:
             return pl.DataFrame()
 
-        # batch assignment ids
         batch_size = 180
         batches = [
             self._assignment_id_list[i : i + batch_size]
             for i in range(0, len(self._assignment_id_list), batch_size)
         ]
 
-        # periodo
         if self.days_back is not None:
             days_back = int(self.days_back)
-            end_dt = datetime.now()
+            end_day = datetime.now().date() - timedelta(days=2)
+            end_dt = datetime(
+                end_day.year, end_day.month, end_day.day
+            ) + timedelta(days=1)
             start_dt = end_dt - timedelta(days=days_back)
+            self.log["start_range_date"] = start_dt.date()
+            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
         else:
             target_day = datetime.now().date() - timedelta(days=2)
             start_dt = datetime(
                 target_day.year, target_day.month, target_day.day
             )
             end_dt = start_dt + timedelta(days=1)
+            self.log["start_range_date"] = start_dt.date()
+            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
 
         window_start = start_dt
         collected_rows = []
@@ -127,11 +162,13 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                     continue
 
                 collected_rows.extend(result)
+
             print(f"Tamanho do dataset:{len(collected_rows)}")
             window_start = window_end
         print(
             f"Tamanho final do dataset antes de agrupar:{len(collected_rows)}"
         )
+        self.log["collected_rows_count"] = len(collected_rows)
         if not collected_rows:
             return pl.DataFrame()
 
