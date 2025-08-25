@@ -33,7 +33,28 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
 
     def extract_and_transform_dataset(self) -> pl.DataFrame:
         """Extrai e transforma o dataset principal."""
-        self.dataset = self.response_time_dataset
+        self.dataset = (
+            self.response_time_dataset.with_columns(
+                [
+                    pl.col("avg_response_time").cast(pl.Float64),
+                    pl.col("percent_loss").cast(pl.Float64),
+                ]
+            )
+            .group_by(["node_id", "date"])
+            .agg(
+                [
+                    pl.col("avg_response_time")
+                    .mean()
+                    .round(2)
+                    .alias("avg_response_time"),
+                    pl.col("percent_loss")
+                    .mean()
+                    .round(2)
+                    .alias("percent_loss"),
+                ]
+            )
+            .sort(["node_id", "date"])
+        )
 
     @property
     def response_time_dataset(self) -> pl.DataFrame:
@@ -56,11 +77,11 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             start_dt = end_dt - timedelta(days=days_back)
         else:
             # quando days_back não informado, consultar apenas o antepenúltimo dia
-            target_day = datetime.now().date() - timedelta(days=2)
+            target_day = datetime.now().date() - timedelta(days=4)
             start_dt = datetime(
                 target_day.year, target_day.month, target_day.day
             )
-            end_dt = start_dt + timedelta(days=1)
+            end_dt = start_dt + timedelta(days=3)
 
         window_start = start_dt
         collected_rows = []
@@ -108,36 +129,15 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             "PercentLoss": pl.String,
         }
 
-        return (
-            pl.DataFrame(data=collected_rows, schema=schema, orient="row")
-            .rename(
-                {
-                    "NodeID": "node_id",
-                    "DateTime": "date",
-                    "AvgResponseTime": "avg_response_time",
-                    "PercentLoss": "percent_loss",
-                }
-            )
-            .with_columns(
-                [
-                    pl.col("avg_response_time").cast(pl.Float64),
-                    pl.col("percent_loss").cast(pl.Float64),
-                ]
-            )
-            .group_by(["node_id", "date"])
-            .agg(
-                [
-                    pl.col("avg_response_time")
-                    .mean()
-                    .round(2)
-                    .alias("avg_response_time"),
-                    pl.col("percent_loss")
-                    .mean()
-                    .round(2)
-                    .alias("percent_loss"),
-                ]
-            )
-            .sort(["node_id", "date"])
+        return pl.DataFrame(
+            data=collected_rows, schema=schema, orient="row"
+        ).rename(
+            {
+                "NodeID": "node_id",
+                "DateTime": "date",
+                "AvgResponseTime": "avg_response_time",
+                "PercentLoss": "percent_loss",
+            }
         )
 
     @cached_property

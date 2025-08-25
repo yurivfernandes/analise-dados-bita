@@ -147,7 +147,7 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             pl.DataFrame(data=collected_rows, schema=schema, orient="row")
             .with_columns(
                 pl.col("CustomPollerAssignmentID")
-                .map_elements(self._assignment_id_map, return_dtype=pl.String)
+                .replace(self._assignment_id_map)
                 .alias("node_id")
             )
             .rename(
