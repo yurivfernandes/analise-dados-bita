@@ -20,10 +20,10 @@ from ..models import (
 class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
     """Classe que busca os dados do custom poller statistics"""
 
-    def __init__(self, days_back=None):
+    def __init__(self, start_date=None, end_date=None):
         super().__init__()
-        self.days_back = days_back
-        # marcar início da execução da task
+        self.start_date = start_date
+        self.end_date = end_date
         self.log["start_time"] = timezone.now()
         self.log["started_at"] = self.log.get(
             "start_time", self.log.get("started_at")
@@ -31,20 +31,12 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
     def run(self) -> Dict:
         """Método principal da classe"""
-
         try:
             self.extract_and_transform_dataset()
-            # preparar filtro por data com base no intervalo utilizado
-            start = self.log.get("start_range_date")
-            end = self.log.get("end_range_date")
-            filtro = {}
-            if start and end:
-                filtro = {"date__gte": start, "date__lte": end}
-
             self.load(
                 dataset=self.dataset,
                 model=CustomPollerStatistics,
-                filtro=filtro,
+                filtro=self._filter,
             )
         finally:
             self.log["end_time"] = timezone.now()
@@ -68,7 +60,7 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                     serializable_log[k] = v.isoformat()
                 else:
                     serializable_log[k] = v
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 serializable_log[k] = str(v)
         self.log["transformed_rows_count"] = len(self.dataset)
         TaskLog.objects.create(
@@ -110,25 +102,9 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             for i in range(0, len(self._assignment_id_list), batch_size)
         ]
 
-        if self.days_back is not None:
-            days_back = int(self.days_back)
-            end_day = datetime.now().date() - timedelta(days=2)
-            end_dt = datetime(
-                end_day.year, end_day.month, end_day.day
-            ) + timedelta(days=1)
-            start_dt = end_dt - timedelta(days=days_back)
-            self.log["start_range_date"] = start_dt.date()
-            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
-        else:
-            target_day = datetime.now().date() - timedelta(days=2)
-            start_dt = datetime(
-                target_day.year, target_day.month, target_day.day
-            )
-            end_dt = start_dt + timedelta(days=1)
-            self.log["start_range_date"] = start_dt.date()
-            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
-
-        window_start = start_dt
+        window_start, end_dt = self._get_window_range()
+        if window_start is None or end_dt is None:
+            return pl.DataFrame()
         collected_rows = []
 
         while window_start < end_dt:
@@ -198,6 +174,47 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
             .select(["node_id", "row_id", "date", "raw_status", "weight"])
         )
 
+    def _get_window_range(self):
+        """Retorna (start_dt, end_dt) como datetimes para iteração em janelas de 2h.
+
+        Usa `self.start_date` e `self.end_date` (objetos date) quando fornecidos.
+        Caso não informados, aplica o comportamento anterior (padrão de 2 dias atrás).
+        Também define no log `start_range_date` e `end_range_date`.
+        """
+        if self.start_date is not None and self.end_date is not None:
+            start_dt = datetime(
+                self.start_date.year,
+                self.start_date.month,
+                self.start_date.day,
+            )
+            end_dt = datetime(
+                self.end_date.year, self.end_date.month, self.end_date.day
+            ) + timedelta(days=1)
+            self.log["start_range_date"] = start_dt.date()
+            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
+            return start_dt, end_dt
+
+        target_day = datetime.now().date() - timedelta(days=2)
+        start_dt = datetime(target_day.year, target_day.month, target_day.day)
+        end_dt = start_dt + timedelta(days=1)
+        self.log["start_range_date"] = start_dt.date()
+        self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
+        return start_dt, end_dt
+
+    @property
+    def _filter(self):
+        """Retorna o filtro (`dict`) para uso no método `load` com base nas datas recebidas pela view.
+
+        Resultado: {} ou {"date__gte": date, "date__lte": date}
+        """
+        if self.start_date is None or self.end_date is None:
+            start = self.log.get("start_range_date")
+            end = self.log.get("end_range_date")
+            if start and end:
+                return {"date__gte": start, "date__lte": end}
+            return {}
+        return {"date__gte": self.start_date, "date__lte": self.end_date}
+
     @cached_property
     def _assignment_id_map(self) -> dict:
         """Retorna um dicionário {assignment_id: node_id} filtrado por cliente (BRADESCO)."""
@@ -251,6 +268,10 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_custom_poller_statistics_async(_task) -> Dict:
-    sync_task = LoadCustompollerStatistics()
+def load_custom_poller_statistics_async(
+    _task, start_date=None, end_date=None
+) -> Dict:
+    sync_task = LoadCustompollerStatistics(
+        start_date=start_date, end_date=end_date
+    )
     return sync_task.run()

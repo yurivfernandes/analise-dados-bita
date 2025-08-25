@@ -15,9 +15,10 @@ from ..models import Node, ResponseTime, TaskLog
 class LoadResponseTime(MixinGetDataset, Pipeline):
     """Classe que busca os dados do meraki"""
 
-    def __init__(self, days_back=None):
+    def __init__(self, start_date=None, end_date=None):
         super().__init__()
-        self.days_back = days_back
+        self.start_date = start_date
+        self.end_date = end_date
         self.log["start_time"] = _tz.now()
         self.log["started_at"] = self.log.get(
             "start_time", self.log.get("started_at")
@@ -28,13 +29,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
 
         try:
             self.extract_and_transform_dataset()
-            start = self.log.get("start_range_date")
-            end = self.log.get("end_range_date")
-            filtro = {}
-            if start and end:
-                filtro = {"date__gte": start, "date__lte": end}
-
-            self.load(dataset=self.dataset, model=ResponseTime, filtro=filtro)
+            self.load(dataset=self.dataset, model=ResponseTime, filtro=self.date_filter)
 
         finally:
             self.log["end_time"] = _tz.now()
@@ -58,7 +53,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
                     serializable_log[k] = v.isoformat()
                 else:
                     serializable_log[k] = v
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 serializable_log[k] = str(v)
         self.log["transformed_rows_count"] = len(self.dataset)
         TaskLog.objects.create(
@@ -100,25 +95,11 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             self._node_id_list[i : i + batch_size]
             for i in range(0, len(self._node_id_list), batch_size)
         ]
-        if self.days_back is not None:
-            days_back = int(self.days_back)
-            end_day = datetime.now().date() - timedelta(days=3)
-            end_dt = datetime(
-                end_day.year, end_day.month, end_day.day
-            ) + timedelta(days=1)
-            start_dt = end_dt - timedelta(days=days_back)
-            self.log["start_range_date"] = start_dt.date()
-            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
-        else:
-            target_day = datetime.now().date() - timedelta(days=3)
-            start_dt = datetime(
-                target_day.year, target_day.month, target_day.day
-            )
-            end_dt = start_dt + timedelta(days=2)
-            self.log["start_range_date"] = start_dt.date()
-            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
 
-        window_start = start_dt
+        window_start, end_dt = self._get_window_range()
+        if window_start is None or end_dt is None:
+            return pl.DataFrame()
+
         collected_rows = []
 
         while window_start < end_dt:
@@ -182,6 +163,50 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             )
         )
 
+    def _get_window_range(self):
+        """Retorna (start_dt, end_dt) como datetimes para iteração em janelas de 2h.
+
+        Usa `self.start_date` e `self.end_date` (que são objetos date) quando fornecidos.
+        Caso não informados, aplica o comportamento anterior (padrão de 3 dias atrás).
+        Também define no log `start_range_date` e `end_range_date`.
+        """
+        if self.start_date is not None and self.end_date is not None:
+            # considerar start_date 00:00:00 e end_date até 23:59:59 do dia
+            start_dt = datetime(
+                self.start_date.year,
+                self.start_date.month,
+                self.start_date.day,
+            )
+            end_dt = datetime(
+                self.end_date.year, self.end_date.month, self.end_date.day
+            ) + timedelta(days=1)
+            self.log["start_range_date"] = start_dt.date()
+            self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
+            return start_dt, end_dt
+
+        # fallback para comportamento antigo
+        target_day = datetime.now().date() - timedelta(days=3)
+        start_dt = datetime(target_day.year, target_day.month, target_day.day)
+        end_dt = start_dt + timedelta(days=2)
+        self.log["start_range_date"] = start_dt.date()
+        self.log["end_range_date"] = (end_dt - timedelta(seconds=1)).date()
+        return start_dt, end_dt
+
+    @property
+    def date_filter(self):
+        """Retorna o filtro (`dict`) para uso no método `load` com base nas datas recebidas pela view.
+
+        Resultado: {} ou {"date__gte": date, "date__lte": date}
+        """
+        if self.start_date is None or self.end_date is None:
+            # se não informado, tentar usar valores já gravados no log (compat)
+            start = self.log.get("start_range_date")
+            end = self.log.get("end_range_date")
+            if start and end:
+                return {"date__gte": start, "date__lte": end}
+            return {}
+        return {"date__gte": self.start_date, "date__lte": self.end_date}
+
     @cached_property
     def _node_id_list(self) -> list:
         """Retorna a lista de NodeIDs filtrados por cliente."""
@@ -203,6 +228,6 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_response_time_async(_task) -> Dict:
-    sync_task = LoadResponseTime()
+def load_response_time_async(_task, start_date=None, end_date=None) -> Dict:
+    sync_task = LoadResponseTime(start_date=start_date, end_date=end_date)
     return sync_task.run()
