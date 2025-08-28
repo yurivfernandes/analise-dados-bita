@@ -93,8 +93,41 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
     def _custom_poller_statistics_dataset(self) -> pl.DataFrame:
         """Retorna o dataset de Custom Poller Statistics."""
 
+        schema = {
+            "CustomPollerAssignmentID": pl.String,
+            "RowID": pl.String,
+            "DateTime": pl.String,
+            "RawStatus": pl.String,
+            "Weight": pl.String,
+        }
+
+        return (
+            pl.DataFrame(
+                data=self._custom_poller_statistics_list,
+                schema=schema,
+                orient="row",
+            )
+            .with_columns(
+                pl.col("CustomPollerAssignmentID")
+                .replace(self._assignment_id_map)
+                .alias("node_id")
+            )
+            .rename(
+                {
+                    "RowID": "row_id",
+                    "DateTime": "date",
+                    "RawStatus": "raw_status",
+                    "Weight": "weight",
+                }
+            )
+            .select(["node_id", "row_id", "date", "raw_status", "weight"])
+        )
+
+    @property
+    def _custom_poller_statistics_list(self) -> list:
+        """Retorna uma lista com os dados de [CustomPollerStatistics_CS]"""
         if not self._assignment_id_list:
-            return pl.DataFrame()
+            return []
 
         batch_size = 180
         batches = [
@@ -109,7 +142,6 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
         while window_start < end_dt:
             window_end = min(window_start + timedelta(hours=2), end_dt)
-
             for batch in batches:
                 in_list = ",".join(f"'{self._esc(a)}'" for a in batch)
 
@@ -139,40 +171,21 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
 
                 collected_rows.extend(result)
 
-            print(f"Tamanho do dataset:{len(collected_rows)}")
+            print(
+                f"Linhas coletadas... {len(collected_rows):,}".replace(
+                    ",", "."
+                )
+            )
+
             window_start = window_end
+
         print(
-            f"Tamanho final do dataset antes de agrupar:{len(collected_rows)}"
+            f"Tamanho final do dataset antes de agrupar:{len(collected_rows):,}".replace(
+                ",", "."
+            )
         )
         self.log["collected_rows_count"] = len(collected_rows)
-        if not collected_rows:
-            return pl.DataFrame()
-
-        schema = {
-            "CustomPollerAssignmentID": pl.String,
-            "RowID": pl.String,
-            "DateTime": pl.String,
-            "RawStatus": pl.String,
-            "Weight": pl.String,
-        }
-
-        return (
-            pl.DataFrame(data=collected_rows, schema=schema, orient="row")
-            .with_columns(
-                pl.col("CustomPollerAssignmentID")
-                .replace(self._assignment_id_map)
-                .alias("node_id")
-            )
-            .rename(
-                {
-                    "RowID": "row_id",
-                    "DateTime": "date",
-                    "RawStatus": "raw_status",
-                    "Weight": "weight",
-                }
-            )
-            .select(["node_id", "row_id", "date", "raw_status", "weight"])
-        )
+        return collected_rows
 
     def _get_window_range(self):
         """Retorna (start_dt, end_dt) como datetimes para iteração em janelas de 2h.
