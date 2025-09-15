@@ -81,3 +81,6 @@ htmlcov/
 *.xlsx
 # MkDocs
 site/
+
+# Arquivo com credenciais
+app.py
