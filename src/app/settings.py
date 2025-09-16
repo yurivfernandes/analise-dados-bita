@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "meraki_devices",
     "api_service_now",
     "capacity_datacenter",
+    "nid",
 ]
 
 MIDDLEWARE = [
@@ -157,6 +158,18 @@ DATABASES = {
     "capacity_datacenter": {
         "ENGINE": "mssql",
         "NAME": os.getenv("DB_NAME_CAPACITY_DATACENTER"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT", "1433"),
+        "OPTIONS": {
+            "driver": os.getenv("DB_DRIVER", "SQL Server Native Client 11.0"),
+            "Trusted_Connection": "yes",
+        },
+    },
+    "NID_QA": {
+        "ENGINE": "mssql",
+        "NAME": os.getenv("DB_NAME_NID_QA"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),

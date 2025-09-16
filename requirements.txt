@@ -13,11 +13,10 @@ mssql-django==1.4
 pyodbc
 
 # Data Processing
-polars==1.29.0
+polars==1.8.2
 pandas==1.5.3
-pyarrow == 20.0.0
+pyarrow
 numpy
-fastexcel == 0.14.0
 
 # Authentication
 PyJWT
@@ -41,4 +40,4 @@ mkdocstrings-python==1.7.5
 celery==5.2.7
 
 #Meraki
-meraki==2.0.3
+meraki
