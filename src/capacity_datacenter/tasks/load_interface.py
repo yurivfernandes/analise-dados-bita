@@ -40,7 +40,8 @@ class LoadInterface(MixinGetDataset, Pipeline):
             interfaces.InterfaceID,
             interfaces.InterfaceName,
             interfaces.Caption,
-            interfaces.ID_VGR
+            interfaces.ID_VGR,
+            interfaces.SERVIÇO
         FROM OPENQUERY(
             [172.21.3.221],
             'SELECT
@@ -48,7 +49,8 @@ class LoadInterface(MixinGetDataset, Pipeline):
                 interfaces.InterfaceID,
                 interfaces.InterfaceName,
                 interfaces.Caption,
-                interfaces.ID_VGR
+                interfaces.ID_VGR,
+                interfaces.SERVIÇO
             FROM [BR_TD_VITAIT].dbo.[Interfaces] interfaces
             INNER JOIN [BR_TD_VITAIT].dbo.[Nodes] nodes
                 ON interfaces.NodeID = nodes.NodeID
@@ -70,6 +72,7 @@ class LoadInterface(MixinGetDataset, Pipeline):
             "InterfaceName": pl.String,
             "Caption": pl.String,
             "ID_VGR": pl.String,
+            "SERVIÇO": pl.String,
         }
 
         return pl.DataFrame(
@@ -81,6 +84,7 @@ class LoadInterface(MixinGetDataset, Pipeline):
                 "InterfaceName": "interface_name",
                 "Caption": "caption",
                 "ID_VGR": "id_vgr",
+                "SERVIÇO": "servico",
             }
         )
 

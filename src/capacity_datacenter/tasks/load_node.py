@@ -42,20 +42,37 @@ class LoadNode(MixinGetDataset, Pipeline):
             nodes.Caption,
             nodes.Description,
             nodes.Automatizacao,
-            nodes.Redundancia
+            nodes.Redundancia,
+            nodes.Cidade,
+            nodes.Tecnologia,
+            nodes.Servico
         FROM OPENQUERY(
             [172.21.3.221],
-            'SELECT
-                nodes.Nome_do_Cliente,
-                nodes.NodeID,
-                nodes.ID_VGR,
-                nodes.Caption,
-                nodes.Description,
-                nodes.Automatizacao,
-                nodes.Redundancia
-            FROM [BR_TD_VITAIT].dbo.[Nodes] nodes
-            WHERE nodes.Nome_do_cliente like ''%BRADESCO%'''
-        ) as nodes
+            '
+            WITH Deduplicado AS (
+                SELECT
+                    nodes.Nome_do_Cliente,
+                    nodes.NodeID,
+                    nodes.ID_VGR,
+                    nodes.Caption,
+                    nodes.Description,
+                    nodes.Automatizacao,
+                    nodes.Redundancia,
+                    nodes.Cidade,
+                    nodes.Tecnologia,
+                    interfaces.SERVIÇO AS Servico,
+                    ROW_NUMBER() OVER (PARTITION BY nodes.NodeID ORDER BY nodes.NodeID) AS rn
+                FROM [BR_TD_VITAIT].dbo.[Nodes] nodes
+                LEFT JOIN [BR_TD_VITAIT].dbo.[Interfaces] interfaces
+                    ON nodes.NodeID = interfaces.NodeID
+                WHERE nodes.Nome_do_cliente LIKE ''%BRADESCO%''
+                AND interfaces.Tipo_Interface = ''WAN''
+            )
+            SELECT *
+            FROM Deduplicado
+            WHERE rn = 1
+            '
+        ) AS nodes
         """
 
         with connection.cursor() as cursor:
@@ -75,20 +92,28 @@ class LoadNode(MixinGetDataset, Pipeline):
             "Description": pl.String,
             "Automatizacao": pl.String,
             "Redundancia": pl.String,
+            "Cidade": pl.String,
+            "Tecnologia": pl.String,
+            "Servico": pl.String,
         }
 
-        return pl.DataFrame(
-            data=list(result), schema=schema, orient="row"
-        ).rename(
-            {
-                "Nome_do_Cliente": "nome_do_cliente",
-                "NodeID": "node_id",
-                "ID_VGR": "id_vgr",
-                "Caption": "caption",
-                "Description": "description",
-                "Automatizacao": "automatizacao",
-                "Redundancia": "redundancia",
-            }
+        return (
+            pl.DataFrame(data=list(result), schema=schema, orient="row")
+            .rename(
+                {
+                    "Nome_do_Cliente": "nome_do_cliente",
+                    "NodeID": "node_id",
+                    "ID_VGR": "id_vgr",
+                    "Caption": "caption",
+                    "Description": "description",
+                    "Automatizacao": "automatizacao",
+                    "Redundancia": "redundancia",
+                    "Cidade": "cidade",
+                    "Tecnologia": "tecnologia",
+                    "Servico": "servico",
+                }
+            )
+            .with_columns(pl.col("cidade").str.to_uppercase().alias("cidade"))
         )
 
 

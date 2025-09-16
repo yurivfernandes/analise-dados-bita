@@ -1,7 +1,8 @@
-import requests
 import datetime
-import pyodbc
 from time import sleep
+
+import pyodbc
+import requests
 
 
 class ServiceNowExtractor:
@@ -17,14 +18,14 @@ class ServiceNowExtractor:
         response = requests.get(url, auth=self.auth, params=params)
         response.raise_for_status()
         return response.json().get("result", [])
-    
+
     def fetch_groups(self, limit=10000):
         url = f"{self.base_url}/sys_user_group"
         params = {"sysparm_limit": limit}
         response = requests.get(url, auth=self.auth, params=params)
         response.raise_for_status()
         return response.json().get("result", [])
-    
+
     def insert_groups_into_database(self, data):
         conn = pyodbc.connect(self.sql_conn_str)
         cursor = conn.cursor()
@@ -40,14 +41,13 @@ class ServiceNowExtractor:
                 continue
 
             values = (
-                    item.get("sys_id"),
-                    item.get("name"),
-                    item.get("description")
-             )
-            
+                item.get("sys_id"),
+                item.get("name"),
+                item.get("description"),
+            )
+
             insert_values.append(values)
 
-        
         cursor.executemany(
             """
             INSERT INTO groups (
@@ -56,8 +56,7 @@ class ServiceNowExtractor:
                 ?,?,?
             )
             """,
-            insert_values
-            
+            insert_values,
         )
 
         conn.commit()
@@ -145,7 +144,6 @@ class ServiceNowExtractor:
         conn.close()
 
     def get_incidents_by_day(self, date_str: str) -> list:
-
         all_incidents = []
         offset = 0
         limit = 10000
@@ -193,9 +191,7 @@ class ServiceNowExtractor:
         print(f"✅ Total de incidentes para {date_str}: {len(all_incidents)}")
         return all_incidents
 
-
     def get_incidents_backlog(self) -> list:
-
         all_incidents = []
         offset = 0
         limit = 10000
@@ -242,7 +238,6 @@ class ServiceNowExtractor:
 
         print(f"✅ Total de incidentes para o backlog: {len(all_incidents)}")
         return all_incidents
-    
 
     def get_tasks_for_incident(self, inc_sys_id: str):
         url = f"{self.base_url}/incident_task"
@@ -255,7 +250,10 @@ class ServiceNowExtractor:
 
     def get_slas_for_incident(self, inc_sys_id: str):
         url = f"{self.base_url}/task_sla"
-        params = {"sysparm_query": f"task={inc_sys_id}", "sysparm_limit": "1000"}
+        params = {
+            "sysparm_query": f"task={inc_sys_id}",
+            "sysparm_limit": "1000",
+        }
 
         response = requests.get(
             url, auth=self.auth, headers=self.headers, params=params
@@ -268,7 +266,10 @@ class ServiceNowExtractor:
 
     def get_time_worked_for_incident(self, inc_sys_id: str):
         url = f"{self.base_url}/task_time_worked"
-        params = {"sysparm_query": f"task={inc_sys_id}", "sysparm_limit": "10000"}
+        params = {
+            "sysparm_query": f"task={inc_sys_id}",
+            "sysparm_limit": "10000",
+        }
 
         response = requests.get(
             url, auth=self.auth, headers=self.headers, params=params
@@ -279,7 +280,6 @@ class ServiceNowExtractor:
 
         return time_results
 
-
     def flatten_reference_fields(self, inc: dict):
         for key in list(inc.keys()):
             value = inc.get(key)
@@ -287,20 +287,19 @@ class ServiceNowExtractor:
                 inc[key] = value.get("value")
                 inc[f"dv_{key}"] = ""
 
-    def delete_and_insert_data_backlog(
-        self, incidents: list
-    ):
+    def delete_and_insert_data_backlog(self, incidents: list):
         conn = pyodbc.connect(self.sql_conn_str)
         cursor = conn.cursor()
 
         cursor.execute("DELETE FROM incident WHERE state in (1,2,3,105)")
 
         for inc in incidents:
-
             self.flatten_reference_fields(inc)
 
             if inc.get("company"):
-                detail_url = f"{self.base_url}/core_company/{inc.get("company")}"
+                detail_url = (
+                    f"{self.base_url}/core_company/{inc.get('company')}"
+                )
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -309,9 +308,7 @@ class ServiceNowExtractor:
                     inc["dv_company"] = detail.get("name", "")
 
             if inc.get("assignment_group"):
-                detail_url = (
-                    f"{self.base_url}/sys_user_group/{inc.get("assignment_group")}"
-                )
+                detail_url = f"{self.base_url}/sys_user_group/{inc.get('assignment_group')}"
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -320,7 +317,9 @@ class ServiceNowExtractor:
                     inc["dv_assignment_group"] = detail.get("name", "")
 
             if inc.get("assigned_to"):
-                detail_url = f"{self.base_url}/sys_user/{inc.get("assigned_to")}"
+                detail_url = (
+                    f"{self.base_url}/sys_user/{inc.get('assigned_to')}"
+                )
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -329,7 +328,9 @@ class ServiceNowExtractor:
                     inc["dv_assigned_to"] = detail.get("name", "")
 
             if inc.get("resolved_by"):
-                detail_url = f"{self.base_url}/sys_user/{inc.get("resolved_by")}"
+                detail_url = (
+                    f"{self.base_url}/sys_user/{inc.get('resolved_by')}"
+                )
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -338,7 +339,7 @@ class ServiceNowExtractor:
                     inc["dv_resolved_by"] = detail.get("name", "")
 
             if inc.get("opened_by"):
-                detail_url = f"{self.base_url}/sys_user/{inc.get("opened_by")}"
+                detail_url = f"{self.base_url}/sys_user/{inc.get('opened_by')}"
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -549,7 +550,9 @@ class ServiceNowExtractor:
                 inc.get("reopened_time"),
                 inc.get("resolved_at"),
                 inc.get("u_lp"),
-                inc.get("u_rpt_tempo_de_deteccao_do_inc_ate_a_abertura_do_ticket"),
+                inc.get(
+                    "u_rpt_tempo_de_deteccao_do_inc_ate_a_abertura_do_ticket"
+                ),
                 inc.get("u_detalhe_sub_categoria_de_causa_raiz"),
                 inc.get("u_tipo_de_servico"),
                 inc.get("cause"),
@@ -581,16 +584,17 @@ class ServiceNowExtractor:
         conn = pyodbc.connect(self.sql_conn_str)
         cursor = conn.cursor()
 
-        
-
         for inc in incidents:
-
-            cursor.execute("DELETE FROM incident WHERE sys_id = ?", inc.get('sys_id'))
+            cursor.execute(
+                "DELETE FROM incident WHERE sys_id = ?", inc.get("sys_id")
+            )
 
             self.flatten_reference_fields(inc)
 
             if inc.get("company"):
-                detail_url = f"{self.base_url}/core_company/{inc.get("company")}"
+                detail_url = (
+                    f"{self.base_url}/core_company/{inc.get('company')}"
+                )
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -619,7 +623,9 @@ class ServiceNowExtractor:
             #         inc["dv_assigned_to"] = detail.get("name", "")
 
             if inc.get("resolved_by"):
-                detail_url = f"{self.base_url}/sys_user/{inc.get("resolved_by")}"
+                detail_url = (
+                    f"{self.base_url}/sys_user/{inc.get('resolved_by')}"
+                )
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -628,7 +634,7 @@ class ServiceNowExtractor:
                     inc["dv_resolved_by"] = detail.get("name", "")
 
             if inc.get("opened_by"):
-                detail_url = f"{self.base_url}/sys_user/{inc.get("opened_by")}"
+                detail_url = f"{self.base_url}/sys_user/{inc.get('opened_by')}"
                 response = requests.get(
                     detail_url, auth=self.auth, headers=self.headers
                 )
@@ -839,7 +845,9 @@ class ServiceNowExtractor:
                 inc.get("reopened_time"),
                 inc.get("resolved_at"),
                 inc.get("u_lp"),
-                inc.get("u_rpt_tempo_de_deteccao_do_inc_ate_a_abertura_do_ticket"),
+                inc.get(
+                    "u_rpt_tempo_de_deteccao_do_inc_ate_a_abertura_do_ticket"
+                ),
                 inc.get("u_detalhe_sub_categoria_de_causa_raiz"),
                 inc.get("u_tipo_de_servico"),
                 inc.get("cause"),
@@ -870,14 +878,15 @@ class ServiceNowExtractor:
                 tasks = self.get_tasks_for_incident(inc_id)
 
             for task in tasks:
-
                 self.flatten_reference_fields(task)
 
                 task["incident"] = inc.get("sys_id")
                 task["dv_incident"] = inc.get("number")
 
                 if task.get("closed_by"):
-                    detail_url = f"{self.base_url}/sys_user/{task.get("closed_by")}"
+                    detail_url = (
+                        f"{self.base_url}/sys_user/{task.get('closed_by')}"
+                    )
                     response = requests.get(
                         detail_url, auth=self.auth, headers=self.headers
                     )
@@ -886,7 +895,9 @@ class ServiceNowExtractor:
                         task["dv_closed_by"] = detail.get("name", "")
 
                 if task.get("assigned_to"):
-                    detail_url = f"{self.base_url}/sys_user/{task.get("assigned_to")}"
+                    detail_url = (
+                        f"{self.base_url}/sys_user/{task.get('assigned_to')}"
+                    )
                     response = requests.get(
                         detail_url, auth=self.auth, headers=self.headers
                     )
@@ -895,7 +906,9 @@ class ServiceNowExtractor:
                         task["dv_assigned_to"] = detail.get("name", "")
 
                 if task.get("opened_by"):
-                    detail_url = f"{self.base_url}/sys_user/{task.get("opened_by")}"
+                    detail_url = (
+                        f"{self.base_url}/sys_user/{task.get('opened_by')}"
+                    )
                     response = requests.get(
                         detail_url, auth=self.auth, headers=self.headers
                     )
@@ -904,7 +917,8 @@ class ServiceNowExtractor:
                         task["dv_opened_by"] = detail.get("name", "")
 
                 cursor.execute(
-                    "DELETE FROM incident_task WHERE sys_id = ?", task.get("sys_id")
+                    "DELETE FROM incident_task WHERE sys_id = ?",
+                    task.get("sys_id"),
                 )
 
                 cursor.execute(
@@ -925,7 +939,9 @@ class ServiceNowExtractor:
                     task.get("impact"),
                     task.get("u_ordem_de_venda"),
                     task.get("work_notes_list"),
-                    task.get("u_data_solicitacao_envio_equipamento_defeituoso"),
+                    task.get(
+                        "u_data_solicitacao_envio_equipamento_defeituoso"
+                    ),
                     task.get("priority"),
                     task.get("business_duration"),
                     task.get("group_list"),
@@ -1027,7 +1043,6 @@ class ServiceNowExtractor:
                 slas = self.get_slas_for_incident(inc_id)
 
             for sla in slas:
-
                 self.flatten_reference_fields(sla)
 
                 sla_sys_id = sla.get("sla")
@@ -1048,7 +1063,8 @@ class ServiceNowExtractor:
                 sla["dv_incident"] = inc.get("number")
 
                 cursor.execute(
-                    "DELETE FROM incident_sla WHERE sys_id = ?", sla.get("sys_id")
+                    "DELETE FROM incident_sla WHERE sys_id = ?",
+                    sla.get("sys_id"),
                 )
 
                 cursor.execute(
@@ -1093,49 +1109,45 @@ class ServiceNowExtractor:
                 times = self.get_time_worked_for_incident(inc_id)
 
             for time in times:
-
                 self.flatten_reference_fields(time)
-              
 
                 time["incident"] = inc.get("sys_id")
                 time["dv_incident"] = inc.get("number")
 
                 cursor.execute(
-                    "DELETE FROM time_worked WHERE sys_id = ?", time.get("sys_id")
+                    "DELETE FROM time_worked WHERE sys_id = ?",
+                    time.get("sys_id"),
                 )
 
                 cursor.execute(
                     "INSERT INTO time_worked (incident,	dv_incident,	comments,	work_date,	time_card,	u_state,	sys_mod_count,	sys_updated_on,	sys_tags,	time_worked,	sys_id,	time_in_seconds,	sys_updated_by,	task,	dv_task,	sys_created_on,	category,	[user],	dv_user,	sys_created_by,	u_horas_billable) VALUES (?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?,	?)",
-                    time.get('incident'),
-                    time.get('dv_incident'),
-                    time.get('comments'),
-                    time.get('work_date'),
-                    time.get('time_card'),
-                    time.get('u_state'),
-                    time.get('sys_mod_count'),
-                    time.get('sys_updated_on'),
-                    time.get('sys_tags'),
-                    time.get('time_worked'),
-                    time.get('sys_id'),
-                    time.get('time_in_seconds'),
-                    time.get('sys_updated_by'),
-                    time.get('task'),
-                    time.get('dv_task'),
-                    time.get('sys_created_on'),
-                    time.get('category'),
-                    time.get('user'),
-                    time.get('dv_user'),
-                    time.get('sys_created_by'),
-                    time.get('u_horas_billable')
-
-
+                    time.get("incident"),
+                    time.get("dv_incident"),
+                    time.get("comments"),
+                    time.get("work_date"),
+                    time.get("time_card"),
+                    time.get("u_state"),
+                    time.get("sys_mod_count"),
+                    time.get("sys_updated_on"),
+                    time.get("sys_tags"),
+                    time.get("time_worked"),
+                    time.get("sys_id"),
+                    time.get("time_in_seconds"),
+                    time.get("sys_updated_by"),
+                    time.get("task"),
+                    time.get("dv_task"),
+                    time.get("sys_created_on"),
+                    time.get("category"),
+                    time.get("user"),
+                    time.get("dv_user"),
+                    time.get("sys_created_by"),
+                    time.get("u_horas_billable"),
                 )
         conn.commit()
         cursor.close()
         conn.close()
 
     def run(self):
-
         sla_data = self.fetch_contract_sla()
         self.insert_contract_into_database(sla_data)
 
@@ -1145,7 +1157,7 @@ class ServiceNowExtractor:
         print(f"- Contrato importado")
 
         today = datetime.datetime.now().date()
-        print (f"*** INICIO: {datetime.datetime.now()}")
+        print(f"*** INICIO: {datetime.datetime.now()}")
         for i in range(3, -1, -1):  # dois dias atrás até hoje
             day = today - datetime.timedelta(days=i)
             date_str = day.strftime("%Y-%m-%d")
@@ -1172,7 +1184,7 @@ class ServiceNowExtractor:
         # self.delete_and_insert_data_backlog(incidents)
         # print(f"✅ Finalizado backlog")
 
-        print (f"*** FIM: {datetime.datetime.now()}")
+        print(f"*** FIM: {datetime.datetime.now()}")
 
 
 if __name__ == "__main__":
@@ -1183,5 +1195,7 @@ if __name__ == "__main__":
     auth = (servicenow_username, servicenow_password)
     headers = {"Content-Type": "application/json"}
     sql_conn_str = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=172.21.0.6;DATABASE=API_SERVICE_NOW;UID=usr_rafael;PWD=Industri@l31"
-    extractor = ServiceNowExtractor(servicenow_base_url, auth, headers, sql_conn_str)
+    extractor = ServiceNowExtractor(
+        servicenow_base_url, auth, headers, sql_conn_str
+    )
     extractor.run()

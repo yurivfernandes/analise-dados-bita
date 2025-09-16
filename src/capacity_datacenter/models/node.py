@@ -1,4 +1,5 @@
 from django.db import models
+
 from .mixins import AuditMixin
 
 
@@ -10,6 +11,9 @@ class Node(AuditMixin, models.Model):
     description = models.TextField(null=True)
     automatizacao = models.CharField(max_length=100, null=True)
     redundancia = models.CharField(max_length=20, null=True)
+    cidade = models.CharField(max_length=100, null=True)
+    tecnologia = models.CharField(max_length=100, null=True)
+    servico = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return f"{self.nome_do_cliente} - {self.node_id}"

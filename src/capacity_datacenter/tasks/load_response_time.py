@@ -29,7 +29,11 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
 
         try:
             self.extract_and_transform_dataset()
-            self.load(dataset=self.dataset, model=ResponseTime, filtro=self.date_filter)
+            self.load(
+                dataset=self.dataset,
+                model=ResponseTime,
+                filtro=self.date_filter,
+            )
 
         finally:
             self.log["end_time"] = _tz.now()
@@ -67,7 +71,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
     def extract_and_transform_dataset(self) -> pl.DataFrame:
         """Extrai e transforma o dataset principal."""
         self.dataset = (
-            self.response_time_dataset.group_by(["node_id", "date"])
+            self._response_time_dataset.group_by(["node_id", "date"])
             .agg(
                 [
                     pl.col("avg_response_time")
@@ -84,7 +88,7 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
         )
 
     @property
-    def response_time_dataset(self) -> pl.DataFrame:
+    def _response_time_dataset(self) -> pl.DataFrame:
         """Retorna o dataset de dispositivos Meraki."""
 
         if not self._node_id_list:
@@ -136,9 +140,6 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
             window_start = window_end
 
         self.log["collected_rows_count"] = len(collected_rows)
-
-        if not collected_rows:
-            return pl.DataFrame()
 
         schema = {
             "NodeID": pl.String,
