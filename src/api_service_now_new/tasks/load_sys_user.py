@@ -64,14 +64,20 @@ class LoadSysUser(MixinGetDataset, Pipeline):
 
         all_results: List[Dict] = []
         for sid in ids:
-            rec = fetch_single_record(path="sys_user", sys_id=sid, params={"sysparm_fields": fields})
+            rec = fetch_single_record(
+                path="sys_user", sys_id=sid, params={"sysparm_fields": fields}
+            )
             if rec:
                 all_results.append(rec)
 
         if not all_results:
-            return pl.DataFrame(schema={f.name: pl.String for f in SysUser._meta.fields})
+            return pl.DataFrame(
+                schema={f.name: pl.String for f in SysUser._meta.fields}
+            )
 
-        return pl.DataFrame(all_results).select([f.name for f in SysUser._meta.fields])
+        return pl.DataFrame(all_results).select(
+            [f.name for f in SysUser._meta.fields]
+        )
 
 
 @shared_task(

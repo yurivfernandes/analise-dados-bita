@@ -171,7 +171,9 @@ def flatten_reference_fields(data: dict) -> dict:
     return data
 
 
-def fetch_single_record(path: str, sys_id: str, params: Optional[Dict] = None, timeout: int = 30) -> Optional[Dict]:
+def fetch_single_record(
+    path: str, sys_id: str, params: Optional[Dict] = None, timeout: int = 30
+) -> Optional[Dict]:
     """Busca um único registro no ServiceNow por `sys_id`.
 
     - `path` é o sufixo da URL da API (ex: 'api/now/table/sys_user' ou 'sys_user' se base_url já contempla o caminho).
@@ -189,9 +191,11 @@ def fetch_single_record(path: str, sys_id: str, params: Optional[Dict] = None, t
     if path.startswith("http://") or path.startswith("https://"):
         url = path
     else:
-        url = f"{base_url.rstrip('/')}/{path.lstrip('/') }"
+        url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
 
-    resp = requests.get(url, auth=auth, headers=headers, params=params, timeout=timeout)
+    resp = requests.get(
+        url, auth=auth, headers=headers, params=params, timeout=timeout
+    )
     if resp.status_code == 404:
         return None
     resp.raise_for_status()

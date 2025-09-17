@@ -53,7 +53,11 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
         all_results: List[Dict] = []
         # agora chamamos a API uma vez por sys_id
         for sid in ids:
-            rec = fetch_single_record(path="sys_company", sys_id=sid, params={"sysparm_fields": fields})
+            rec = fetch_single_record(
+                path="sys_company",
+                sys_id=sid,
+                params={"sysparm_fields": fields},
+            )
             if rec:
                 all_results.append(rec)
 
