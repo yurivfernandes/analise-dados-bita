@@ -3,6 +3,7 @@ from typing import Dict
 import polars as pl
 from celery import shared_task
 from django.db import transaction
+from django.utils import timezone
 
 from api_service_now_new.models.incident import Incident
 from api_service_now_new.utils.servicenow import ensure_datetime, paginate
@@ -18,8 +19,14 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
         super().__init__()
 
     def run(self) -> Dict:
+        # medir tempo total do run
+        started = timezone.now()
         self.extract_and_transform_dataset()
         self.load(dataset=self.dataset, model=Incident)
+        finished = timezone.now()
+        run_duration = round((finished - started).total_seconds(), 2)
+        self.log["run_duration"] = run_duration
+        print(f"...RUN DURATION: {run_duration}s...")
         return self.log
 
     def extract_and_transform_dataset(self) -> None:
@@ -41,6 +48,8 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
         - Atualizar atributos em memória e usar `bulk_update`
         """
         if dataset.is_empty():
+            self.log["n_updated"] = 0
+            self.log.setdefault("update_duration", 0.0)
             return
 
         rows = dataset.to_dicts()
@@ -71,12 +80,19 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
                     setattr(inst, k, v)
             instances_to_update.append(inst)
 
+        started = timezone.now()
         if instances_to_update:
             model.objects.bulk_update(
                 instances_to_update, fields=updatable_fields, batch_size=1000
             )
-
+        finished = timezone.now()
+        duration = round((finished - started).total_seconds(), 2)
         self.log["n_updated"] = len(instances_to_update)
+        self.log["update_duration"] = duration
+        print(
+            f"...{len(instances_to_update)} REGISTROS ATUALIZADOS NO BANCO DE DADOS..."
+        )
+        print(f"...UPDATE DURATION: {duration}s...")
 
     @property
     def _incidents(self) -> pl.DataFrame:

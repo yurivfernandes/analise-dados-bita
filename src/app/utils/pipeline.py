@@ -65,8 +65,14 @@ class Pipeline:
 
         """
 
+        # medir tempo do load completo
+        started = timezone.now()
         self._delete(filtro=filtro, model=model)
         self._save(dataset=dataset, model=model)
+        finished = timezone.now()
+        load_duration = round((finished - started).total_seconds(), 2)
+        self.log["load_duration"] = load_duration
+        print(f"...LOAD DURATION: {load_duration}s (delete+save)...")
 
     def _delete(self, filtro: dict, model=models.Model) -> None:
         """Deleta os registros na base, conforme o model e o filtro selecionado."""
@@ -74,9 +80,14 @@ class Pipeline:
             f"...LIMPANDO OS DADOS DO MODEL [{model.__name__}] NO BANCO DE DADOS ..."
         )
         print(f"....FILTROS UTILIZADOS: {filtro}...")
+        started = timezone.now()
         n_deleted, __ = model.objects.filter(**filtro).delete()
+        finished = timezone.now()
+        duration = round((finished - started).total_seconds(), 2)
         self.log["n_deleted"] = n_deleted
+        self.log["delete_duration"] = duration
         print(f"...{n_deleted} DADOS DELETADOS NO BANCO DE DADOS...")
+        print(f"...DELETE DURATION: {duration}s...")
 
     def _save(self, dataset: pl.DataFrame, model=models.Model) -> None:
         """Salva os dados no banco de dados no model selecionado."""
@@ -84,9 +95,15 @@ class Pipeline:
             f"...SALVANDO OS DADOS NO BANCO DE DADOS NO MODEL: [{model.__name__}]..."
         )
         if dataset.is_empty():
+            print("...DATASET VAZIO: nada a salvar...")
+            self.log.setdefault("save_duration", 0.0)
             return
-
+        started = timezone.now()
         objs = [model(**vals) for vals in dataset.to_dicts()]
         bulk = model.objects.bulk_create(objs=objs, batch_size=1000)
+        finished = timezone.now()
+        duration = round((finished - started).total_seconds(), 2)
         self.log["n_inserted"] = len(bulk)
+        self.log["save_duration"] = duration
         print(f"...{len(bulk)} REGISTROS SALVOS NO BANCO DE DADOS...")
+        print(f"...SAVE DURATION: {duration}s...")
