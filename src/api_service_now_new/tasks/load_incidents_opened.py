@@ -24,7 +24,10 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
 
     @property
     def _filtro(self) -> dict:
-        return {"opened_at__range": [self.start_date, self.end_date]}
+        return {
+            "opened_at__gte": self.start_date,
+            "opened_at__lte": self.end_date,
+        }
 
     def run(self) -> Dict:
         """Método principal: executa extração, persiste via `self.load` e retorna o log."""
