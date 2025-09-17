@@ -6,7 +6,7 @@ from celery import shared_task
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import IncidentTask
-from ..utils.servicenow import paginate
+from ..utils.servicenow import ensure_datetime, paginate
 
 
 class LoadIncidentTask(MixinGetDataset, Pipeline):
@@ -19,7 +19,10 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
 
     @property
     def _filtro(self) -> dict:
-        return {}
+        return {
+            "opened_at__gte": ensure_datetime(self.start_date, end=False),
+            "opened_at__lte": ensure_datetime(self.end_date, end=True),
+        }
 
     def run(self) -> Dict:
         self.extract_and_transform_dataset()

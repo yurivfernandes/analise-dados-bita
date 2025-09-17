@@ -1,10 +1,11 @@
-from datetime import datetime
 import logging
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
 import polars as pl
 import requests
+from django.db import transaction
 
 
 def get_servicenow_env() -> Tuple[str, tuple, Dict]:
@@ -168,3 +169,88 @@ def flatten_reference_fields(data: dict) -> dict:
             data[key] = value.get("value")
             data[f"dv_{key}"] = ""
     return data
+
+
+@transaction.atomic
+def upsert_by_sys_id(
+    dataset: pl.DataFrame, model, log: Optional[Dict] = None
+) -> None:
+    """Upsert em lote por `sys_id` para registros de `dataset` no `model`.
+
+    Aceita `dataset` como `polars.DataFrame`, lista de dicts ou qualquer iterável de dicts.
+    Atualiza em transação usando `bulk_create` e `bulk_update`.
+    Atualiza `log["n_inserted"]` e `log["n_updated"]` quando informado.
+    """
+    # Converte para lista de dicionários
+    if dataset is None:
+        return
+    if isinstance(dataset, pl.DataFrame):
+        if dataset.is_empty():
+            return
+        rows = dataset.to_dicts()
+    elif isinstance(dataset, list):
+        rows = dataset
+    else:
+        try:
+            rows = list(dataset)
+        except Exception:
+            rows = []
+
+    if not rows:
+        return
+
+    # coletar nomes de campos válidos do model
+    model_field_names = {f.name for f in model._meta.fields}
+    pk_name = model._meta.pk.name
+
+    # filtrar rows para conter apenas campos do model
+    processed = []
+    for r in rows:
+        if not r:
+            continue
+        pr = {k: v for k, v in r.items() if k in model_field_names}
+        if pr and pr.get("sys_id"):
+            processed.append(pr)
+
+    if not processed:
+        return
+
+    sys_ids = [r["sys_id"] for r in processed]
+
+    # buscar existentes em batch
+    existing_qs = model.objects.filter(sys_id__in=sys_ids)
+    existing_map = {getattr(obj, "sys_id"): obj for obj in existing_qs}
+
+    to_create = []
+    to_update = []
+
+    for row in processed:
+        sid = row["sys_id"]
+        if sid in existing_map:
+            obj = existing_map[sid]
+            for k, v in row.items():
+                setattr(obj, k, v)
+            to_update.append(obj)
+        else:
+            to_create.append(model(**row))
+
+    n_created = 0
+    n_updated = 0
+
+    if to_create:
+        created_objs = model.objects.bulk_create(to_create, batch_size=1000)
+        n_created = len(created_objs)
+
+    if to_update:
+        # campos a atualizar: todos os campos do model exceto pk e sys_id
+        update_fields = [
+            f for f in model_field_names if f not in (pk_name, "sys_id")
+        ]
+        if update_fields:
+            model.objects.bulk_update(
+                to_update, update_fields, batch_size=1000
+            )
+            n_updated = len(to_update)
+
+    if isinstance(log, dict):
+        log["n_inserted"] = log.get("n_inserted", 0) + n_created

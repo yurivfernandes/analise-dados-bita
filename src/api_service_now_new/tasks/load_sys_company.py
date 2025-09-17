@@ -6,7 +6,7 @@ from celery import shared_task
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import SysCompany
-from ..utils.servicenow import paginate
+from ..utils.servicenow import paginate, upsert_by_sys_id
 
 
 class LoadSysCompany(MixinGetDataset, Pipeline):
@@ -21,7 +21,7 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
 
     def run(self) -> Dict:
         self.extract_and_transform_dataset()
-        self.load(dataset=self.dataset, model=SysCompany, filtro=self._filtro)
+        upsert_by_sys_id(dataset=self.dataset, model=SysCompany, log=self.log)
         return self.log
 
     def extract_and_transform_dataset(self) -> None:
@@ -45,6 +45,8 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
             result_list,
             schema={f.name: pl.String for f in SysCompany._meta.fields},
         )
+
+    # ...existing code...
 
 
 @shared_task(
