@@ -171,6 +171,40 @@ def flatten_reference_fields(data: dict) -> dict:
     return data
 
 
+def fetch_single_record(path: str, sys_id: str, params: Optional[Dict] = None, timeout: int = 30) -> Optional[Dict]:
+    """Busca um único registro no ServiceNow por `sys_id`.
+
+    - `path` é o sufixo da URL da API (ex: 'api/now/table/sys_user' ou 'sys_user' se base_url já contempla o caminho).
+    - Retorna o dicionário do registro ou `None` se não encontrado.
+
+    Usa `get_servicenow_env()` para obter base_url, auth e headers.
+    """
+    params = dict(params or {})
+    # sysparm_query limita por sys_id
+    params.update({"sysparm_query": f"sys_id={sys_id}", "sysparm_limit": "1"})
+
+    base_url, auth, headers = get_servicenow_env()
+
+    # permite passar tanto 'sys_user' quanto caminhos completos. Normaliza para unir com base_url
+    if path.startswith("http://") or path.startswith("https://"):
+        url = path
+    else:
+        url = f"{base_url.rstrip('/')}/{path.lstrip('/') }"
+
+    resp = requests.get(url, auth=auth, headers=headers, params=params, timeout=timeout)
+    if resp.status_code == 404:
+        return None
+    resp.raise_for_status()
+
+    body = resp.json()
+    result = body.get("result")
+    if not result:
+        return None
+    if isinstance(result, list):
+        return process_data([result[0]])[0]
+    return process_data([result])[0]
+
+
 @transaction.atomic
 def upsert_by_sys_id(
     dataset: pl.DataFrame, model, log: Optional[Dict] = None
@@ -235,7 +269,6 @@ def upsert_by_sys_id(
             to_create.append(model(**row))
 
     n_created = 0
-    n_updated = 0
 
     if to_create:
         created_objs = model.objects.bulk_create(to_create, batch_size=1000)
@@ -250,7 +283,6 @@ def upsert_by_sys_id(
             model.objects.bulk_update(
                 to_update, update_fields, batch_size=1000
             )
-            n_updated = len(to_update)
 
     if isinstance(log, dict):
         log["n_inserted"] = log.get("n_inserted", 0) + n_created
