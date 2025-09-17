@@ -12,6 +12,13 @@ from ...tasks import LoadContractSla, LoadGroups, LoadSysCompany, LoadSysUser
 logger = logging.getLogger(__name__)
 
 
+def _fmt_hms(td: datetime.timedelta) -> str:
+    secs = int(td.total_seconds())
+    h, rem = divmod(secs, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+
 class LoadConfigurationsView(APIView):
     """View que aciona tasks de configurações do ServiceNow (contract_sla, groups, companies, users).
 
@@ -46,9 +53,8 @@ class LoadConfigurationsView(APIView):
         )
 
     def _run_pipelines_in_background(self, start_date, end_date):
+        started_at = datetime.datetime.now()
         try:
-            started_at = datetime.datetime.now()
-
             # contract_sla
             print("[Configurations] Executando tarefa: load_contract_sla")
             t0 = datetime.datetime.now()
@@ -57,7 +63,7 @@ class LoadConfigurationsView(APIView):
                 logger.info("load_contract_sla finished: %s", r1)
             print(
                 f"[Configurations] Concluída: load_contract_sla em "
-                f"{(datetime.datetime.now() - t0).total_seconds():.2f}s"
+                f"{_fmt_hms(datetime.datetime.now() - t0)}"
             )
 
             # groups
@@ -68,7 +74,7 @@ class LoadConfigurationsView(APIView):
                 logger.info("load_groups finished: %s", r2)
             print(
                 f"[Configurations] Concluída: load_groups em "
-                f"{(datetime.datetime.now() - t1).total_seconds():.2f}s"
+                f"{_fmt_hms(datetime.datetime.now() - t1)}"
             )
 
             # companies
@@ -79,7 +85,7 @@ class LoadConfigurationsView(APIView):
                 logger.info("load_sys_company finished: %s", r3)
             print(
                 f"[Configurations] Concluída: load_sys_company em "
-                f"{(datetime.datetime.now() - t2).total_seconds():.2f}s"
+                f"{_fmt_hms(datetime.datetime.now() - t2)}"
             )
 
             # users
@@ -90,11 +96,14 @@ class LoadConfigurationsView(APIView):
                 logger.info("load_sys_user finished: %s", r4)
             print(
                 f"[Configurations] Concluída: load_sys_user em "
-                f"{(datetime.datetime.now() - t3).total_seconds():.2f}s"
+                f"{_fmt_hms(datetime.datetime.now() - t3)}"
             )
-
-            total = (datetime.datetime.now() - started_at).total_seconds()
-            print(f"[Configurations] Tempo total de execução: {total:.2f}s")
 
         except Exception:
             logger.exception("Erro ao executar as pipelines de configurations")
+        finally:
+            total = datetime.datetime.now() - started_at
+            print(
+                f"[Thread: {self.__class__.__name__}] Tempo total de execução: {_fmt_hms(total)}",
+                flush=True,
+            )

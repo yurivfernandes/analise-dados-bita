@@ -17,6 +17,13 @@ from ...tasks import (
 logger = logging.getLogger(__name__)
 
 
+def _fmt_hms(td: datetime.timedelta) -> str:
+    secs = int(td.total_seconds())
+    h, rem = divmod(secs, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+
 class LoadIncidentsView(APIView):
     """View que aciona as tasks de construção/atualização da base de incidents do ServiceNow
 
@@ -54,8 +61,9 @@ class LoadIncidentsView(APIView):
 
     def _run_pipelines_in_background(self, start_date, end_date):
         """Método que executa as pipelines em background (chamado pela thread)."""
+        started_at = datetime.datetime.now()
         try:
-            started_at = datetime.datetime.now()
+            # helper de tempo definido no módulo: _fmt_hms
 
             # task que popula pela data de opened_at (pode deletar+inserir)
             task_name = LoadIncidentsOpened.__name__
@@ -67,8 +75,7 @@ class LoadIncidentsView(APIView):
                 r1 = load.run()
                 logger.info("load_incidents_opened finished: %s", r1)
             print(
-                f"[{task_name}] Concluída em "
-                f"{(datetime.datetime.now() - t0).total_seconds():.2f}s"
+                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t0)}"
             )
 
             # task que atualiza por sys_updated_on
@@ -88,8 +95,7 @@ class LoadIncidentsView(APIView):
                 r3 = load.run()
                 logger.info("load_incident_sla finished: %s", r3)
             print(
-                f"[{task_name}] Concluída em "
-                f"{(datetime.datetime.now() - t1).total_seconds():.2f}s"
+                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t1)}"
             )
 
             # task para incident_task
@@ -102,8 +108,7 @@ class LoadIncidentsView(APIView):
                 r4 = load.run()
                 logger.info("load_incident_task finished: %s", r4)
             print(
-                f"[{task_name}] Concluída em "
-                f"{(datetime.datetime.now() - t2).total_seconds():.2f}s"
+                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t2)}"
             )
 
             # task para task_time_worked
@@ -116,12 +121,14 @@ class LoadIncidentsView(APIView):
                 r5 = load.run()
                 logger.info("load_task_time_worked finished: %s", r5)
             print(
-                f"[{task_name}] Concluída em "
-                f"{(datetime.datetime.now() - t3).total_seconds():.2f}s"
+                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t3)}"
             )
-
-            total = (datetime.datetime.now() - started_at).total_seconds()
-            print(f"[Incidents] Tempo total de execução: {total:.2f}s")
 
         except Exception:
             logger.exception("Erro ao executar as pipelines de incidents")
+        finally:
+            total = datetime.datetime.now() - started_at
+            print(
+                f"[Thread: {self.__class__.__name__}] Tempo total de execução: {_fmt_hms(total)}",
+                flush=True,
+            )
