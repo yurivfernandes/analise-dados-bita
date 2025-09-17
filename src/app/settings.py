@@ -167,7 +167,7 @@ DATABASES = {
             "Trusted_Connection": "yes",
         },
     },
-    "NID_QA": {
+    "nid_qa": {
         "ENGINE": "mssql",
         "NAME": os.getenv("DB_NAME_NID_QA"),
         "USER": os.getenv("DB_USER"),
