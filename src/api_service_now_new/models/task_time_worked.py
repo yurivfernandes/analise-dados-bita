@@ -18,7 +18,7 @@ class TaskTimeWorked(models.Model):
     time_worked = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    sys_id = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    sys_id = models.TextField(primary_key=True, db_collation=COLLATION)
     time_in_seconds = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -41,4 +41,5 @@ class TaskTimeWorked(models.Model):
     dv_user = models.TextField(null=True, blank=True, db_collation=COLLATION)
 
     class Meta:
+        managed = False
         db_table = "task_time_worked"

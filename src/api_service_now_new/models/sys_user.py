@@ -72,4 +72,5 @@ class SysUser(models.Model):
     )
 
     class Meta:
+        managed = False
         db_table = "sys_user"

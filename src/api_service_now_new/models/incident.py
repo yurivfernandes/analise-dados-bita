@@ -4,7 +4,7 @@ COLLATION = "SQL_Latin1_General_CP1_CI_AS"
 
 
 class Incident(models.Model):
-    sys_id = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    sys_id = models.TextField(db_collation=COLLATION, primary_key=True)
     number = models.TextField(null=True, blank=True, db_collation=COLLATION)
     state = models.TextField(null=True, blank=True, db_collation=COLLATION)
     incident_state = models.TextField(
@@ -98,4 +98,5 @@ class Incident(models.Model):
     )
 
     class Meta:
+        managed = False
         db_table = "incident"

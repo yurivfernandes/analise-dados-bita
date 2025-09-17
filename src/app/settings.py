@@ -169,7 +169,7 @@ DATABASES = {
     },
     "nid_qa": {
         "ENGINE": "mssql",
-        "NAME": os.getenv("DB_NAME_NID_QA"),
+        "NAME": os.getenv("DB_NAME_API_SERVICE_NOW"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),

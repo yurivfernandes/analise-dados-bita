@@ -31,7 +31,7 @@ class ContractSla(models.Model):
         null=True, blank=True, db_collation=COLLATION
     )
     duration = models.TextField(null=True, blank=True, db_collation=COLLATION)
-    sys_id = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    sys_id = models.TextField(primary_key=True, db_collation=COLLATION)
     sys_updated_by = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -122,4 +122,5 @@ class ContractSla(models.Model):
     dv_flow = models.TextField(null=True, blank=True, db_collation=COLLATION)
 
     class Meta:
+        managed = False
         db_table = "contract_sla"

@@ -88,7 +88,7 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
 
         query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}"
         params = {"sysparm_query": query, "sysparm_fields": fields}
-        return paginate(
+        result_list = paginate(
             path="incident",
             params=params,
             limit=10000,
@@ -96,6 +96,10 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
             limit_param="sysparm_limit",
             offset_param="sysparm_offset",
             result_key="result",
+        )
+        return pl.DataFrame(
+            result_list,
+            schema={f.name: pl.String for f in Incident._meta.fields},
         )
 
 

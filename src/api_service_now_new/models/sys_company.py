@@ -55,4 +55,5 @@ class SysCompany(models.Model):
     )
 
     class Meta:
+        managed = False
         db_table = "sys_company"

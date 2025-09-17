@@ -3,9 +3,10 @@ from typing import Dict
 import polars as pl
 from celery import shared_task
 
-from api_service_now_new.models.incident import Incident
-from api_service_now_new.utils.servicenow import ensure_datetime, paginate
 from app.utils import MixinGetDataset, Pipeline
+
+from ..models import Incident
+from ..utils.servicenow import ensure_datetime, paginate
 
 
 class LoadIncidentsOpened(MixinGetDataset, Pipeline):
@@ -21,10 +22,14 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
         self.end_date = end_date
         super().__init__()
 
+    @property
+    def _filtro(self) -> dict:
+        return {"opened_at__range": [self.start_date, self.end_date]}
+
     def run(self) -> Dict:
         """Método principal: executa extração, persiste via `self.load` e retorna o log."""
         self.extract_and_transform_dataset()
-        self.load(dataset=self.dataset, model=Incident, filtro={})
+        self.load(dataset=self.dataset, model=Incident, filtro=self._filtro)
         return self.log
 
     def extract_and_transform_dataset(self) -> None:
@@ -42,7 +47,7 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
 
         query = f"opened_at>={start_ts}^opened_at<={end_ts}"
         params = {"sysparm_query": query, "sysparm_fields": fields}
-        return paginate(
+        result_list = paginate(
             path="incident",
             params=params,
             limit=10000,
@@ -50,6 +55,10 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
             limit_param="sysparm_limit",
             offset_param="sysparm_offset",
             result_key="result",
+        )
+        return pl.DataFrame(
+            result_list,
+            schema={f.name: pl.String for f in Incident._meta.fields},
         )
 
 

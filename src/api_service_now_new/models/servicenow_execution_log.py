@@ -6,7 +6,7 @@ COLLATION = "SQL_Latin1_General_CP1_CI_AS"
 
 
 class ServiceNowExecutionLog(models.Model):
-    execution_id = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
+    execution_id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     execution_type = models.CharField(max_length=20, db_collation=COLLATION)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
@@ -57,4 +57,5 @@ class ServiceNowExecutionLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        managed = False
         db_table = "servicenow_execution_log"

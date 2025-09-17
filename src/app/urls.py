@@ -27,5 +27,5 @@ urlpatterns = [
     path("api/meraki/", include("meraki_devices.api.urls")),
     path("api/api-service-now/", include("api_service_now.api.urls")),
     path("api/capacity_datacenter/", include("capacity_datacenter.api.urls")),
-    path("api/api_service_now_new/", include("api_service_now_new.api.urls")),
+    path("api/api-service-now-new/", include("api_service_now_new.api.urls")),
 ]

@@ -18,7 +18,7 @@ class IncidentSla(models.Model):
         null=True, blank=True, db_collation=COLLATION
     )
     duration = models.TextField(null=True, blank=True, db_collation=COLLATION)
-    sys_id = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    sys_id = models.TextField(primary_key=True, db_collation=COLLATION)
     time_left = models.TextField(null=True, blank=True, db_collation=COLLATION)
     sys_updated_by = models.TextField(
         null=True, blank=True, db_collation=COLLATION
@@ -79,4 +79,5 @@ class IncidentSla(models.Model):
     )
 
     class Meta:
+        managed = False
         db_table = "incident_sla"

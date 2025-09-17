@@ -331,7 +331,7 @@ class IncidentTask(models.Model):
     u_detalhe_subcategoria_iot_task = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    sys_id = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    sys_id = models.TextField(primary_key=True, db_collation=COLLATION)
     contact_type = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -424,4 +424,5 @@ class IncidentTask(models.Model):
     )
 
     class Meta:
+        managed = False
         db_table = "incident_task"

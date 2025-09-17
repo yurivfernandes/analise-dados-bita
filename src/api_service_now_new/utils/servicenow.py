@@ -1,6 +1,7 @@
+from datetime import datetime
 import logging
 import os
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import polars as pl
 import requests
@@ -9,11 +10,11 @@ import requests
 def get_servicenow_env() -> Tuple[str, tuple, Dict]:
     """Retorna (base_url, (user, password), headers) usando variáveis de ambiente.
 
-    Espera encontrar `SERVICENOW_URL`, `SERVICENOW_USER` e `SERVICENOW_PASS` no env.
+    Espera encontrar `SERVICE_NOW_BASE_URL`, `SERVICE_NOW_USERNAME` e `SERVICE_NOW_USER_PASSWORD` no env.
     """
-    base_url = os.getenv("SERVICENOW_URL")
-    user = os.getenv("SERVICENOW_USER")
-    password = os.getenv("SERVICENOW_PASS")
+    base_url = os.getenv("SERVICE_NOW_BASE_URL")
+    user = os.getenv("SERVICE_NOW_USERNAME")
+    password = os.getenv("SERVICE_NOW_USER_PASSWORD")
     headers = {"Content-Type": "application/json"}
     if not all([base_url, user, password]):
         raise RuntimeError(
@@ -41,7 +42,7 @@ def paginate(
     cursor_param: str = "startingAfter",
     cursor_field: Optional[str] = None,
     result_key: str = "result",
-) -> pl.DataFrame:
+) -> List[Dict]:
     """Paginação genérica para APIs REST.
 
     - `mode` pode ser "offset" (usa `limit_param` e `offset_param`) ou "cursor" (usa `cursor_param`).
@@ -126,10 +127,44 @@ def paginate(
         return pl.DataFrame()
 
     try:
-        return pl.DataFrame(all_results)
+        processed_results = []
+        for result in all_results:
+            # Processa campos de referência básicos
+            processed_result = process_data([result])[0]
+
+            # Adiciona timestamps ETL
+            processed_result["etl_created_at"] = datetime.now()
+            processed_result["etl_updated_at"] = datetime.now()
+
+            processed_results.append(processed_result)
+        return processed_results
     except (ValueError, TypeError) as e:
         logging.warning(
             "polars.DataFrame construction failed: %s; falling back", e
         )
         # fallback: construir DataFrame de forma mais permissiva
         return pl.DataFrame([dict(x) for x in all_results])
+
+
+def process_data(data: List[Dict]) -> List[Dict]:
+    """Processa os dados, aplicando flatten nos campos de referência"""
+    processed_data = []
+
+    for item in data:
+        if not item:
+            continue
+
+        processed_item = flatten_reference_fields(item)
+        processed_data.append(processed_item)
+
+    return processed_data
+
+
+def flatten_reference_fields(data: dict) -> dict:
+    """Converte campos de referência do ServiceNow para valores simples"""
+    for key in list(data.keys()):
+        value = data.get(key)
+        if isinstance(value, dict) and "value" in value:
+            data[key] = value.get("value")
+            data[f"dv_{key}"] = ""
+    return data

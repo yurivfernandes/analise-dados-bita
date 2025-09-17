@@ -21,7 +21,7 @@ class Groups(models.Model):
         null=True, blank=True, db_collation=COLLATION
     )
     points = models.TextField(null=True, blank=True, db_collation=COLLATION)
-    sys_id = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    sys_id = models.TextField(primary_key=True, db_collation=COLLATION)
     u_product_family = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -89,4 +89,5 @@ class Groups(models.Model):
     )
 
     class Meta:
+        managed = False
         db_table = "groups"
