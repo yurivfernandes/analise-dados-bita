@@ -1,3 +1,4 @@
+import datetime
 import logging
 import threading
 
@@ -6,7 +7,13 @@ from rest_framework.views import APIView
 
 from meraki_devices.utils import patch_requests_ssl
 
-from ...tasks import LoadIncidentsOpened, LoadIncidentsUpdated
+from ...tasks import (
+    LoadIncidentSla,
+    LoadIncidentsOpened,
+    LoadIncidentsUpdated,
+    LoadIncidentTask,
+    LoadTaskTimeWorked,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +29,13 @@ class LoadIncidentsView(APIView):
     def post(self, request, *args, **kwargs) -> Response:
         data_inicio = request.data.get("data_inicio")
         data_fim = request.data.get("data_fim")
+        # se não informado, usar dia anterior
+        if not data_inicio or not data_fim:
+            ontem = (
+                datetime.datetime.now() - datetime.timedelta(days=1)
+            ).date()
+            data_inicio = data_inicio or ontem.strftime("%Y-%m-%d")
+            data_fim = data_fim or ontem.strftime("%Y-%m-%d")
         patch_requests_ssl()
         thread = threading.Thread(
             target=self._run_pipelines_in_background,
@@ -54,6 +68,21 @@ class LoadIncidentsView(APIView):
             ) as load:
                 r2 = load.run()
                 logger.info("load_incidents_updated finished: %s", r2)
+
+            # task para incident_sla
+            with LoadIncidentSla() as load:
+                r3 = load.run()
+                logger.info("load_incident_sla finished: %s", r3)
+
+            # task para incident_task
+            with LoadIncidentTask() as load:
+                r4 = load.run()
+                logger.info("load_incident_task finished: %s", r4)
+
+            # task para task_time_worked
+            with LoadTaskTimeWorked() as load:
+                r5 = load.run()
+                logger.info("load_task_time_worked finished: %s", r5)
 
         except Exception:
             logger.exception("Erro ao executar as pipelines de incidents")

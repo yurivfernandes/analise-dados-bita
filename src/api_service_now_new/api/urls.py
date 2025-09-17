@@ -1,17 +1,14 @@
-from django.contrib import admin
-from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
-from . import views
-
-router = DefaultRouter()
+from .views import LoadConfigurationsView, LoadIncidentsView
 
 urlpatterns = [
     path(
-        "load-incidents/",
-        views.LoadIncidentsView.as_view(),
-        name="load-incidents",
-    )
+        "load_incidents/", LoadIncidentsView.as_view(), name="load_incidents"
+    ),
+    path(
+        "load_configurations/",
+        LoadConfigurationsView.as_view(),
+        name="load_configurations",
+    ),
 ]
-
-urlpatterns += router.urls
