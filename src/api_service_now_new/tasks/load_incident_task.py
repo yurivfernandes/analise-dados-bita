@@ -12,7 +12,9 @@ from ..utils.servicenow import paginate
 class LoadIncidentTask(MixinGetDataset, Pipeline):
     """Carrega incident_task do ServiceNow paginado."""
 
-    def __init__(self):
+    def __init__(self, start_date: str, end_date: str):
+        self.start_date = start_date
+        self.end_date = end_date
         super().__init__()
 
     @property
@@ -33,9 +35,11 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
     def _incident_task(self) -> pl.DataFrame:
         fields = ",".join([f.name for f in IncidentTask._meta.fields])
 
+        query = f"opened_at>={self.start_date} 00:00:00^opened_at<={self.end_date} 23:59:59"
+
         result_list = paginate(
             path="incident_task",
-            params={"sysparm_fields": fields},
+            params={"sysparm_fields": fields, "sysparm_query": query},
             limit=10000,
             mode="offset",
             limit_param="sysparm_limit",
@@ -56,6 +60,6 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_incident_task_async(_task):
-    sync_task = LoadIncidentTask()
+def load_incident_task_async(_task, start_date: str, end_date: str):
+    sync_task = LoadIncidentTask(start_date=start_date, end_date=end_date)
     return sync_task.run()

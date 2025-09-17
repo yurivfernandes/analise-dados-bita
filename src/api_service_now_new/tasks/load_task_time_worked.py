@@ -12,7 +12,9 @@ from ..utils.servicenow import paginate
 class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
     """Carrega task_time_worked do ServiceNow paginado."""
 
-    def __init__(self):
+    def __init__(self, start_date: str, end_date: str):
+        self.start_date = start_date
+        self.end_date = end_date
         super().__init__()
 
     @property
@@ -33,9 +35,11 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
     def _task_time_worked(self) -> pl.DataFrame:
         fields = ",".join([f.name for f in TaskTimeWorked._meta.fields])
 
+        query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59"
+
         result_list = paginate(
             path="task_time_worked",
-            params={"sysparm_fields": fields},
+            params={"sysparm_fields": fields, "sysparm_query": query},
             limit=10000,
             mode="offset",
             limit_param="sysparm_limit",
@@ -56,6 +60,6 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
     retry_backoff=5,
     retry_kwargs={"max_retries": 3},
 )
-def load_task_time_worked_async(_task):
-    sync_task = LoadTaskTimeWorked()
+def load_task_time_worked_async(_task, start_date: str, end_date: str):
+    sync_task = LoadTaskTimeWorked(start_date=start_date, end_date=end_date)
     return sync_task.run()
