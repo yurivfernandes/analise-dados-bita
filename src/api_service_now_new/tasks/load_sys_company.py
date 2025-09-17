@@ -32,7 +32,7 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
         fields = ",".join([f.name for f in SysCompany._meta.fields])
 
         result_list = paginate(
-            path="sys_company",
+            path="core_company",
             params={"sysparm_fields": fields},
             limit=10000,
             mode="offset",

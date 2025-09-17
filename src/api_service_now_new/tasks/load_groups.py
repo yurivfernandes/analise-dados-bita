@@ -47,9 +47,6 @@ class LoadGroups(MixinGetDataset, Pipeline):
             schema={f.name: pl.String for f in Groups._meta.fields},
         )
 
-    # ...existing code...
-
-
 @shared_task(
     name="api_service_now_new.load_groups_async",
     bind=True,
