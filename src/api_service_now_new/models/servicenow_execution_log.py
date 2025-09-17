@@ -1,12 +1,11 @@
-import uuid
-
 from django.db import models
 
 COLLATION = "SQL_Latin1_General_CP1_CI_AS"
 
 
 class ServiceNowExecutionLog(models.Model):
-    execution_id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    id = models.AutoField(primary_key=True)
+    execution_id = models.UUIDField(null=True, blank=True)
     execution_type = models.CharField(max_length=20, db_collation=COLLATION)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
