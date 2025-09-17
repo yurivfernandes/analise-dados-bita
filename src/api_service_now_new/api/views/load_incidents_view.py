@@ -63,24 +63,24 @@ class LoadIncidentsView(APIView):
                 logger.info("load_incidents_opened finished: %s", r1)
 
             # task que atualiza por sys_updated_on
-            with LoadIncidentsUpdated(
-                start_date=start_date, end_date=end_date
-            ) as load:
-                r2 = load.run()
-                logger.info("load_incidents_updated finished: %s", r2)
+            # with LoadIncidentsUpdated(
+            #     start_date=start_date, end_date=end_date
+            # ) as load:
+            #     r2 = load.run()
+            #     logger.info("load_incidents_updated finished: %s", r2)
 
             # task para incident_sla
-            with LoadIncidentSla() as load:
+            with LoadIncidentSla(start_date=start_date, end_date=end_date) as load:
                 r3 = load.run()
                 logger.info("load_incident_sla finished: %s", r3)
 
             # task para incident_task
-            with LoadIncidentTask() as load:
+            with LoadIncidentTask(start_date=start_date, end_date=end_date) as load:
                 r4 = load.run()
                 logger.info("load_incident_task finished: %s", r4)
 
             # task para task_time_worked
-            with LoadTaskTimeWorked() as load:
+            with LoadTaskTimeWorked(start_date=start_date, end_date=end_date) as load:
                 r5 = load.run()
                 logger.info("load_task_time_worked finished: %s", r5)
 
