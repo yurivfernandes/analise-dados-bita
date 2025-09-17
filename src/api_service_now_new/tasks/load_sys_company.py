@@ -1,12 +1,16 @@
-from typing import Dict
+from typing import Dict, List
 
 import polars as pl
 from celery import shared_task
 
 from app.utils import MixinGetDataset, Pipeline
 
-from ..models import SysCompany
+from ..models import Incident, SysCompany
 from ..utils.servicenow import paginate, upsert_by_sys_id
+
+
+def _chunked(seq: List[str], size: int = 100) -> List[List[str]]:
+    return [seq[i : i + size] for i in range(0, len(seq), size)]
 
 
 class LoadSysCompany(MixinGetDataset, Pipeline):
@@ -31,22 +35,42 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
     def _companies(self) -> pl.DataFrame:
         fields = ",".join([f.name for f in SysCompany._meta.fields])
 
-        result_list = paginate(
-            path="core_company",
-            params={"sysparm_fields": fields},
-            limit=10000,
-            mode="offset",
-            limit_param="sysparm_limit",
-            offset_param="sysparm_offset",
-            result_key="result",
+        # IDs únicos de companies presentes em Incident
+        qs = (
+            Incident.objects.exclude(company__isnull=True)
+            .exclude(company="")
+            .values_list("company", flat=True)
+            .distinct()
         )
+        ids = sorted({x for x in qs if x})
 
-        return pl.DataFrame(
-            result_list,
-            schema={f.name: pl.String for f in SysCompany._meta.fields},
+        if not ids:
+            # retorna DF vazio com schema correto
+            return pl.DataFrame(
+                schema={f.name: pl.String for f in SysCompany._meta.fields}
+            )
+
+        all_results: List[Dict] = []
+        for chunk in _chunked(ids, size=100):
+            query = f"sys_idIN{','.join(chunk)}"
+            batch = paginate(
+                path="sys_company",
+                params={"sysparm_fields": fields, "sysparm_query": query},
+                limit=10000,
+                mode="offset",
+                limit_param="sysparm_limit",
+                offset_param="sysparm_offset",
+                result_key="result",
+            )
+            if isinstance(batch, list):
+                all_results.extend(batch)
+            else:
+                # segurança caso paginate retorne DataFrame
+                all_results.extend(pl.DataFrame(batch).to_dicts())
+
+        return pl.DataFrame(all_results).select(
+            [f.name for f in SysCompany._meta.fields]
         )
-
-    # ...existing code...
 
 
 @shared_task(

@@ -7,9 +7,11 @@ from rest_framework.views import APIView
 
 from meraki_devices.utils import patch_requests_ssl
 
+from ...models import ServiceNowExecutionLog
 from ...tasks import (
     LoadIncidentSla,
     LoadIncidentsOpened,
+    LoadIncidentsUpdated,
     LoadIncidentTask,
     LoadTaskTimeWorked,
 )
@@ -62,6 +64,32 @@ class LoadIncidentsView(APIView):
     def _run_pipelines_in_background(self, start_date, end_date):
         """Método que executa as pipelines em background (chamado pela thread)."""
         started_at = datetime.datetime.now()
+        # cria registro de log de execução
+        try:
+            sd = (
+                datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+                if isinstance(start_date, str)
+                else start_date
+            )
+        except Exception:
+            sd = None
+        try:
+            ed = (
+                datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+                if isinstance(end_date, str)
+                else end_date
+            )
+        except Exception:
+            ed = None
+
+        exec_log = ServiceNowExecutionLog.objects.create(
+            execution_type="incidents",
+            start_date=sd,
+            end_date=ed,
+            started_at=started_at,
+            status="running",
+        )
+        error_message = None
         try:
             # helper de tempo definido no módulo: _fmt_hms
 
@@ -79,11 +107,17 @@ class LoadIncidentsView(APIView):
             )
 
             # task que atualiza por sys_updated_on
-            # with LoadIncidentsUpdated(
-            #     start_date=start_date, end_date=end_date
-            # ) as load:
-            #     r2 = load.run()
-            #     logger.info("load_incidents_updated finished: %s", r2)
+            task_name = LoadIncidentsUpdated.__name__
+            print(f"[{task_name}] Executando ({start_date} -> {end_date})")
+            t0 = datetime.datetime.now()
+            with LoadIncidentsUpdated(
+                start_date=start_date, end_date=end_date
+            ) as load:
+                r2 = load.run()
+                logger.info("load_incidents_updated finished: %s", r2)
+            print(
+                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t0)}"
+            )
 
             # task para incident_sla
             task_name = LoadIncidentSla.__name__
@@ -124,11 +158,28 @@ class LoadIncidentsView(APIView):
                 f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t3)}"
             )
 
-        except Exception:
+        except Exception as e:
             logger.exception("Erro ao executar as pipelines de incidents")
+            error_message = str(e)
         finally:
             total = datetime.datetime.now() - started_at
             print(
                 f"[Thread: {self.__class__.__name__}] Tempo total de execução: {_fmt_hms(total)}",
                 flush=True,
             )
+            # atualizar log de execução
+            try:
+                exec_log.ended_at = datetime.datetime.now()
+                exec_log.duration_seconds = round(total.total_seconds(), 2)
+                exec_log.status = "error" if error_message else "success"
+                exec_log.error_message = error_message
+                exec_log.save(
+                    update_fields=[
+                        "ended_at",
+                        "duration_seconds",
+                        "status",
+                        "error_message",
+                    ]
+                )
+            except Exception:
+                logger.exception("Falha ao salvar ServiceNowExecutionLog")
