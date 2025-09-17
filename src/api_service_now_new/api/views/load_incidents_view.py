@@ -37,6 +37,7 @@ class LoadIncidentsView(APIView):
             data_inicio = data_inicio or ontem.strftime("%Y-%m-%d")
             data_fim = data_fim or ontem.strftime("%Y-%m-%d")
         patch_requests_ssl()
+
         thread = threading.Thread(
             target=self._run_pipelines_in_background,
             args=(data_inicio, data_fim),
@@ -70,17 +71,23 @@ class LoadIncidentsView(APIView):
             #     logger.info("load_incidents_updated finished: %s", r2)
 
             # task para incident_sla
-            with LoadIncidentSla(start_date=start_date, end_date=end_date) as load:
+            with LoadIncidentSla(
+                start_date=start_date, end_date=end_date
+            ) as load:
                 r3 = load.run()
                 logger.info("load_incident_sla finished: %s", r3)
 
             # task para incident_task
-            with LoadIncidentTask(start_date=start_date, end_date=end_date) as load:
+            with LoadIncidentTask(
+                start_date=start_date, end_date=end_date
+            ) as load:
                 r4 = load.run()
                 logger.info("load_incident_task finished: %s", r4)
 
             # task para task_time_worked
-            with LoadTaskTimeWorked(start_date=start_date, end_date=end_date) as load:
+            with LoadTaskTimeWorked(
+                start_date=start_date, end_date=end_date
+            ) as load:
                 r5 = load.run()
                 logger.info("load_task_time_worked finished: %s", r5)
 

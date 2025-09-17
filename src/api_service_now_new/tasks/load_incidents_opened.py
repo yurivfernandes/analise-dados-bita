@@ -53,7 +53,6 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
         result_list = paginate(
             path="incident",
             params=params,
-            limit=10000,
             mode="offset",
             limit_param="sysparm_limit",
             offset_param="sysparm_offset",

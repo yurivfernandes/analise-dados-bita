@@ -34,18 +34,16 @@ class LoadIncidentSla(MixinGetDataset, Pipeline):
         fields = ",".join([f.name for f in IncidentSla._meta.fields])
         query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59^taskISNOTEMPTY"
         result_list = paginate(
-            path="incident_sla",
+            path="task_sla",
             params={"sysparm_fields": fields, "sysparm_query": query},
-            limit=10000,
             mode="offset",
             limit_param="sysparm_limit",
             offset_param="sysparm_offset",
             result_key="result",
         )
 
-        return pl.DataFrame(
-            result_list,
-            schema={f.name: pl.String for f in IncidentSla._meta.fields},
+        return pl.DataFrame(result_list).select(
+            [f.name for f in IncidentSla._meta.fields]
         )
 
 

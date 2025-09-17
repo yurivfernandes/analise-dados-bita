@@ -40,16 +40,14 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
         result_list = paginate(
             path="incident_task",
             params={"sysparm_fields": fields, "sysparm_query": query},
-            limit=10000,
             mode="offset",
             limit_param="sysparm_limit",
             offset_param="sysparm_offset",
             result_key="result",
         )
 
-        return pl.DataFrame(
-            result_list,
-            schema={f.name: pl.String for f in IncidentTask._meta.fields},
+        return pl.DataFrame(result_list).select(
+            [f.name for f in IncidentTask._meta.fields]
         )
 
 
