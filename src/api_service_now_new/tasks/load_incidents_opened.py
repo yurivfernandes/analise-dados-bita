@@ -24,9 +24,12 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
 
     @property
     def _filtro(self) -> dict:
+        start_ts = ensure_datetime(self.start_date, end=False)
+        end_ts = ensure_datetime(self.end_date, end=True)
+
         return {
-            "opened_at__gte": self.start_date,
-            "opened_at__lte": self.end_date,
+            "opened_at__gte": start_ts,
+            "opened_at__lte": end_ts,
         }
 
     def run(self) -> Dict:
