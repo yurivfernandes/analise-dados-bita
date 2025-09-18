@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 import polars as pl
 import requests
 from django.db import transaction
+from django.db.models import DateTimeField
 
 
 def get_servicenow_env() -> Tuple[str, tuple, Dict]:
@@ -143,6 +144,11 @@ def paginate(
             processed_result["etl_updated_at"] = datetime.now()
 
             processed_results.append(processed_result)
+        # Normalizar colunas com mistura str/datetime e converter strings vazias em None
+        try:
+            processed_results = normalize_date_columns(processed_results)
+        except Exception:
+            pass
         return processed_results
     except (ValueError, TypeError) as e:
         logging.warning(
@@ -167,6 +173,11 @@ def process_data(data: List[Dict]) -> List[Dict]:
         except Exception:
             # não falhar o pipeline por causa de parsing de datas
             pass
+        # para garantir consistência quando construirmos DataFrames, converter
+        # quaisquer datetime em strings ISO (o upsert converterá de volta)
+        for k, v in list(processed_item.items()):
+            if isinstance(v, datetime):
+                processed_item[k] = v.isoformat(sep=" ")
         processed_data.append(processed_item)
 
     return processed_data
@@ -213,10 +224,50 @@ def coerce_dates_in_dict(d: dict) -> dict:
                 or key.endswith("_time")
                 or key.startswith("last_")
             ):
-                pd = parse_datetime(v)
-                if pd is not None:
-                    d[k] = pd
+                if v.strip() == "":
+                    d[k] = None
+                else:
+                    pd = parse_datetime(v)
+                    if pd is not None:
+                        d[k] = pd
     return d
+
+
+def _is_datetime_field(model, field_name: str) -> bool:
+    try:
+        f = next((f for f in model._meta.fields if f.name == field_name), None)
+        return isinstance(f, DateTimeField)
+    except Exception:
+        return False
+
+
+def normalize_date_columns(rows: List[Dict]) -> List[Dict]:
+    """Se uma coluna tiver ao menos um datetime, converte strings daquela coluna em datetime.
+    Também troca strings vazias por None em colunas de data.
+    """
+    if not rows:
+        return rows
+    keys = set().union(*(r.keys() for r in rows))
+    for k in keys:
+        has_dt = False
+        has_str = False
+        for r in rows:
+            v = r.get(k)
+            if isinstance(v, datetime):
+                has_dt = True
+            elif isinstance(v, str):
+                has_str = True
+        if has_dt and has_str:
+            for r in rows:
+                v = r.get(k)
+                if isinstance(v, str):
+                    if v.strip() == "":
+                        r[k] = None
+                    else:
+                        pd = parse_datetime(v)
+                        if pd is not None:
+                            r[k] = pd
+    return rows
 
 
 def flatten_reference_fields(data: dict) -> dict:

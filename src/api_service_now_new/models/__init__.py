@@ -1,4 +1,4 @@
-from .cmdb_ci import CmdbCi
+from .cmdb_ci_network_link import CmdbCiNetworkLink
 from .contract_sla import ContractSla
 from .groups import Groups
 from .incident import Incident
@@ -19,5 +19,6 @@ __all__ = [
     "SysCompany",
     "SysUser",
     "CmdbCi",
+    "CmdbCiNetworkLink",
     "TaskTimeWorked",
 ]

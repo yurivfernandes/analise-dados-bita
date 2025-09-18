@@ -9,7 +9,7 @@ from meraki_devices.utils import patch_requests_ssl
 
 from ...models import ServiceNowExecutionLog
 from ...tasks import (
-    LoadCmdbCi,
+    LoadCmdbCiNetworkLink,
     LoadContractSla,
     LoadGroups,
     LoadSysCompany,
@@ -62,6 +62,8 @@ class LoadConfigurationsView(APIView):
     def _run_pipelines_in_background(self, start_date, end_date):
         started_at = datetime.datetime.now()
         # cria registro de log de execução
+        results = {}
+        errors = []
         try:
             sd = (
                 datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -86,7 +88,6 @@ class LoadConfigurationsView(APIView):
             started_at=started_at,
             status="running",
         )
-        error_message = None
         try:
             # Executar tasks de configuração em paralelo (até N threads)
             tasks_to_run = [
@@ -94,14 +95,11 @@ class LoadConfigurationsView(APIView):
                 ("load_groups", LoadGroups),
                 ("load_sys_company", LoadSysCompany),
                 ("load_sys_user", LoadSysUser),
-                ("load_cmdb_ci", LoadCmdbCi),
+                ("load_cmdb_ci_network_link", LoadCmdbCiNetworkLink),
             ]
 
             # limitar número de threads simultâneas (pode ajustar conforme necessidade)
             max_threads = 3
-
-            results = {}
-            errors = []
 
             def _run_task(task_name, task_cls):
                 try:
@@ -132,7 +130,7 @@ class LoadConfigurationsView(APIView):
                 for th in threads:
                     th.join()
 
-        except Exception as e:
+        except Exception:
             logger.exception("Erro ao executar as pipelines de configurations")
         finally:
             total = datetime.datetime.now() - started_at
@@ -140,3 +138,22 @@ class LoadConfigurationsView(APIView):
                 f"[Thread: {self.__class__.__name__}] Tempo total de execução: {_fmt_hms(total)}",
                 flush=True,
             )
+            # atualizar log de execução
+            try:
+                exec_log.ended_at = datetime.datetime.now()
+                exec_log.duration_seconds = round(total.total_seconds(), 2)
+                exec_log.status = "error" if errors else "success"
+                # agrega primeiras mensagens de erro (se houver)
+                exec_log.error_message = (
+                    "; ".join(e for _, e in errors)[:1000] if errors else None
+                )
+                exec_log.save(
+                    update_fields=[
+                        "ended_at",
+                        "duration_seconds",
+                        "status",
+                        "error_message",
+                    ]
+                )
+            except Exception:
+                logger.exception("Falha ao salvar ServiceNowExecutionLog")
