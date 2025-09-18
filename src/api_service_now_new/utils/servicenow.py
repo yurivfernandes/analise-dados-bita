@@ -432,15 +432,58 @@ def upsert_by_sys_id(
     to_create = []
     to_update = []
 
+    def _coerce_obj_dt_fields(obj):
+        try:
+            for f in obj._meta.fields:
+                if isinstance(f, DateTimeField):
+                    val = getattr(obj, f.name)
+                    if val is None or isinstance(val, datetime):
+                        continue
+                    if isinstance(val, str):
+                        pd = parse_datetime(val)
+                        if pd is not None:
+                            setattr(obj, f.name, pd)
+                    elif isinstance(val, (int, float)):
+                        try:
+                            ts = float(val)
+                            if ts <= 0:
+                                setattr(obj, f.name, None)
+                            elif ts > 1e12:
+                                setattr(
+                                    obj,
+                                    f.name,
+                                    datetime.fromtimestamp(ts / 1000.0),
+                                )
+                            elif ts > 1e10:
+                                setattr(
+                                    obj,
+                                    f.name,
+                                    datetime.fromtimestamp(ts / 1000.0),
+                                )
+                            elif ts > 1e9:
+                                setattr(
+                                    obj, f.name, datetime.fromtimestamp(ts)
+                                )
+                            else:
+                                setattr(obj, f.name, None)
+                        except Exception:
+                            setattr(obj, f.name, None)
+        except Exception:
+            # não interromper por sanitização
+            pass
+
     for row in processed:
         sid = row["sys_id"]
         if sid in existing_map:
             obj = existing_map[sid]
             for k, v in row.items():
                 setattr(obj, k, v)
+            _coerce_obj_dt_fields(obj)
             to_update.append(obj)
         else:
-            to_create.append(model(**row))
+            obj = model(**row)
+            _coerce_obj_dt_fields(obj)
+            to_create.append(obj)
 
     n_created = 0
 
@@ -454,9 +497,35 @@ def upsert_by_sys_id(
             f for f in model_field_names if f not in (pk_name, "sys_id")
         ]
         if update_fields:
-            model.objects.bulk_update(
-                to_update, update_fields, batch_size=1000
-            )
+            try:
+                model.objects.bulk_update(
+                    to_update, update_fields, batch_size=1000
+                )
+            except Exception as e:
+                logging.warning(
+                    "bulk_update falhou (%s). Aplicando fallback com updates individuais.",
+                    e,
+                )
+                # Fallback: atualizar registro a registro
+                for obj in to_update:
+                    try:
+                        obj.save(update_fields=update_fields)
+                    except Exception:
+                        # último recurso: update() direto
+                        try:
+                            pk_val = getattr(obj, pk_name)
+                            kwargs = {
+                                f: getattr(obj, f) for f in update_fields
+                            }
+                            model.objects.filter(**{pk_name: pk_val}).update(
+                                **kwargs
+                            )
+                        except Exception:
+                            logging.exception(
+                                "Falha no fallback update para %s=%s",
+                                pk_name,
+                                getattr(obj, pk_name, None),
+                            )
 
     if isinstance(log, dict):
         log["n_inserted"] = log.get("n_inserted", 0) + n_created
