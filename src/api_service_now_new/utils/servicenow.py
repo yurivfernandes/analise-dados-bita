@@ -1,6 +1,7 @@
 import logging
 import os
 from datetime import datetime
+from datetime import timezone as dt_timezone
 
 try:
     from dateutil import parser as _dateutil_parser  # type: ignore
@@ -12,6 +13,7 @@ import polars as pl
 import requests
 from django.db import transaction
 from django.db.models import DateTimeField
+from django.utils import timezone as dj_timezone
 
 
 def get_servicenow_env() -> Tuple[str, tuple, Dict]:
@@ -140,8 +142,8 @@ def paginate(
             processed_result = process_data([result])[0]
 
             # Adiciona timestamps ETL
-            processed_result["etl_created_at"] = datetime.now()
-            processed_result["etl_updated_at"] = datetime.now()
+            processed_result["etl_created_at"] = dj_timezone.now()
+            processed_result["etl_updated_at"] = dj_timezone.now()
 
             processed_results.append(processed_result)
         # Normalizar colunas com mistura str/datetime e converter strings vazias em None
@@ -193,15 +195,21 @@ def parse_datetime(value: str) -> Optional[datetime]:
     # service now frequentemente retorna 'YYYY-MM-DD HH:MM:SS' ou ISO com Z
     try:
         if _dateutil_parser:
-            return _dateutil_parser.parse(value)
-        # fallback simples: tentar fromisoformat (remove Z)
-        v = value.replace("Z", "")
-        return datetime.fromisoformat(v)
+            dt = _dateutil_parser.parse(value)
+        else:
+            # fallback simples: tentar fromisoformat (remove Z)
+            v = value.replace("Z", "")
+            dt = datetime.fromisoformat(v)
+        # se vier sem timezone, assumir UTC
+        if dt and dt.tzinfo is None:
+            dt = dt.replace(tzinfo=dt_timezone.utc)
+        return dt
     except Exception:
         # tentar formatos comuns
         for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
             try:
-                return datetime.strptime(value, fmt)
+                dt = datetime.strptime(value, fmt)
+                return dt.replace(tzinfo=dt_timezone.utc)
             except Exception:
                 continue
     return None
@@ -241,11 +249,15 @@ def coerce_dates_in_dict(d: dict) -> dict:
                 if ts <= 0:
                     d[k] = None
                 elif ts > 1e12:  # claramente milissegundos
-                    d[k] = datetime.fromtimestamp(ts / 1000.0)
+                    d[k] = datetime.fromtimestamp(
+                        ts / 1000.0, tz=dt_timezone.utc
+                    )
                 elif ts > 1e10:  # pode ser milissegundos (10 dígitos+)
-                    d[k] = datetime.fromtimestamp(ts / 1000.0)
+                    d[k] = datetime.fromtimestamp(
+                        ts / 1000.0, tz=dt_timezone.utc
+                    )
                 elif ts > 1e9:  # segundos (timestamp contemporâneo)
-                    d[k] = datetime.fromtimestamp(ts)
+                    d[k] = datetime.fromtimestamp(ts, tz=dt_timezone.utc)
                 else:
                     # valores pequenos não são timestamps válidos -> None
                     d[k] = None
@@ -395,26 +407,32 @@ def upsert_by_sys_id(
                     v = r.get(fn)
                     if v is None:
                         continue
-                    # já datetime? ok
                     if isinstance(v, datetime):
+                        if v.tzinfo is None:
+                            r[fn] = v.replace(tzinfo=dt_timezone.utc)
                         continue
-                    # string -> datetime
                     if isinstance(v, str):
-                        pd = parse_datetime(v)
-                        if pd is not None:
-                            r[fn] = pd
-                    # numérico -> tratar como epoch
-                    elif isinstance(v, (int, float)):
+                        dtv = parse_datetime(v)
+                        if dtv is not None:
+                            r[fn] = dtv
+                        continue
+                    if isinstance(v, (int, float)):
                         try:
                             ts = float(v)
                             if ts <= 0:
                                 r[fn] = None
                             elif ts > 1e12:
-                                r[fn] = datetime.fromtimestamp(ts / 1000.0)
+                                r[fn] = datetime.fromtimestamp(
+                                    ts / 1000.0, tz=dt_timezone.utc
+                                )
                             elif ts > 1e10:
-                                r[fn] = datetime.fromtimestamp(ts / 1000.0)
+                                r[fn] = datetime.fromtimestamp(
+                                    ts / 1000.0, tz=dt_timezone.utc
+                                )
                             elif ts > 1e9:
-                                r[fn] = datetime.fromtimestamp(ts)
+                                r[fn] = datetime.fromtimestamp(
+                                    ts, tz=dt_timezone.utc
+                                )
                             else:
                                 r[fn] = None
                         except Exception:
@@ -437,7 +455,15 @@ def upsert_by_sys_id(
             for f in obj._meta.fields:
                 if isinstance(f, DateTimeField):
                     val = getattr(obj, f.name)
-                    if val is None or isinstance(val, datetime):
+                    if val is None:
+                        continue
+                    if isinstance(val, datetime):
+                        if val.tzinfo is None:
+                            setattr(
+                                obj,
+                                f.name,
+                                val.replace(tzinfo=dt_timezone.utc),
+                            )
                         continue
                     if isinstance(val, str):
                         pd = parse_datetime(val)
@@ -452,17 +478,25 @@ def upsert_by_sys_id(
                                 setattr(
                                     obj,
                                     f.name,
-                                    datetime.fromtimestamp(ts / 1000.0),
+                                    datetime.fromtimestamp(
+                                        ts / 1000.0, tz=dt_timezone.utc
+                                    ),
                                 )
                             elif ts > 1e10:
                                 setattr(
                                     obj,
                                     f.name,
-                                    datetime.fromtimestamp(ts / 1000.0),
+                                    datetime.fromtimestamp(
+                                        ts / 1000.0, tz=dt_timezone.utc
+                                    ),
                                 )
                             elif ts > 1e9:
                                 setattr(
-                                    obj, f.name, datetime.fromtimestamp(ts)
+                                    obj,
+                                    f.name,
+                                    datetime.fromtimestamp(
+                                        ts, tz=dt_timezone.utc
+                                    ),
                                 )
                             else:
                                 setattr(obj, f.name, None)
