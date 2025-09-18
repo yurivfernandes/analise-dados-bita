@@ -54,7 +54,7 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
         # agora chamamos a API uma vez por sys_id
         for sid in ids:
             rec = fetch_single_record(
-                path="sys_company",
+                path="core_company",
                 sys_id=sid,
                 params={"sysparm_fields": fields},
             )
@@ -66,9 +66,7 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
                 schema={f.name: pl.String for f in SysCompany._meta.fields}
             )
 
-        return pl.DataFrame(all_results).select(
-            [f.name for f in SysCompany._meta.fields]
-        )
+        return pl.DataFrame(all_results)
 
 
 @shared_task(

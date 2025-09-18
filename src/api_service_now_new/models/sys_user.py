@@ -13,7 +13,7 @@ class SysUser(models.Model):
         max_length=40, null=True, blank=True, db_collation=COLLATION
     )
     last_name = models.CharField(
-        max_length=40, null=True, blank=True, db_collation=COLLATION
+        max_length=120, null=True, blank=True, db_collation=COLLATION
     )
     middle_name = models.CharField(
         max_length=40, null=True, blank=True, db_collation=COLLATION
@@ -42,12 +42,14 @@ class SysUser(models.Model):
     title = models.CharField(
         max_length=40, null=True, blank=True, db_collation=COLLATION
     )
-    active = models.BooleanField(default=True, null=True)
-    locked_out = models.BooleanField(default=False, null=True)
-    web_service_access_only = models.BooleanField(default=False, null=True)
-    last_login = models.DateTimeField(null=True, blank=True)
-    last_login_time = models.DateTimeField(null=True, blank=True)
-    failed_attempts = models.IntegerField(default=0, null=True)
+    active = models.CharField(max_length=10, null=True, blank=True)
+    locked_out = models.CharField(max_length=10, null=True, blank=True)
+    web_service_access_only = models.CharField(
+        max_length=10, null=True, blank=True
+    )
+    last_login = models.CharField(max_length=50, null=True, blank=True)
+    last_login_time = models.CharField(max_length=50, null=True, blank=True)
+    failed_attempts = models.CharField(max_length=50, null=True, blank=True)
     time_zone = models.CharField(
         max_length=40, null=True, blank=True, db_collation=COLLATION
     )

@@ -75,9 +75,7 @@ class LoadSysUser(MixinGetDataset, Pipeline):
                 schema={f.name: pl.String for f in SysUser._meta.fields}
             )
 
-        return pl.DataFrame(all_results).select(
-            [f.name for f in SysUser._meta.fields]
-        )
+        return pl.DataFrame(all_results)
 
 
 @shared_task(

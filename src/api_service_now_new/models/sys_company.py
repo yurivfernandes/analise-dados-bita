@@ -9,9 +9,9 @@ class SysCompany(models.Model):
     parent = models.CharField(
         max_length=32, null=True, blank=True, db_collation=COLLATION
     )
-    customer = models.BooleanField(default=False, null=True)
-    vendor = models.BooleanField(default=False, null=True)
-    manufacturer = models.BooleanField(default=False, null=True)
+    customer = models.CharField(max_length=10, null=True, blank=True)
+    vendor = models.CharField(max_length=10, null=True, blank=True)
+    manufacturer = models.CharField(max_length=10, null=True, blank=True)
     phone = models.CharField(
         max_length=40, null=True, blank=True, db_collation=COLLATION
     )

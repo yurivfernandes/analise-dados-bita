@@ -4,11 +4,11 @@ from .views import LoadConfigurationsView, LoadIncidentsView
 
 urlpatterns = [
     path(
-        "load_incidents/", LoadIncidentsView.as_view(), name="load_incidents"
+        "load-incidents/", LoadIncidentsView.as_view(), name="load-incidents"
     ),
     path(
-        "load_configurations/",
+        "load-configurations/",
         LoadConfigurationsView.as_view(),
-        name="load_configurations",
+        name="load-configurations",
     ),
 ]
