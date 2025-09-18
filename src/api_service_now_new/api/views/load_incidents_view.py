@@ -19,14 +19,14 @@ from ...tasks import (
 logger = logging.getLogger(__name__)
 
 
-def _fmt_hms(td: datetime.timedelta) -> str:
-    secs = int(td.total_seconds())
-    h, rem = divmod(secs, 3600)
-    m, s = divmod(rem, 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
-
-
 class LoadIncidentsView(APIView):
+    @staticmethod
+    def _fmt_hms(td: datetime.timedelta) -> str:
+        secs = int(td.total_seconds())
+        h, rem = divmod(secs, 3600)
+        m, s = divmod(rem, 60)
+        return f"{h:02d}:{m:02d}:{s:02d}"
+
     """View que aciona as tasks de construção/atualização da base de incidents do ServiceNow
 
     Agora executa o processamento pesado em uma thread de background para evitar
@@ -103,7 +103,7 @@ class LoadIncidentsView(APIView):
                 r1 = load.run()
                 logger.info("load_incidents_opened finished: %s", r1)
             print(
-                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t0)}"
+                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t0)}"
             )
 
             # task que atualiza por sys_updated_on
@@ -116,7 +116,7 @@ class LoadIncidentsView(APIView):
                 r2 = load.run()
                 logger.info("load_incidents_updated finished: %s", r2)
             print(
-                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t0)}"
+                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t0)}"
             )
 
             # task para incident_sla
@@ -129,7 +129,7 @@ class LoadIncidentsView(APIView):
                 r3 = load.run()
                 logger.info("load_incident_sla finished: %s", r3)
             print(
-                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t1)}"
+                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t1)}"
             )
 
             # task para incident_task
@@ -142,7 +142,7 @@ class LoadIncidentsView(APIView):
                 r4 = load.run()
                 logger.info("load_incident_task finished: %s", r4)
             print(
-                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t2)}"
+                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t2)}"
             )
 
             # task para task_time_worked
@@ -155,7 +155,7 @@ class LoadIncidentsView(APIView):
                 r5 = load.run()
                 logger.info("load_task_time_worked finished: %s", r5)
             print(
-                f"[{task_name}] Concluída em {_fmt_hms(datetime.datetime.now() - t3)}"
+                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t3)}"
             )
 
         except Exception as e:
@@ -164,7 +164,7 @@ class LoadIncidentsView(APIView):
         finally:
             total = datetime.datetime.now() - started_at
             print(
-                f"[Thread: {self.__class__.__name__}] Tempo total de execução: {_fmt_hms(total)}",
+                f"[Thread: {self.__class__.__name__}] Tempo total de execução: {self._fmt_hms(total)}",
                 flush=True,
             )
             # atualizar log de execução

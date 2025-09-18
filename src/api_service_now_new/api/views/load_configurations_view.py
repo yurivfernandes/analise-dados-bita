@@ -19,14 +19,14 @@ from ...tasks import (
 logger = logging.getLogger(__name__)
 
 
-def _fmt_hms(td: datetime.timedelta) -> str:
-    secs = int(td.total_seconds())
-    h, rem = divmod(secs, 3600)
-    m, s = divmod(rem, 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
-
-
 class LoadConfigurationsView(APIView):
+    @staticmethod
+    def _fmt_hms(td: datetime.timedelta) -> str:
+        secs = int(td.total_seconds())
+        h, rem = divmod(secs, 3600)
+        m, s = divmod(rem, 60)
+        return f"{h:02d}:{m:02d}:{s:02d}"
+
     """View que aciona tasks de configurações do ServiceNow (contract_sla, groups, companies, users).
 
     Executa em thread de background, sem Celery, para evitar broken pipe na resposta HTTP.
@@ -111,7 +111,7 @@ class LoadConfigurationsView(APIView):
                         logger.info("%s finished: %s", task_name, r)
                     print(
                         f"[Configurations] Concluída: {task_name} em "
-                        f"{_fmt_hms(datetime.datetime.now() - t0)}"
+                        f"{self._fmt_hms(datetime.datetime.now() - t0)}"
                     )
                 except Exception as e:
                     logger.exception("Erro na task %s", task_name)
@@ -135,7 +135,7 @@ class LoadConfigurationsView(APIView):
         finally:
             total = datetime.datetime.now() - started_at
             print(
-                f"[Thread: {self.__class__.__name__}] Tempo total de execução: {_fmt_hms(total)}",
+                f"[Thread: {self.__class__.__name__}] Tempo total de execução: {self._fmt_hms(total)}",
                 flush=True,
             )
             # atualizar log de execução

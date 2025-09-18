@@ -215,21 +215,43 @@ def coerce_dates_in_dict(d: dict) -> dict:
     - se o valor é string e o parse for bem sucedido substitui pelo datetime
     """
     for k, v in list(d.items()):
+        key = k.lower()
+        looks_datetime = (
+            "sys_" in key
+            or key.endswith("_on")
+            or key.endswith("_at")
+            or key.endswith("_time")
+            or key.startswith("last_")
+        )
+        if not looks_datetime:
+            continue
+        # strings: parse padrão
         if isinstance(v, str):
-            key = k.lower()
-            if (
-                "sys_" in key
-                or key.endswith("_on")
-                or key.endswith("_at")
-                or key.endswith("_time")
-                or key.startswith("last_")
-            ):
-                if v.strip() == "":
+            if v.strip() == "":
+                d[k] = None
+            else:
+                pd = parse_datetime(v)
+                if pd is not None:
+                    d[k] = pd
+        # numéricos: tentar tratar como epoch (segundos ou milissegundos)
+        elif isinstance(v, (int, float)):
+            try:
+                # heurística: valores muito grandes provavelmente estão em ms
+                ts = float(v)
+                if ts <= 0:
                     d[k] = None
+                elif ts > 1e12:  # claramente milissegundos
+                    d[k] = datetime.fromtimestamp(ts / 1000.0)
+                elif ts > 1e10:  # pode ser milissegundos (10 dígitos+)
+                    d[k] = datetime.fromtimestamp(ts / 1000.0)
+                elif ts > 1e9:  # segundos (timestamp contemporâneo)
+                    d[k] = datetime.fromtimestamp(ts)
                 else:
-                    pd = parse_datetime(v)
-                    if pd is not None:
-                        d[k] = pd
+                    # valores pequenos não são timestamps válidos -> None
+                    d[k] = None
+            except Exception:
+                # em falha, setar None para não enviar int para datetime no banco
+                d[k] = None
     return d
 
 
@@ -361,6 +383,45 @@ def upsert_by_sys_id(
 
     if not processed:
         return
+
+    # Converter strings (e números residuais) para datetime nos campos DateTimeField do model
+    try:
+        dt_fields = {
+            f.name for f in model._meta.fields if isinstance(f, DateTimeField)
+        }
+        if dt_fields:
+            for r in processed:
+                for fn in dt_fields:
+                    v = r.get(fn)
+                    if v is None:
+                        continue
+                    # já datetime? ok
+                    if isinstance(v, datetime):
+                        continue
+                    # string -> datetime
+                    if isinstance(v, str):
+                        pd = parse_datetime(v)
+                        if pd is not None:
+                            r[fn] = pd
+                    # numérico -> tratar como epoch
+                    elif isinstance(v, (int, float)):
+                        try:
+                            ts = float(v)
+                            if ts <= 0:
+                                r[fn] = None
+                            elif ts > 1e12:
+                                r[fn] = datetime.fromtimestamp(ts / 1000.0)
+                            elif ts > 1e10:
+                                r[fn] = datetime.fromtimestamp(ts / 1000.0)
+                            elif ts > 1e9:
+                                r[fn] = datetime.fromtimestamp(ts)
+                            else:
+                                r[fn] = None
+                        except Exception:
+                            r[fn] = None
+    except Exception:
+        # não interromper o fluxo por conversão de tipo
+        pass
 
     sys_ids = [r["sys_id"] for r in processed]
 
