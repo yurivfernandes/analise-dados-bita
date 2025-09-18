@@ -1,5 +1,6 @@
 """Tasks package for api_service_now_new module."""
 
+from .load_cmdb_ci import LoadCmdbCi
 from .load_contract_sla import LoadContractSla
 from .load_groups import LoadGroups
 from .load_incident_sla import LoadIncidentSla
@@ -20,4 +21,5 @@ __all__ = [
     "LoadIncidentSla",
     "LoadIncidentTask",
     "LoadTaskTimeWorked",
+    "LoadCmdbCi",
 ]

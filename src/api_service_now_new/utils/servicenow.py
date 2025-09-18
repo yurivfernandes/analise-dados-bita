@@ -1,6 +1,11 @@
 import logging
 import os
 from datetime import datetime
+
+try:
+    from dateutil import parser as _dateutil_parser  # type: ignore
+except Exception:
+    _dateutil_parser = None
 from typing import Dict, List, Optional, Tuple
 
 import polars as pl
@@ -156,9 +161,62 @@ def process_data(data: List[Dict]) -> List[Dict]:
             continue
 
         processed_item = flatten_reference_fields(item)
+        # tentar converter strings que representam datas para datetime
+        try:
+            processed_item = coerce_dates_in_dict(processed_item)
+        except Exception:
+            # não falhar o pipeline por causa de parsing de datas
+            pass
         processed_data.append(processed_item)
 
     return processed_data
+
+
+def parse_datetime(value: str) -> Optional[datetime]:
+    """Tenta converter uma string para datetime usando dateutil se disponível
+
+    Retorna objeto datetime ou None se não for possível.
+    """
+    if value is None or not isinstance(value, str):
+        return None
+    # service now frequentemente retorna 'YYYY-MM-DD HH:MM:SS' ou ISO com Z
+    try:
+        if _dateutil_parser:
+            return _dateutil_parser.parse(value)
+        # fallback simples: tentar fromisoformat (remove Z)
+        v = value.replace("Z", "")
+        return datetime.fromisoformat(v)
+    except Exception:
+        # tentar formatos comuns
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(value, fmt)
+            except Exception:
+                continue
+    return None
+
+
+def coerce_dates_in_dict(d: dict) -> dict:
+    """Percorre o dict e converte valores que parecem datas para datetime.
+
+    Regras:
+    - se a chave contém 'sys_' ou termina com '_on' ou termina com '_at' tenta parse
+    - se o valor é string e o parse for bem sucedido substitui pelo datetime
+    """
+    for k, v in list(d.items()):
+        if isinstance(v, str):
+            key = k.lower()
+            if (
+                "sys_" in key
+                or key.endswith("_on")
+                or key.endswith("_at")
+                or key.endswith("_time")
+                or key.startswith("last_")
+            ):
+                pd = parse_datetime(v)
+                if pd is not None:
+                    d[k] = pd
+    return d
 
 
 def flatten_reference_fields(data: dict) -> dict:

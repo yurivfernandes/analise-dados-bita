@@ -1,3 +1,4 @@
+from .cmdb_ci import CmdbCi
 from .contract_sla import ContractSla
 from .groups import Groups
 from .incident import Incident
@@ -17,5 +18,6 @@ __all__ = [
     "ServiceNowExecutionLog",
     "SysCompany",
     "SysUser",
+    "CmdbCi",
     "TaskTimeWorked",
 ]

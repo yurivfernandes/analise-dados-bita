@@ -7,7 +7,14 @@ from rest_framework.views import APIView
 
 from meraki_devices.utils import patch_requests_ssl
 
-from ...tasks import LoadContractSla, LoadGroups, LoadSysCompany, LoadSysUser
+from ...models import ServiceNowExecutionLog
+from ...tasks import (
+    LoadCmdbCi,
+    LoadContractSla,
+    LoadGroups,
+    LoadSysCompany,
+    LoadSysUser,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,52 +61,78 @@ class LoadConfigurationsView(APIView):
 
     def _run_pipelines_in_background(self, start_date, end_date):
         started_at = datetime.datetime.now()
+        # cria registro de log de execução
         try:
-            # contract_sla
-            print("[Configurations] Executando tarefa: load_contract_sla")
-            t0 = datetime.datetime.now()
-            with LoadContractSla() as load:
-                r1 = load.run()
-                logger.info("load_contract_sla finished: %s", r1)
-            print(
-                f"[Configurations] Concluída: load_contract_sla em "
-                f"{_fmt_hms(datetime.datetime.now() - t0)}"
+            sd = (
+                datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+                if isinstance(start_date, str)
+                else start_date
             )
-
-            # groups
-            print("[Configurations] Executando tarefa: load_groups")
-            t1 = datetime.datetime.now()
-            with LoadGroups() as load:
-                r2 = load.run()
-                logger.info("load_groups finished: %s", r2)
-            print(
-                f"[Configurations] Concluída: load_groups em "
-                f"{_fmt_hms(datetime.datetime.now() - t1)}"
-            )
-
-            # companies
-            print("[Configurations] Executando tarefa: load_sys_company")
-            t2 = datetime.datetime.now()
-            with LoadSysCompany() as load:
-                r3 = load.run()
-                logger.info("load_sys_company finished: %s", r3)
-            print(
-                f"[Configurations] Concluída: load_sys_company em "
-                f"{_fmt_hms(datetime.datetime.now() - t2)}"
-            )
-
-            # users
-            print("[Configurations] Executando tarefa: load_sys_user")
-            t3 = datetime.datetime.now()
-            with LoadSysUser() as load:
-                r4 = load.run()
-                logger.info("load_sys_user finished: %s", r4)
-            print(
-                f"[Configurations] Concluída: load_sys_user em "
-                f"{_fmt_hms(datetime.datetime.now() - t3)}"
-            )
-
         except Exception:
+            sd = None
+        try:
+            ed = (
+                datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+                if isinstance(end_date, str)
+                else end_date
+            )
+        except Exception:
+            ed = None
+
+        exec_log = ServiceNowExecutionLog.objects.create(
+            execution_type="configurations",
+            start_date=sd,
+            end_date=ed,
+            started_at=started_at,
+            status="running",
+        )
+        error_message = None
+        try:
+            # Executar tasks de configuração em paralelo (até N threads)
+            tasks_to_run = [
+                ("load_contract_sla", LoadContractSla),
+                ("load_groups", LoadGroups),
+                ("load_sys_company", LoadSysCompany),
+                ("load_sys_user", LoadSysUser),
+                ("load_cmdb_ci", LoadCmdbCi),
+            ]
+
+            # limitar número de threads simultâneas (pode ajustar conforme necessidade)
+            max_threads = 3
+
+            results = {}
+            errors = []
+
+            def _run_task(task_name, task_cls):
+                try:
+                    print(f"[Configurations] Executando tarefa: {task_name}")
+                    t0 = datetime.datetime.now()
+                    with task_cls() as load:
+                        r = load.run()
+                        results[task_name] = r
+                        logger.info("%s finished: %s", task_name, r)
+                    print(
+                        f"[Configurations] Concluída: {task_name} em "
+                        f"{_fmt_hms(datetime.datetime.now() - t0)}"
+                    )
+                except Exception as e:
+                    logger.exception("Erro na task %s", task_name)
+                    errors.append((task_name, str(e)))
+
+            # rodar em lotes de até max_threads
+            for i in range(0, len(tasks_to_run), max_threads):
+                batch = tasks_to_run[i : i + max_threads]
+                threads = []
+                for name, cls in batch:
+                    th = threading.Thread(
+                        target=_run_task, args=(name, cls), daemon=True
+                    )
+                    th.start()
+                    threads.append(th)
+                for th in threads:
+                    th.join()
+
+        except Exception as e:
             logger.exception("Erro ao executar as pipelines de configurations")
         finally:
             total = datetime.datetime.now() - started_at
