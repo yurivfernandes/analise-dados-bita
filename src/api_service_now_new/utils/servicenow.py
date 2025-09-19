@@ -133,20 +133,52 @@ def paginate(
                 continue
             # achatar referências simples (value/dv_value)
             flat = flatten_reference_fields(dict(result))
-            # remover strings vazias -> None para economizar espaço se desejado
+
+            # Normalizar todos os valores para str ou None para evitar schema misto
             for k, v in list(flat.items()):
                 if isinstance(v, str) and v.strip() == "":
                     flat[k] = None
+                elif v is None:
+                    flat[k] = None
+                else:
+                    # converte valores não-None para string para manter consistência
+                    try:
+                        flat[k] = str(v)
+                    except Exception:
+                        flat[k] = None
+
             flat["etl_created_at"] = dj_timezone.now()
             flat["etl_updated_at"] = dj_timezone.now()
             processed_results.append(flat)
+
+        # Retornamos a lista de dicts normalizados. O chamador pode construir o DataFrame
+        # ou paginar retornando polars; a chamada que constrói DataFrame receberá
+        # valores coerentes (todos strings ou None).
         return processed_results
     except (ValueError, TypeError) as e:
         logging.warning(
             "polars.DataFrame construction failed: %s; falling back", e
         )
-        # fallback: construir DataFrame de forma mais permissiva
-        return pl.DataFrame([dict(x) for x in all_results])
+        # fallback: construir DataFrame de forma mais permissiva com coerção manual
+        fallback = []
+        for x in all_results:
+            row = {}
+            for k, v in dict(x).items():
+                if isinstance(v, dict) and "value" in v:
+                    v = v.get("value")
+                if isinstance(v, str) and v.strip() == "":
+                    row[k] = None
+                elif v is None:
+                    row[k] = None
+                else:
+                    try:
+                        row[k] = str(v)
+                    except Exception:
+                        row[k] = None
+            row["etl_created_at"] = dj_timezone.now()
+            row["etl_updated_at"] = dj_timezone.now()
+            fallback.append(row)
+        return fallback
 
 
 def process_data(data: List[Dict]) -> List[Dict]:
