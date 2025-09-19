@@ -49,6 +49,10 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
         fields = ",".join([f.name for f in Incident._meta.fields])
 
         query = f"opened_at>={start_ts}^opened_at<={end_ts}"
+        # adicionar filtro por assignment group
+        add_q = "assignment_groupLIKEvita"
+        if add_q not in query:
+            query = f"{query}^{add_q}"
         params = {"sysparm_query": query, "sysparm_fields": fields}
         result_list = paginate(
             path="incident",

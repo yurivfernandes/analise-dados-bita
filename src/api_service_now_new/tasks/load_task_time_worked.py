@@ -39,6 +39,9 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
         fields = ",".join([f.name for f in TaskTimeWorked._meta.fields])
 
         query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59"
+        add_q = "assignment_groupLIKEvita"
+        if add_q not in query:
+            query = f"{query}^{add_q}"
 
         result_list = paginate(
             path="task_time_worked",

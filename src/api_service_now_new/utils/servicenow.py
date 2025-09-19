@@ -55,17 +55,6 @@ def paginate(
     all_results = []
     params = dict(params or {})
 
-    # Sempre incluir filtro para assignment group contendo 'vita'
-    # Se já existir `sysparm_query`, concatena com `^` (AND do ServiceNow), caso contrário define.
-    existing_query = params.get("sysparm_query")
-    add_query = "assignment_groupLIKEvita"
-    if existing_query:
-        # evitar duplicação se filtro já presente
-        if add_query not in existing_query:
-            params["sysparm_query"] = f"{existing_query}^{add_query}"
-    else:
-        params["sysparm_query"] = add_query
-
     # sempre pega env internamente (simplifica chamadas)
     base_url, auth, headers = get_servicenow_env()
 

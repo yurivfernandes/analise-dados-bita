@@ -39,6 +39,10 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
         fields = ",".join([f.name for f in IncidentTask._meta.fields])
 
         query = f"opened_at>={self.start_date} 00:00:00^opened_at<={self.end_date} 23:59:59"
+        # adicionar filtro por assignment group (evita duplicação)
+        add_q = "assignment_groupLIKEvita"
+        if add_q not in query:
+            query = f"{query}^{add_q}"
 
         result_list = paginate(
             path="incident_task",
