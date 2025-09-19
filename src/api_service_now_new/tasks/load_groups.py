@@ -30,7 +30,9 @@ class LoadGroups(MixinGetDataset, Pipeline):
 
     @property
     def _groups(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in Groups._meta.fields])
+        fields = ",".join(
+            [f.name for f in Groups._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+        )
 
         result_list = paginate(
             path="sys_user_group",

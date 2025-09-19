@@ -36,7 +36,14 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
 
     @property
     def _incident_task(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in IncidentTask._meta.fields])
+        # excluir campos de controle do ETL
+        fields = ",".join(
+            [
+                f.name
+                for f in IncidentTask._meta.fields
+                if not f.name.startswith("etl_") and f.name != "etl_hash"
+            ]
+        )
 
         query = f"opened_at>={self.start_date} 00:00:00^opened_at<={self.end_date} 23:59:59"
         # adicionar filtro por assignment group (evita duplicação)

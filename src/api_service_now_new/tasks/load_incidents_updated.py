@@ -100,7 +100,9 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
         end_ts = ensure_datetime(self.end_date, end=True)
 
         # solicita apenas os campos presentes no model Incident
-        fields = ",".join([f.name for f in Incident._meta.fields])
+        fields = ",".join(
+            [f.name for f in Incident._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+        )
 
         query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}"
         params = {"sysparm_query": query, "sysparm_fields": fields}

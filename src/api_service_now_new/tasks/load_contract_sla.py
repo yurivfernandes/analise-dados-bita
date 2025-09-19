@@ -34,7 +34,9 @@ class LoadContractSla(MixinGetDataset, Pipeline):
 
     @property
     def _contract_sla(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in ContractSla._meta.fields])
+        fields = ",".join(
+            [f.name for f in ContractSla._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+        )
 
         result_list = paginate(
             path="contract_sla",

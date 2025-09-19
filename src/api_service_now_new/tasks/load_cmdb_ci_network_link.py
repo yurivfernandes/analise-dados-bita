@@ -31,7 +31,9 @@ class LoadCmdbCiNetworkLink(MixinGetDataset, Pipeline):
 
     @property
     def _dataset(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in CmdbCiNetworkLink._meta.fields])
+        fields = ",".join(
+            [f.name for f in CmdbCiNetworkLink._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+        )
 
         result_list = paginate(
             path="cmdb_ci_network_link",

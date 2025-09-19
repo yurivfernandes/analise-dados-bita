@@ -36,7 +36,13 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
 
     @property
     def _task_time_worked(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in TaskTimeWorked._meta.fields])
+        fields = ",".join(
+            [
+                f.name
+                for f in TaskTimeWorked._meta.fields
+                if not f.name.startswith("etl_") and f.name != "etl_hash"
+            ]
+        )
 
         query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59"
         add_q = "assignment_groupLIKEvita"

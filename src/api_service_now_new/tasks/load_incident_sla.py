@@ -34,7 +34,13 @@ class LoadIncidentSla(MixinGetDataset, Pipeline):
 
     @property
     def _incident_sla(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in IncidentSla._meta.fields])
+        fields = ",".join(
+            [
+                f.name
+                for f in IncidentSla._meta.fields
+                if not f.name.startswith("etl_") and f.name != "etl_hash"
+            ]
+        )
         query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59^taskISNOTEMPTY"
         # para task_sla o assignment_group pertence ao task referenciado -> usar dot-walk
         add_q = "task.assignment_group.nameLIKEvita"

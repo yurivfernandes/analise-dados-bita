@@ -33,7 +33,9 @@ class LoadSysUser(MixinGetDataset, Pipeline):
 
     @property
     def _users(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in SysUser._meta.fields])
+        fields = ",".join(
+            [f.name for f in SysUser._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+        )
 
         # IDs únicos de usuários presentes em Incident (opened_by, resolved_by, closed_by)
         opened = (

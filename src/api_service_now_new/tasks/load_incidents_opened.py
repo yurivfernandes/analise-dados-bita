@@ -46,7 +46,13 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
         end_ts = ensure_datetime(self.end_date, end=True)
 
         # solicita apenas os campos presentes no model Incident
-        fields = ",".join([f.name for f in Incident._meta.fields])
+        fields = ",".join(
+            [
+                f.name
+                for f in Incident._meta.fields
+                if not f.name.startswith("etl_") and f.name != "etl_hash"
+            ]
+        )
 
         query = f"opened_at>={start_ts}^opened_at<={end_ts}"
         # adicionar filtro por assignment group

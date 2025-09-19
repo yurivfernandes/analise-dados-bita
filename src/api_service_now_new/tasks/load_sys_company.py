@@ -33,7 +33,9 @@ class LoadSysCompany(MixinGetDataset, Pipeline):
 
     @property
     def _companies(self) -> pl.DataFrame:
-        fields = ",".join([f.name for f in SysCompany._meta.fields])
+        fields = ",".join(
+            [f.name for f in SysCompany._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+        )
 
         # IDs únicos de companies presentes em Incident
         qs = (
