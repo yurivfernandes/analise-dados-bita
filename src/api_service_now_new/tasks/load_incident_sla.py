@@ -49,8 +49,9 @@ class LoadIncidentSla(MixinGetDataset, Pipeline):
             result_key="result",
         )
 
-        return pl.DataFrame(result_list).select(
-            [f.name for f in IncidentSla._meta.fields]
+        return pl.DataFrame(
+            result_list,
+            schema={f.name: pl.String for f in IncidentSla._meta.fields},
         )
 
 

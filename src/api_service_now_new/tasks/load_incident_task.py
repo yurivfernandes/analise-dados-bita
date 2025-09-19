@@ -53,8 +53,9 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
             result_key="result",
         )
 
-        return pl.DataFrame(result_list).select(
-            [f.name for f in IncidentTask._meta.fields]
+        return pl.DataFrame(
+            result_list,
+            schema={f.name: pl.String for f in IncidentTask._meta.fields},
         )
 
 

@@ -82,6 +82,7 @@ def paginate(
 
             all_results.extend(page)
             offset += limit
+            print(offset)
 
     elif mode == "cursor":
         cursor = None

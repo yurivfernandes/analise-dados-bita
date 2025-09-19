@@ -75,7 +75,10 @@ class LoadSysUser(MixinGetDataset, Pipeline):
                 schema={f.name: pl.String for f in SysUser._meta.fields}
             )
 
-        return pl.DataFrame(all_results)
+        return pl.DataFrame(
+            all_results,
+            schema={f.name: pl.String for f in SysUser._meta.fields},
+        )
 
 
 @shared_task(
