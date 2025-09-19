@@ -129,8 +129,8 @@ class LoadIncidentsView(APIView):
             # 1. Paralelo: 3 tasks pesadas
             heavy_tasks = [
                 ("load_incidents_opened", LoadIncidentsOpened),
-                ("load_incidents_updated", LoadIncidentsUpdated),
                 ("load_incident_sla", LoadIncidentSla),
+                ("load_task_time_worked", LoadTaskTimeWorked),
             ]
             threads = []
             for name, cls in heavy_tasks:
@@ -144,8 +144,8 @@ class LoadIncidentsView(APIView):
 
             # 2. Sequenciais: dependem de base das anteriores
             sequential_tasks = [
+                ("load_incidents_updated", LoadIncidentsUpdated),
                 ("load_incident_task", LoadIncidentTask),
-                ("load_task_time_worked", LoadTaskTimeWorked),
             ]
             for name, cls in sequential_tasks:
                 _run_task(name, cls)
