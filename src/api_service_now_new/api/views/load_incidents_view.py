@@ -62,9 +62,18 @@ class LoadIncidentsView(APIView):
         )
 
     def _run_pipelines_in_background(self, start_date, end_date):
-        """Método que executa as pipelines em background (chamado pela thread)."""
+        """Executa as pipelines de incidents em background com paralelismo controlado.
+
+        Estratégia:
+        - Executar simultaneamente (3 threads) as tasks pesadas: opened, updated, incident_sla.
+        - Após concluí-las, executar sequencialmente: incident_task, task_time_worked.
+        - Registrar tempos, erros e consolidar em ServiceNowExecutionLog.
+        """
         started_at = datetime.datetime.now()
-        # cria registro de log de execução
+        results = {}
+        errors = []
+
+        # Parse seguro das datas para log (não quebra se formato inválido)
         try:
             sd = (
                 datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -89,90 +98,73 @@ class LoadIncidentsView(APIView):
             started_at=started_at,
             status="running",
         )
-        error_message = None
+
+        def _run_task(task_name: str, task_cls):
+            """Executa uma task, tentando primeiro com start/end e fazendo fallback se assinatura diferente."""
+            try:
+                print(
+                    f"[Incidents] Executando tarefa: {task_name} ({start_date} -> {end_date})"
+                )
+                t0 = datetime.datetime.now()
+                # Tenta com parâmetros (maioria das tasks de incident usa)
+                try:
+                    with task_cls(
+                        start_date=start_date, end_date=end_date
+                    ) as load:
+                        r = load.run()
+                except TypeError:
+                    # fallback se a task não aceita esses kwargs
+                    with task_cls() as load:
+                        r = load.run()
+                results[task_name] = r
+                print(
+                    f"[Incidents] Concluída: {task_name} em {self._fmt_hms(datetime.datetime.now() - t0)}"
+                )
+                logger.info("%s finished: %s", task_name, r)
+            except Exception as e:
+                logger.exception("Erro na task %s", task_name)
+                errors.append((task_name, str(e)))
+
         try:
-            # helper de tempo definido no módulo: _fmt_hms
+            # 1. Paralelo: 3 tasks pesadas
+            heavy_tasks = [
+                ("load_incidents_opened", LoadIncidentsOpened),
+                ("load_incidents_updated", LoadIncidentsUpdated),
+                ("load_incident_sla", LoadIncidentSla),
+            ]
+            threads = []
+            for name, cls in heavy_tasks:
+                th = threading.Thread(
+                    target=_run_task, args=(name, cls), daemon=True
+                )
+                th.start()
+                threads.append(th)
+            for th in threads:
+                th.join()
 
-            # task que popula pela data de opened_at (pode deletar+inserir)
-            task_name = LoadIncidentsOpened.__name__
-            print(f"[{task_name}] Executando ({start_date} -> {end_date})")
-            t0 = datetime.datetime.now()
-            with LoadIncidentsOpened(
-                start_date=start_date, end_date=end_date
-            ) as load:
-                r1 = load.run()
-                logger.info("load_incidents_opened finished: %s", r1)
-            print(
-                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t0)}"
-            )
-
-            # task que atualiza por sys_updated_on
-            task_name = LoadIncidentsUpdated.__name__
-            print(f"[{task_name}] Executando ({start_date} -> {end_date})")
-            t0 = datetime.datetime.now()
-            with LoadIncidentsUpdated(
-                start_date=start_date, end_date=end_date
-            ) as load:
-                r2 = load.run()
-                logger.info("load_incidents_updated finished: %s", r2)
-            print(
-                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t0)}"
-            )
-
-            # task para incident_sla
-            task_name = LoadIncidentSla.__name__
-            print(f"[{task_name}] Executando ({start_date} -> {end_date})")
-            t1 = datetime.datetime.now()
-            with LoadIncidentSla(
-                start_date=start_date, end_date=end_date
-            ) as load:
-                r3 = load.run()
-                logger.info("load_incident_sla finished: %s", r3)
-            print(
-                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t1)}"
-            )
-
-            # task para incident_task
-            task_name = LoadIncidentTask.__name__
-            print(f"[{task_name}] Executando ({start_date} -> {end_date})")
-            t2 = datetime.datetime.now()
-            with LoadIncidentTask(
-                start_date=start_date, end_date=end_date
-            ) as load:
-                r4 = load.run()
-                logger.info("load_incident_task finished: %s", r4)
-            print(
-                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t2)}"
-            )
-
-            # task para task_time_worked
-            task_name = LoadTaskTimeWorked.__name__
-            print(f"[{task_name}] Executando ({start_date} -> {end_date})")
-            t3 = datetime.datetime.now()
-            with LoadTaskTimeWorked(
-                start_date=start_date, end_date=end_date
-            ) as load:
-                r5 = load.run()
-                logger.info("load_task_time_worked finished: %s", r5)
-            print(
-                f"[{task_name}] Concluída em {self._fmt_hms(datetime.datetime.now() - t3)}"
-            )
-
-        except Exception as e:
-            logger.exception("Erro ao executar as pipelines de incidents")
-            error_message = str(e)
+            # 2. Sequenciais: dependem de base das anteriores
+            sequential_tasks = [
+                ("load_incident_task", LoadIncidentTask),
+                ("load_task_time_worked", LoadTaskTimeWorked),
+            ]
+            for name, cls in sequential_tasks:
+                _run_task(name, cls)
+        except Exception:
+            logger.exception("Erro inesperado no pipeline de incidents")
         finally:
             total = datetime.datetime.now() - started_at
             print(
                 f"[Thread: {self.__class__.__name__}] Tempo total de execução: {self._fmt_hms(total)}",
                 flush=True,
             )
-            # atualizar log de execução
+            # Atualiza o log
             try:
                 exec_log.ended_at = datetime.datetime.now()
                 exec_log.duration_seconds = round(total.total_seconds(), 2)
-                exec_log.status = "error" if error_message else "success"
-                exec_log.error_message = error_message
+                exec_log.status = "error" if errors else "success"
+                exec_log.error_message = (
+                    "; ".join(e for _, e in errors)[:1000] if errors else None
+                )
                 exec_log.save(
                     update_fields=[
                         "ended_at",
