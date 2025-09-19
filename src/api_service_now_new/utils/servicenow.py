@@ -171,10 +171,6 @@ def coerce_dates_in_dict(d: dict) -> dict:  # deprecado
     return d
 
 
-def _is_datetime_field(model, field_name: str) -> bool:  # compat
-    return False
-
-
 def normalize_date_columns(rows: List[Dict]) -> List[Dict]:  # deprecado
     return rows
 
