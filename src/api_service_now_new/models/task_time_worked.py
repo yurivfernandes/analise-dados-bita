@@ -43,7 +43,7 @@ class TaskTimeWorked(models.Model):
         auto_now_add=True, null=True, blank=True
     )
     etl_updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-
+    etl_hash = models.TextField(null=True, blank=True, db_collation=COLLATION)
     class Meta:
         managed = False
         db_table = "task_time_worked"

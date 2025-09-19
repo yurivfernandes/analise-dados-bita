@@ -45,7 +45,7 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
         )
 
         query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59"
-        add_q = "assignment_groupLIKEvita"
+        add_q = "task.assignment_groupLIKEvita"
         if add_q not in query:
             query = f"{query}^{add_q}"
 
@@ -58,8 +58,9 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
             result_key="result",
         )
 
-        return pl.DataFrame(result_list).select(
-            [f.name for f in TaskTimeWorked._meta.fields]
+        return pl.DataFrame(
+            result_list,
+            schema={f.name: pl.String for f in TaskTimeWorked._meta.fields},
         )
 
 
