@@ -1,18 +1,11 @@
 import logging
 import os
 from datetime import datetime
-from datetime import timezone as dt_timezone
-
-try:
-    from dateutil import parser as _dateutil_parser  # type: ignore
-except Exception:
-    _dateutil_parser = None
 from typing import Dict, List, Optional, Tuple
 
 import polars as pl
 import requests
 from django.db import transaction
-from django.db.models import DateTimeField
 from django.utils import timezone as dj_timezone
 
 
@@ -33,10 +26,8 @@ def get_servicenow_env() -> Tuple[str, tuple, Dict]:
 
 
 def ensure_datetime(s: str, end: bool = False) -> str:
-    """Garante timestamp completo quando recebido apenas a data (YYYY-MM-DD)."""
-    if not isinstance(s, str):
-        return s
-    if len(s) == 10:
+    """Mantido apenas por compatibilidade (não faz parsing real, apenas completa HH:MM:SS se formato for YYYY-MM-DD)."""
+    if isinstance(s, str) and len(s) == 10:
         return f"{s} 23:59:59" if end else f"{s} 00:00:00"
     return s
 
@@ -131,26 +122,24 @@ def paginate(
             "Unsupported pagination mode: must be 'offset' or 'cursor'"
         )
 
-    # converte para polars DataFrame antes de retornar
+    # converte para polars DataFrame antes de retornar (mas já retornamos lista de dicts processados)
     if not all_results:
         return pl.DataFrame()
 
     try:
         processed_results = []
         for result in all_results:
-            # Processa campos de referência básicos
-            processed_result = process_data([result])[0]
-
-            # Adiciona timestamps ETL
-            processed_result["etl_created_at"] = dj_timezone.now()
-            processed_result["etl_updated_at"] = dj_timezone.now()
-
-            processed_results.append(processed_result)
-        # Normalizar colunas com mistura str/datetime e converter strings vazias em None
-        try:
-            processed_results = normalize_date_columns(processed_results)
-        except Exception:
-            pass
+            if not result:
+                continue
+            # achatar referências simples (value/dv_value)
+            flat = flatten_reference_fields(dict(result))
+            # remover strings vazias -> None para economizar espaço se desejado
+            for k, v in list(flat.items()):
+                if isinstance(v, str) and v.strip() == "":
+                    flat[k] = None
+            flat["etl_created_at"] = dj_timezone.now()
+            flat["etl_updated_at"] = dj_timezone.now()
+            processed_results.append(flat)
         return processed_results
     except (ValueError, TypeError) as e:
         logging.warning(
@@ -161,146 +150,32 @@ def paginate(
 
 
 def process_data(data: List[Dict]) -> List[Dict]:
-    """Processa os dados, aplicando flatten nos campos de referência"""
-    processed_data = []
-
+    """Mantido para compatibilidade; agora apenas achata refs e retorna strings/None sem parse de datas."""
+    out = []
     for item in data:
         if not item:
             continue
-
-        processed_item = flatten_reference_fields(item)
-        # tentar converter strings que representam datas para datetime
-        try:
-            processed_item = coerce_dates_in_dict(processed_item)
-        except Exception:
-            # não falhar o pipeline por causa de parsing de datas
-            pass
-        # para garantir consistência quando construirmos DataFrames, converter
-        # quaisquer datetime em strings ISO (o upsert converterá de volta)
-        for k, v in list(processed_item.items()):
-            if isinstance(v, datetime):
-                processed_item[k] = v.isoformat(sep=" ")
-        processed_data.append(processed_item)
-
-    return processed_data
+        flat = flatten_reference_fields(dict(item))
+        for k, v in list(flat.items()):
+            if isinstance(v, str) and v.strip() == "":
+                flat[k] = None
+        out.append(flat)
+    return out
 
 
-def parse_datetime(value: str) -> Optional[datetime]:
-    """Tenta converter uma string para datetime usando dateutil se disponível
-
-    Retorna objeto datetime ou None se não for possível.
-    """
-    if value is None or not isinstance(value, str):
-        return None
-    # service now frequentemente retorna 'YYYY-MM-DD HH:MM:SS' ou ISO com Z
-    try:
-        if _dateutil_parser:
-            dt = _dateutil_parser.parse(value)
-        else:
-            # fallback simples: tentar fromisoformat (remove Z)
-            v = value.replace("Z", "")
-            dt = datetime.fromisoformat(v)
-        # se vier sem timezone, assumir UTC
-        if dt and dt.tzinfo is None:
-            dt = dt.replace(tzinfo=dt_timezone.utc)
-        return dt
-    except Exception:
-        # tentar formatos comuns
-        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
-            try:
-                dt = datetime.strptime(value, fmt)
-                return dt.replace(tzinfo=dt_timezone.utc)
-            except Exception:
-                continue
+def parse_datetime(value: str) -> Optional[datetime]:  # deprecado
     return None
 
 
-def coerce_dates_in_dict(d: dict) -> dict:
-    """Percorre o dict e converte valores que parecem datas para datetime.
-
-    Regras:
-    - se a chave contém 'sys_' ou termina com '_on' ou termina com '_at' tenta parse
-    - se o valor é string e o parse for bem sucedido substitui pelo datetime
-    """
-    for k, v in list(d.items()):
-        key = k.lower()
-        looks_datetime = (
-            "sys_" in key
-            or key.endswith("_on")
-            or key.endswith("_at")
-            or key.endswith("_time")
-            or key.startswith("last_")
-        )
-        if not looks_datetime:
-            continue
-        # strings: parse padrão
-        if isinstance(v, str):
-            if v.strip() == "":
-                d[k] = None
-            else:
-                pd = parse_datetime(v)
-                if pd is not None:
-                    d[k] = pd
-        # numéricos: tentar tratar como epoch (segundos ou milissegundos)
-        elif isinstance(v, (int, float)):
-            try:
-                # heurística: valores muito grandes provavelmente estão em ms
-                ts = float(v)
-                if ts <= 0:
-                    d[k] = None
-                elif ts > 1e12:  # claramente milissegundos
-                    d[k] = datetime.fromtimestamp(
-                        ts / 1000.0, tz=dt_timezone.utc
-                    )
-                elif ts > 1e10:  # pode ser milissegundos (10 dígitos+)
-                    d[k] = datetime.fromtimestamp(
-                        ts / 1000.0, tz=dt_timezone.utc
-                    )
-                elif ts > 1e9:  # segundos (timestamp contemporâneo)
-                    d[k] = datetime.fromtimestamp(ts, tz=dt_timezone.utc)
-                else:
-                    # valores pequenos não são timestamps válidos -> None
-                    d[k] = None
-            except Exception:
-                # em falha, setar None para não enviar int para datetime no banco
-                d[k] = None
+def coerce_dates_in_dict(d: dict) -> dict:  # deprecado
     return d
 
 
-def _is_datetime_field(model, field_name: str) -> bool:
-    try:
-        f = next((f for f in model._meta.fields if f.name == field_name), None)
-        return isinstance(f, DateTimeField)
-    except Exception:
-        return False
+def _is_datetime_field(model, field_name: str) -> bool:  # compat
+    return False
 
 
-def normalize_date_columns(rows: List[Dict]) -> List[Dict]:
-    """Se uma coluna tiver ao menos um datetime, converte strings daquela coluna em datetime.
-    Também troca strings vazias por None em colunas de data.
-    """
-    if not rows:
-        return rows
-    keys = set().union(*(r.keys() for r in rows))
-    for k in keys:
-        has_dt = False
-        has_str = False
-        for r in rows:
-            v = r.get(k)
-            if isinstance(v, datetime):
-                has_dt = True
-            elif isinstance(v, str):
-                has_str = True
-        if has_dt and has_str:
-            for r in rows:
-                v = r.get(k)
-                if isinstance(v, str):
-                    if v.strip() == "":
-                        r[k] = None
-                    else:
-                        pd = parse_datetime(v)
-                        if pd is not None:
-                            r[k] = pd
+def normalize_date_columns(rows: List[Dict]) -> List[Dict]:  # deprecado
     return rows
 
 
@@ -356,13 +231,10 @@ def fetch_single_record(
 def upsert_by_sys_id(
     dataset: pl.DataFrame, model, log: Optional[Dict] = None
 ) -> None:
-    """Upsert em lote por `sys_id` para registros de `dataset` no `model`.
+    """Upsert simples por sys_id. Todos os campos (exceto PK) tratados como texto; sem conversões de data.
 
-    Aceita `dataset` como `polars.DataFrame`, lista de dicts ou qualquer iterável de dicts.
-    Atualiza em transação usando `bulk_create` e `bulk_update`.
-    Atualiza `log["n_inserted"]` e `log["n_updated"]` quando informado.
+    Se o modelo possuir campos etl_created_at/etl_updated_at (DateTimeField) o banco preenche via auto_now/auto_now_add.
     """
-    # Converte para lista de dicionários
     if dataset is None:
         return
     if isinstance(dataset, pl.DataFrame):
@@ -376,190 +248,64 @@ def upsert_by_sys_id(
             rows = list(dataset)
         except Exception:
             rows = []
-
     if not rows:
         return
 
-    # coletar nomes de campos válidos do model
-    model_field_names = {f.name for f in model._meta.fields}
+    field_names = {f.name for f in model._meta.fields}
     pk_name = model._meta.pk.name
-
-    # filtrar rows para conter apenas campos do model
     processed = []
     for r in rows:
         if not r:
             continue
-        pr = {k: v for k, v in r.items() if k in model_field_names}
-        if pr and pr.get("sys_id"):
+        pr = {
+            k: (v if v != "" else None)
+            for k, v in r.items()
+            if k in field_names
+        }
+        if pr.get("sys_id"):
             processed.append(pr)
-
     if not processed:
         return
 
-    # Converter strings (e números residuais) para datetime nos campos DateTimeField do model
-    try:
-        dt_fields = {
-            f.name for f in model._meta.fields if isinstance(f, DateTimeField)
-        }
-        if dt_fields:
-            for r in processed:
-                for fn in dt_fields:
-                    v = r.get(fn)
-                    if v is None:
-                        continue
-                    if isinstance(v, datetime):
-                        if v.tzinfo is None:
-                            r[fn] = v.replace(tzinfo=dt_timezone.utc)
-                        continue
-                    if isinstance(v, str):
-                        dtv = parse_datetime(v)
-                        if dtv is not None:
-                            r[fn] = dtv
-                        continue
-                    if isinstance(v, (int, float)):
-                        try:
-                            ts = float(v)
-                            if ts <= 0:
-                                r[fn] = None
-                            elif ts > 1e12:
-                                r[fn] = datetime.fromtimestamp(
-                                    ts / 1000.0, tz=dt_timezone.utc
-                                )
-                            elif ts > 1e10:
-                                r[fn] = datetime.fromtimestamp(
-                                    ts / 1000.0, tz=dt_timezone.utc
-                                )
-                            elif ts > 1e9:
-                                r[fn] = datetime.fromtimestamp(
-                                    ts, tz=dt_timezone.utc
-                                )
-                            else:
-                                r[fn] = None
-                        except Exception:
-                            r[fn] = None
-    except Exception:
-        # não interromper o fluxo por conversão de tipo
-        pass
-
-    sys_ids = [r["sys_id"] for r in processed]
-
-    # buscar existentes em batch
-    existing_qs = model.objects.filter(sys_id__in=sys_ids)
-    existing_map = {getattr(obj, "sys_id"): obj for obj in existing_qs}
-
+    existing = {
+        o.sys_id: o
+        for o in model.objects.filter(
+            sys_id__in=[r["sys_id"] for r in processed]
+        )
+    }
     to_create = []
     to_update = []
-
-    def _coerce_obj_dt_fields(obj):
-        try:
-            for f in obj._meta.fields:
-                if isinstance(f, DateTimeField):
-                    val = getattr(obj, f.name)
-                    if val is None:
-                        continue
-                    if isinstance(val, datetime):
-                        if val.tzinfo is None:
-                            setattr(
-                                obj,
-                                f.name,
-                                val.replace(tzinfo=dt_timezone.utc),
-                            )
-                        continue
-                    if isinstance(val, str):
-                        pd = parse_datetime(val)
-                        if pd is not None:
-                            setattr(obj, f.name, pd)
-                    elif isinstance(val, (int, float)):
-                        try:
-                            ts = float(val)
-                            if ts <= 0:
-                                setattr(obj, f.name, None)
-                            elif ts > 1e12:
-                                setattr(
-                                    obj,
-                                    f.name,
-                                    datetime.fromtimestamp(
-                                        ts / 1000.0, tz=dt_timezone.utc
-                                    ),
-                                )
-                            elif ts > 1e10:
-                                setattr(
-                                    obj,
-                                    f.name,
-                                    datetime.fromtimestamp(
-                                        ts / 1000.0, tz=dt_timezone.utc
-                                    ),
-                                )
-                            elif ts > 1e9:
-                                setattr(
-                                    obj,
-                                    f.name,
-                                    datetime.fromtimestamp(
-                                        ts, tz=dt_timezone.utc
-                                    ),
-                                )
-                            else:
-                                setattr(obj, f.name, None)
-                        except Exception:
-                            setattr(obj, f.name, None)
-        except Exception:
-            # não interromper por sanitização
-            pass
-
-    for row in processed:
-        sid = row["sys_id"]
-        if sid in existing_map:
-            obj = existing_map[sid]
-            for k, v in row.items():
-                setattr(obj, k, v)
-            _coerce_obj_dt_fields(obj)
+    for r in processed:
+        sid = r["sys_id"]
+        if sid in existing:
+            obj = existing[sid]
+            for k, v in r.items():
+                if k not in (pk_name,):
+                    setattr(obj, k, v)
             to_update.append(obj)
         else:
-            obj = model(**row)
-            _coerce_obj_dt_fields(obj)
-            to_create.append(obj)
+            to_create.append(model(**r))
 
-    n_created = 0
-
+    created = 0
     if to_create:
-        created_objs = model.objects.bulk_create(to_create, batch_size=1000)
-        n_created = len(created_objs)
-
+        created = len(model.objects.bulk_create(to_create, batch_size=1000))
     if to_update:
-        # campos a atualizar: todos os campos do model exceto pk e sys_id
         update_fields = [
-            f for f in model_field_names if f not in (pk_name, "sys_id")
+            f for f in field_names if f not in (pk_name, "sys_id")
         ]
         if update_fields:
             try:
                 model.objects.bulk_update(
                     to_update, update_fields, batch_size=1000
                 )
-            except Exception as e:
-                logging.warning(
-                    "bulk_update falhou (%s). Aplicando fallback com updates individuais.",
-                    e,
-                )
-                # Fallback: atualizar registro a registro
+            except Exception:
                 for obj in to_update:
                     try:
                         obj.save(update_fields=update_fields)
                     except Exception:
-                        # último recurso: update() direto
-                        try:
-                            pk_val = getattr(obj, pk_name)
-                            kwargs = {
-                                f: getattr(obj, f) for f in update_fields
-                            }
-                            model.objects.filter(**{pk_name: pk_val}).update(
-                                **kwargs
-                            )
-                        except Exception:
-                            logging.exception(
-                                "Falha no fallback update para %s=%s",
-                                pk_name,
-                                getattr(obj, pk_name, None),
-                            )
-
+                        logging.exception(
+                            "Falha update individual sys_id=%s",
+                            getattr(obj, "sys_id", None),
+                        )
     if isinstance(log, dict):
-        log["n_inserted"] = log.get("n_inserted", 0) + n_created
+        log["n_inserted"] = log.get("n_inserted", 0) + created

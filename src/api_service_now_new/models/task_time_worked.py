@@ -39,6 +39,10 @@ class TaskTimeWorked(models.Model):
     )
     dv_task = models.TextField(null=True, blank=True, db_collation=COLLATION)
     dv_user = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    etl_created_at = models.DateTimeField(
+        auto_now_add=True, null=True, blank=True
+    )
+    etl_updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
         managed = False

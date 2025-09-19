@@ -18,7 +18,6 @@ __all__ = [
     "ServiceNowExecutionLog",
     "SysCompany",
     "SysUser",
-    "CmdbCi",
     "CmdbCiNetworkLink",
     "TaskTimeWorked",
 ]
