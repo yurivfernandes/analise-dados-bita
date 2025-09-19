@@ -10,9 +10,11 @@ from meraki_devices.utils import patch_requests_ssl
 from ...models import ServiceNowExecutionLog
 from ...tasks import (
     LoadIncidentSla,
+    LoadIncidentSlaUpdated,
     LoadIncidentsOpened,
     LoadIncidentsUpdated,
     LoadIncidentTask,
+    LoadIncidentTaskUpdated,
     LoadTaskTimeWorked,
 )
 
@@ -45,6 +47,9 @@ class LoadIncidentsView(APIView):
             data_inicio = data_inicio or ontem.strftime("%Y-%m-%d")
             data_fim = data_fim or ontem.strftime("%Y-%m-%d")
         patch_requests_ssl()
+        # LoadTaskTimeWorked(start_date=data_inicio, end_date=data_fim).run()
+        LoadIncidentTask(start_date=data_inicio, end_date=data_fim).run()
+        LoadIncidentSla(start_date=data_inicio, end_date=data_fim).run()
         thread = threading.Thread(
             target=self._run_pipelines_in_background,
             args=(data_inicio, data_fim),
@@ -59,6 +64,39 @@ class LoadIncidentsView(APIView):
                 "message": "Processing started in background",
             }
         )
+
+    def _run_task(
+        self, task_name: str, task_cls, start_date, end_date, results, errors
+    ):
+        """Executa uma task, tentando primeiro com start/end e fazendo fallback se assinatura diferente.
+
+        Tornou-se método de instância para evitar funções aninhadas e permitir testes/override.
+        """
+        try:
+            print(
+                f"[Incidents] Executando tarefa: {task_name} ({start_date} -> {end_date})"
+            )
+            t0 = datetime.datetime.now()
+            # Tenta com parâmetros (maioria das tasks de incident usa)
+            try:
+                with task_cls(
+                    start_date=start_date, end_date=end_date
+                ) as load:
+                    r = load.run()
+            except TypeError:
+                # fallback se a task não aceita esses kwargs
+                with task_cls() as load:
+                    r = load.run()
+            results[task_name] = r
+            print(
+                f"[Incidents] Concluída: {task_name} em {self._fmt_hms(datetime.datetime.now() - t0)}"
+            )
+            logger.info("%s finished: %s", task_name, r)
+            return r
+        except Exception as e:
+            logger.exception("Erro na task %s", task_name)
+            errors.append((task_name, str(e)))
+            return None
 
     def _run_pipelines_in_background(self, start_date, end_date):
         """Executa as pipelines de incidents em background com paralelismo controlado.
@@ -98,56 +136,46 @@ class LoadIncidentsView(APIView):
             status="running",
         )
 
-        def _run_task(task_name: str, task_cls):
-            """Executa uma task, tentando primeiro com start/end e fazendo fallback se assinatura diferente."""
-            try:
-                print(
-                    f"[Incidents] Executando tarefa: {task_name} ({start_date} -> {end_date})"
-                )
-                t0 = datetime.datetime.now()
-                # Tenta com parâmetros (maioria das tasks de incident usa)
-                try:
-                    with task_cls(
-                        start_date=start_date, end_date=end_date
-                    ) as load:
-                        r = load.run()
-                except TypeError:
-                    # fallback se a task não aceita esses kwargs
-                    with task_cls() as load:
-                        r = load.run()
-                results[task_name] = r
-                print(
-                    f"[Incidents] Concluída: {task_name} em {self._fmt_hms(datetime.datetime.now() - t0)}"
-                )
-                logger.info("%s finished: %s", task_name, r)
-            except Exception as e:
-                logger.exception("Erro na task %s", task_name)
-                errors.append((task_name, str(e)))
+        # método separado para executar uma task; definido como método de instância
+        # para evitar funções aninhadas e facilitar testes
+        def _run_task_local(name, cls):
+            return self._run_task(
+                name, cls, start_date, end_date, results, errors
+            )
 
         try:
-            # 1. Paralelo: 3 tasks pesadas
+            # 1. Paralelo: 4 tasks pesadas (construção inicial)
             heavy_tasks = [
                 ("load_incidents_opened", LoadIncidentsOpened),
                 ("load_incident_sla", LoadIncidentSla),
                 ("load_task_time_worked", LoadTaskTimeWorked),
+                ("load_incident_task", LoadIncidentTask),
             ]
             threads = []
             for name, cls in heavy_tasks:
                 th = threading.Thread(
-                    target=_run_task, args=(name, cls), daemon=True
+                    target=_run_task_local, args=(name, cls), daemon=True
                 )
                 th.start()
                 threads.append(th)
             for th in threads:
                 th.join()
 
-            # 2. Sequenciais: dependem de base das anteriores
-            sequential_tasks = [
+            # 2. Paralelo: executar updates (atualizações por sys_id) em paralelo
+            update_tasks = [
                 ("load_incidents_updated", LoadIncidentsUpdated),
-                ("load_incident_task", LoadIncidentTask),
+                ("load_incident_sla_updated", LoadIncidentSlaUpdated),
+                ("load_incident_task_updated", LoadIncidentTaskUpdated),
             ]
-            for name, cls in sequential_tasks:
-                _run_task(name, cls)
+            threads = []
+            for name, cls in update_tasks:
+                th = threading.Thread(
+                    target=_run_task_local, args=(name, cls), daemon=True
+                )
+                th.start()
+                threads.append(th)
+            for th in threads:
+                th.join()
         except Exception:
             logger.exception("Erro inesperado no pipeline de incidents")
         finally:
