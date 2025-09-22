@@ -101,29 +101,15 @@ class LoadConfigurationsView(APIView):
             # limitar número de threads simultâneas (pode ajustar conforme necessidade)
             max_threads = 3
 
-            def _run_task(task_name, task_cls):
-                try:
-                    print(f"[Configurations] Executando tarefa: {task_name}")
-                    t0 = datetime.datetime.now()
-                    with task_cls() as load:
-                        r = load.run()
-                        results[task_name] = r
-                        logger.info("%s finished: %s", task_name, r)
-                    print(
-                        f"[Configurations] Concluída: {task_name} em "
-                        f"{self._fmt_hms(datetime.datetime.now() - t0)}"
-                    )
-                except Exception as e:
-                    logger.exception("Erro na task %s", task_name)
-                    errors.append((task_name, str(e)))
-
             # rodar em lotes de até max_threads
             for i in range(0, len(tasks_to_run), max_threads):
                 batch = tasks_to_run[i : i + max_threads]
                 threads = []
                 for name, cls in batch:
                     th = threading.Thread(
-                        target=_run_task, args=(name, cls), daemon=True
+                        target=self._run_task,
+                        args=(name, cls, results, errors),
+                        daemon=True,
                     )
                     th.start()
                     threads.append(th)
@@ -157,3 +143,32 @@ class LoadConfigurationsView(APIView):
                 )
             except Exception:
                 logger.exception("Falha ao salvar ServiceNowExecutionLog")
+
+    def _run_task(self, task_name, task_cls, results: dict, errors: list):
+        """Executa uma task de pipeline em uma thread separada.
+
+        Guarda resultados em `results` e erros em `errors`. Protege contra
+        execução duplicada garantindo que `task_name` não esteja presente em `results`.
+        """
+        # Evitar execução duplicada dentro do mesmo run
+        if task_name in results:
+            logger.warning(
+                "Task %s já foi executada neste run; ignorando segunda execução",
+                task_name,
+            )
+            return
+
+        try:
+            print(f"[Configurations] Executando tarefa: {task_name}")
+            t0 = datetime.datetime.now()
+            with task_cls() as load:
+                r = load.run()
+                results[task_name] = r
+                logger.info("%s finished: %s", task_name, r)
+            print(
+                f"[Configurations] Concluída: {task_name} em "
+                f"{self._fmt_hms(datetime.datetime.now() - t0)}"
+            )
+        except Exception as e:
+            logger.exception("Erro na task %s", task_name)
+            errors.append((task_name, str(e)))
