@@ -9,6 +9,7 @@ from meraki_devices.utils import patch_requests_ssl
 
 from ...models import ServiceNowExecutionLog
 from ...tasks import (
+    LoadAstContract,
     LoadCmdbCiNetworkLink,
     LoadContractSla,
     LoadGroups,
@@ -91,6 +92,7 @@ class LoadConfigurationsView(APIView):
         try:
             # Executar tasks de configuração em paralelo (até N threads)
             tasks_to_run = [
+                ("load_ast_contract", LoadAstContract),
                 ("load_contract_sla", LoadContractSla),
                 ("load_groups", LoadGroups),
                 ("load_sys_company", LoadSysCompany),
