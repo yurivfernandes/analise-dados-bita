@@ -13,7 +13,7 @@ class AstContract(models.Model):
     dv_account = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    active = models.BooleanField(null=True, blank=True)
+    active = models.TextField(null=True, blank=True, db_collation=COLLATION)
     applicable_taxes = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -39,8 +39,8 @@ class AstContract(models.Model):
     dv_business_owner = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    commitment = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    commitment = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     consumer = models.TextField(null=True, blank=True, db_collation=COLLATION)
     dv_consumer = models.TextField(
@@ -61,11 +61,11 @@ class AstContract(models.Model):
     dv_contract_model = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    cost_adjustment = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    cost_adjustment = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
-    cost_adjustment_percentage = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    cost_adjustment_percentage = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     cost_adjustment_reason = models.TextField(
         null=True, blank=True, db_collation=COLLATION
@@ -82,16 +82,14 @@ class AstContract(models.Model):
     dv_cost_center = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    cost_per_unit = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    cost_per_unit = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     description = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    discount = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
-    )
-    ends = models.DateField(null=True, blank=True)
+    discount = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    ends = models.TextField(null=True, blank=True, db_collation=COLLATION)
     expiration = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -104,7 +102,9 @@ class AstContract(models.Model):
     dv_invoice_payment_terms = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    license_quantity_entitled = models.IntegerField(null=True, blank=True)
+    license_quantity_entitled = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
+    )
     license_type = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -123,15 +123,15 @@ class AstContract(models.Model):
     dv_life_cycle_stage_status = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    lifetime_cost = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    lifetime_cost = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     location = models.TextField(null=True, blank=True, db_collation=COLLATION)
     dv_location = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    monthly_cost = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    monthly_cost = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     number = models.TextField(null=True, blank=True, db_collation=COLLATION)
     parent_contract = models.TextField(
@@ -140,8 +140,8 @@ class AstContract(models.Model):
     dv_parent_contract = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    payment_amount = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    payment_amount = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     payment_schedule = models.TextField(
         null=True, blank=True, db_collation=COLLATION
@@ -154,32 +154,38 @@ class AstContract(models.Model):
     dv_process = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    process_non_contractual_slas = models.BooleanField(null=True, blank=True)
-    ratecard = models.BooleanField(null=True, blank=True)
-    renewable = models.BooleanField(null=True, blank=True)
+    process_non_contractual_slas = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
+    )
+    ratecard = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    renewable = models.TextField(null=True, blank=True, db_collation=COLLATION)
     renewal_contact = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
     dv_renewal_contact = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    renewal_date = models.DateField(null=True, blank=True)
-    renewal_end_date = models.DateField(null=True, blank=True)
+    renewal_date = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
+    )
+    renewal_end_date = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
+    )
     renewal_options = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
     dv_renewal_options = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    sales_tax = models.BooleanField(null=True, blank=True)
+    sales_tax = models.TextField(null=True, blank=True, db_collation=COLLATION)
     short_description = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    starts = models.DateField(null=True, blank=True)
+    starts = models.TextField(null=True, blank=True, db_collation=COLLATION)
     state = models.TextField(null=True, blank=True, db_collation=COLLATION)
     dv_state = models.TextField(null=True, blank=True, db_collation=COLLATION)
-    sub_total_cost = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    sub_total_cost = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     substate = models.TextField(null=True, blank=True, db_collation=COLLATION)
     dv_substate = models.TextField(
@@ -194,7 +200,9 @@ class AstContract(models.Model):
     sys_created_by = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    sys_created_on = models.DateTimeField(null=True, blank=True)
+    sys_created_on = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
+    )
     sys_domain = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
@@ -202,24 +210,26 @@ class AstContract(models.Model):
         null=True, blank=True, db_collation=COLLATION
     )
     sys_id = models.TextField(primary_key=True, db_collation=COLLATION)
-    sys_mod_count = models.IntegerField(null=True, blank=True)
+    sys_mod_count = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
+    )
     sys_tags = models.TextField(null=True, blank=True, db_collation=COLLATION)
     sys_updated_by = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    sys_updated_on = models.DateTimeField(null=True, blank=True)
-    tax_cost = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    sys_updated_on = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
-    tax_exempt = models.BooleanField(null=True, blank=True)
-    tax_rate = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    tax_cost = models.TextField(null=True, blank=True, db_collation=COLLATION)
+    tax_exempt = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
+    tax_rate = models.TextField(null=True, blank=True, db_collation=COLLATION)
     terms_and_conditions = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    total_cost = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    total_cost = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     u_approve_post_labor = models.TextField(
         null=True, blank=True, db_collation=COLLATION
@@ -233,7 +243,9 @@ class AstContract(models.Model):
     dv_u_configuration_item = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    u_dias_spare = models.IntegerField(null=True, blank=True)
+    u_dias_spare = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
+    )
     u_modelo = models.TextField(null=True, blank=True, db_collation=COLLATION)
     dv_u_modelo = models.TextField(
         null=True, blank=True, db_collation=COLLATION
@@ -250,8 +262,8 @@ class AstContract(models.Model):
     vendor_contract = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    yearly_cost = models.DecimalField(
-        max_digits=18, decimal_places=0, null=True, blank=True
+    yearly_cost = models.TextField(
+        null=True, blank=True, db_collation=COLLATION
     )
     etl_created_at = models.TextField(
         null=True, blank=True, db_collation=COLLATION
@@ -259,7 +271,7 @@ class AstContract(models.Model):
     etl_updated_at = models.TextField(
         null=True, blank=True, db_collation=COLLATION
     )
-    
+
     class Meta:
         managed = False
         db_table = "ast_contract"
