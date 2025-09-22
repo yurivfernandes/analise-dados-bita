@@ -71,6 +71,37 @@ nav:
         - Load Interface: power_bi/tasks/load_interface_new_id.md
       - Utils:
         - Visão Geral: power_bi/utils/mixin.md
+    - API Service Now New:
+      - Visão Geral: api_service_now_new/index.md
+      - Arquitetura:
+        - Diagramas e Fluxos: api_service_now_new/architecture/index.md
+      - Modelos:
+        - Visão Geral: api_service_now_new/models/index.md
+      - APIs e Views:
+        - Visão Geral: api_service_now_new/api/index.md
+      - Tasks:
+        - Visão Geral: api_service_now_new/tasks/index.md
+        - Incidents:
+          - Load Incidents Opened: api_service_now_new/tasks/load_incidents_opened.md
+          - Load Incident SLA: api_service_now_new/tasks/load_incident_sla.md
+          - Load Incident Task: api_service_now_new/tasks/load_incident_task.md
+          - Load Task Time Worked: api_service_now_new/tasks/load_task_time_worked.md
+        - Configurações:
+          - Load Contract SLA: api_service_now_new/tasks/load_contract_sla.md
+          - Load Groups: api_service_now_new/tasks/load_groups.md
+          - Load Sys User: api_service_now_new/tasks/load_sys_user.md
+          - Load Sys Company: api_service_now_new/tasks/load_sys_company.md
+          - Load CMDB CI Network Link: api_service_now_new/tasks/load_cmdb_ci_network_link.md
+      - Utilitários:
+        - Visão Geral: api_service_now_new/utils/index.md
+        - Funções Principais:
+          - paginate(): api_service_now_new/utils/paginate.md
+          - upsert_by_sys_id(): api_service_now_new/utils/upsert_by_sys_id.md
+          - flatten_reference_fields(): api_service_now_new/utils/flatten_reference_fields.md
+        - Funções de Apoio:
+          - fetch_single_record(): api_service_now_new/utils/fetch_single_record.md
+          - get_servicenow_env(): api_service_now_new/utils/get_servicenow_env.md
+          - ensure_datetime(): api_service_now_new/utils/ensure_datetime.md
 
 theme:
   name: material
