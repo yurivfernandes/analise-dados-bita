@@ -35,12 +35,20 @@ class LoadContractSla(MixinGetDataset, Pipeline):
     @property
     def _contract_sla(self) -> pl.DataFrame:
         fields = ",".join(
-            [f.name for f in ContractSla._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+            [
+                f.name
+                for f in ContractSla._meta.fields
+                if not f.name.startswith("etl_") and f.name != "etl_hash"
+            ]
         )
+
+        # para contract_sla o assignment_group pertence ao task referenciado -> usar dot-walk
+        add_q = "task.assignment_group.nameLIKEvita"
+        params = {"sysparm_fields": fields, "sysparm_query": add_q}
 
         result_list = paginate(
             path="contract_sla",
-            params={"sysparm_fields": fields},
+            params=params,
             limit=10000,
             mode="offset",
             limit_param="sysparm_limit",

@@ -31,12 +31,26 @@ class LoadGroups(MixinGetDataset, Pipeline):
     @property
     def _groups(self) -> pl.DataFrame:
         fields = ",".join(
-            [f.name for f in Groups._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+            [
+                f.name
+                for f in Groups._meta.fields
+                if not f.name.startswith("etl_") and f.name != "etl_hash"
+            ]
         )
+
+        # aplicar filtro por assignment_group (fila) similar aos loaders de incidents
+        query = ""
+        add_q = "assignment_groupLIKEvita"
+        if add_q:
+            query = add_q
+
+        params = {"sysparm_fields": fields}
+        if query:
+            params["sysparm_query"] = query
 
         result_list = paginate(
             path="sys_user_group",
-            params={"sysparm_fields": fields},
+            params=params,
             limit=10000,
             mode="offset",
             limit_param="sysparm_limit",
@@ -48,6 +62,7 @@ class LoadGroups(MixinGetDataset, Pipeline):
             result_list,
             schema={f.name: pl.String for f in Groups._meta.fields},
         )
+
 
 @shared_task(
     name="api_service_now_new.load_groups_async",
