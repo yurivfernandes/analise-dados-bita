@@ -40,7 +40,7 @@ class LoadGroups(MixinGetDataset, Pipeline):
 
         # aplicar filtro por assignment_group (fila) similar aos loaders de incidents
         query = ""
-        add_q = "assignment_groupLIKEvita"
+        add_q = "nameLIKEvita"
         if add_q:
             query = add_q
 

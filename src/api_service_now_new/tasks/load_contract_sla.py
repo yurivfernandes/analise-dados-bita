@@ -43,7 +43,7 @@ class LoadContractSla(MixinGetDataset, Pipeline):
         )
 
         # para contract_sla o assignment_group pertence ao task referenciado -> usar dot-walk
-        add_q = "task.assignment_group.nameLIKEvita"
+        add_q = "nameLIKEvita^nameLIKEvgr^nameLIKEbradesco"
         params = {"sysparm_fields": fields, "sysparm_query": add_q}
 
         result_list = paginate(

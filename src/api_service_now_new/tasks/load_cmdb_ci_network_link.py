@@ -41,7 +41,7 @@ class LoadCmdbCiNetworkLink(MixinGetDataset, Pipeline):
 
         # aplicar filtro por assignment_group (fila) similar aos loaders de incidents
         query = ""
-        add_q = "assignment_groupLIKEvita"
+        add_q = "company.nameLIKEbradesco"
         if add_q:
             query = add_q
 
@@ -52,7 +52,7 @@ class LoadCmdbCiNetworkLink(MixinGetDataset, Pipeline):
         result_list = paginate(
             path="cmdb_ci_network_link",
             params=params,
-            limit=5000,
+            limit=10000,
             mode="offset",
             limit_param="sysparm_limit",
             offset_param="sysparm_offset",

@@ -35,7 +35,7 @@ def ensure_datetime(s: str, end: bool = False) -> str:
 def paginate(
     path: str,
     params: Optional[Dict] = None,
-    limit: int = 5000,
+    limit: int = 10000,
     mode: str = "offset",
     limit_param: str = "sysparm_limit",
     offset_param: str = "sysparm_offset",
