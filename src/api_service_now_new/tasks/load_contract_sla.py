@@ -6,7 +6,7 @@ from celery import shared_task
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import ContractSla
-from ..utils.servicenow import paginate
+from ..utils.servicenow import paginate, upsert_by_sys_id
 
 
 class LoadContractSla(MixinGetDataset, Pipeline):
@@ -26,7 +26,7 @@ class LoadContractSla(MixinGetDataset, Pipeline):
 
     def run(self) -> Dict:
         self.extract_and_transform_dataset()
-        self.load(dataset=self.dataset, model=ContractSla, filtro=self._filtro)
+        upsert_by_sys_id(dataset=self.dataset, model=ContractSla, log=self.log)
         return self.log
 
     def extract_and_transform_dataset(self) -> None:
@@ -43,7 +43,7 @@ class LoadContractSla(MixinGetDataset, Pipeline):
         )
 
         # para contract_sla o assignment_group pertence ao task referenciado -> usar dot-walk
-        add_q = "nameLIKEvita^nameLIKEvgr^nameLIKEbradesco"
+        add_q = "nameLIKE[vita^ORnameLIKE[vgr^ORnameLIKEbradesco"
         params = {"sysparm_fields": fields, "sysparm_query": add_q}
 
         result_list = paginate(

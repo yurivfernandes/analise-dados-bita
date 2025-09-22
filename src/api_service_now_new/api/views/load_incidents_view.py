@@ -159,20 +159,20 @@ class LoadIncidentsView(APIView):
                 th.join()
 
             # 2. Paralelo: executar updates (atualizações por sys_id) em paralelo
-            update_tasks = [
-                ("load_incidents_updated", LoadIncidentsUpdated),
-                ("load_incident_sla_updated", LoadIncidentSlaUpdated),
-                ("load_incident_task_updated", LoadIncidentTaskUpdated),
-            ]
-            threads = []
-            for name, cls in update_tasks:
-                th = threading.Thread(
-                    target=_run_task_local, args=(name, cls), daemon=True
-                )
-                th.start()
-                threads.append(th)
-            for th in threads:
-                th.join()
+            # update_tasks = [
+            #     ("load_incidents_updated", LoadIncidentsUpdated),
+            #     ("load_incident_sla_updated", LoadIncidentSlaUpdated),
+            #     ("load_incident_task_updated", LoadIncidentTaskUpdated),
+            # ]
+            # threads = []
+            # for name, cls in update_tasks:
+            #     th = threading.Thread(
+            #         target=_run_task_local, args=(name, cls), daemon=True
+            #     )
+            #     th.start()
+            #     threads.append(th)
+            # for th in threads:
+            #     th.join()
         except Exception:
             logger.exception("Erro inesperado no pipeline de incidents")
         finally:

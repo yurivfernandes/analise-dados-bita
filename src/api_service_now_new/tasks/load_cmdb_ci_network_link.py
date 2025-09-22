@@ -62,7 +62,7 @@ class LoadCmdbCiNetworkLink(MixinGetDataset, Pipeline):
         return pl.DataFrame(
             result_list,
             schema={f.name: pl.String for f in CmdbCiNetworkLink._meta.fields},
-        )
+        ).unique(subset="sys_id")
 
 
 @shared_task(

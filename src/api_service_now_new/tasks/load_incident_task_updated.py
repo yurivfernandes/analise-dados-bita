@@ -115,7 +115,7 @@ class LoadIncidentTaskUpdated(MixinGetDataset, Pipeline):
         return pl.DataFrame(
             result_list,
             schema={f.name: pl.String for f in IncidentTask._meta.fields},
-        ).unique(subset="sys_id")
+        )
 
 
 @shared_task(
