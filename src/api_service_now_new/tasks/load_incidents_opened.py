@@ -56,7 +56,7 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
 
         query = f"opened_at>={start_ts}^opened_at<={end_ts}"
         # adicionar filtro por assignment group
-        add_q = "assignment_groupLIKEvita"
+        add_q = "assignment_groupSTARTSWITHvita"
         if add_q not in query:
             query = f"{query}^{add_q}"
         params = {"sysparm_query": query, "sysparm_fields": fields}

@@ -45,7 +45,7 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
         )
 
         query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59"
-        add_q = "task.assignment_groupLIKEvita"
+        add_q = "task.assignment_groupSTARTSWITHvita"
         if add_q not in query:
             query = f"{query}^{add_q}"
 

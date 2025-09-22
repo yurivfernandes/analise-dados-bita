@@ -47,7 +47,7 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
 
         query = f"opened_at>={self.start_date} 00:00:00^opened_at<={self.end_date} 23:59:59"
         # adicionar filtro por assignment group (evita duplicação)
-        add_q = "assignment_groupLIKEvita"
+        add_q = "assignment_groupSTARTSWITHvita"
         if add_q not in query:
             query = f"{query}^{add_q}"
 

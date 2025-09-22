@@ -104,7 +104,7 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
             [f.name for f in Incident._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
         )
 
-        query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}"
+        query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}^assignment_groupSTARTSWITHvita"
         params = {"sysparm_query": query, "sysparm_fields": fields}
         result_list = paginate(
             path="incident",

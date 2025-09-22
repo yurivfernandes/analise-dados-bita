@@ -97,7 +97,7 @@ class LoadIncidentTaskUpdated(MixinGetDataset, Pipeline):
         )
 
         query = f"opened_at>={start_ts} 00:00:00^opened_at<={end_ts} 23:59:59"
-        add_q = "assignment_groupLIKEvita"
+        add_q = "assignment_groupSTARTSWITHvita"
         if add_q not in query:
             query = f"{query}^{add_q}"
 

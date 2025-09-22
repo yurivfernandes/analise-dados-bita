@@ -97,7 +97,7 @@ class LoadIncidentSlaUpdated(MixinGetDataset, Pipeline):
         )
 
         query = f"sys_created_on>={start_ts}^sys_created_on<={end_ts}^taskISNOTEMPTY"
-        add_q = "task.assignment_group.nameLIKEvita"
+        add_q = "task.assignment_group.nameSTARTSWITHvita"
         if add_q not in query:
             query = f"{query}^{add_q}"
 
