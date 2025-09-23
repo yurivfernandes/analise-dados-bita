@@ -38,7 +38,10 @@ class LoadGroups(MixinGetDataset, Pipeline):
             ]
         )
 
-        params = {"sysparm_fields": fields, "sysparm_query":"nameSTARTSWITHvita"}
+        params = {
+            "sysparm_fields": fields,
+            "sysparm_query": "nameSTARTSWITHvita",
+        }
 
         result_list = paginate(
             path="sys_user_group",

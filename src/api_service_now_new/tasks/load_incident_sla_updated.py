@@ -96,11 +96,7 @@ class LoadIncidentSlaUpdated(MixinGetDataset, Pipeline):
             ]
         )
 
-        query = f"sys_created_on>={start_ts}^sys_created_on<={end_ts}^taskISNOTEMPTY"
-        add_q = "task.assignment_group.nameSTARTSWITHvita"
-        if add_q not in query:
-            query = f"{query}^{add_q}"
-
+        query = f"sys_created_on>={start_ts}^sys_created_on<={end_ts}^taskISNOTEMPTY^task.assignment_group.nameSTARTSWITHvita"
         params = {"sysparm_fields": fields, "sysparm_query": query}
         result_list = paginate(
             path="task_sla",

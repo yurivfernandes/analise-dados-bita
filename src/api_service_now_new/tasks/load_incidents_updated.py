@@ -101,7 +101,11 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
 
         # solicita apenas os campos presentes no model Incident
         fields = ",".join(
-            [f.name for f in Incident._meta.fields if not f.name.startswith("etl_") and f.name != "etl_hash"]
+            [
+                f.name
+                for f in Incident._meta.fields
+                if not f.name.startswith("etl_") and f.name != "etl_hash"
+            ]
         )
 
         query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}^assignment_groupSTARTSWITHvita"

@@ -41,11 +41,10 @@ class LoadContractSla(MixinGetDataset, Pipeline):
                 if not f.name.startswith("etl_") and f.name != "etl_hash"
             ]
         )
-
-        # para contract_sla o assignment_group pertence ao task referenciado -> usar dot-walk
-        add_q = "nameLIKE[vita^ORnameLIKE[vgr^ORnameLIKEbradesco"
-        params = {"sysparm_fields": fields, "sysparm_query": add_q}
-
+        params = {
+            "sysparm_fields": fields,
+            "sysparm_query": "nameLIKE[vita^ORnameLIKE[vgr^ORnameLIKEbradesco",
+        }
         result_list = paginate(
             path="contract_sla",
             params=params,

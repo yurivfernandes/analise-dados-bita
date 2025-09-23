@@ -41,11 +41,8 @@ class LoadIncidentSla(MixinGetDataset, Pipeline):
                 if not f.name.startswith("etl_") and f.name != "etl_hash"
             ]
         )
-        query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59^taskISNOTEMPTY"
-        # para task_sla o assignment_group pertence ao task referenciado -> usar dot-walk
-        add_q = "task.assignment_group.nameSTARTSWITHvita"
-        if add_q not in query:
-            query = f"{query}^{add_q}"
+        query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59^taskISNOTEMPTY^task.assignment_group.nameSTARTSWITHvita"
+
         result_list = paginate(
             path="task_sla",
             params={"sysparm_fields": fields, "sysparm_query": query},

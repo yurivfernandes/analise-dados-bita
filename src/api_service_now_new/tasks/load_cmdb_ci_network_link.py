@@ -38,17 +38,10 @@ class LoadCmdbCiNetworkLink(MixinGetDataset, Pipeline):
                 if not f.name.startswith("etl_") and f.name != "etl_hash"
             ]
         )
-
-        # aplicar filtro por assignment_group (fila) similar aos loaders de incidents
-        query = ""
-        add_q = "company.nameLIKEbradesco"
-        if add_q:
-            query = add_q
-
-        params = {"sysparm_fields": fields}
-        if query:
-            params["sysparm_query"] = query
-
+        params = {
+            "sysparm_fields": fields,
+            "sysparm_query": "company.nameLIKEbradesco",
+        }
         result_list = paginate(
             path="cmdb_ci_network_link",
             params=params,
