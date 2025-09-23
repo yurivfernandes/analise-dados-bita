@@ -38,15 +38,7 @@ class LoadGroups(MixinGetDataset, Pipeline):
             ]
         )
 
-        # aplicar filtro por assignment_group (fila) similar aos loaders de incidents
-        query = ""
-        add_q = "nameLIKEvita"
-        if add_q:
-            query = add_q
-
-        params = {"sysparm_fields": fields}
-        if query:
-            params["sysparm_query"] = query
+        params = {"sysparm_fields": fields, "sysparm_query":"nameSTARTSWITHvita"}
 
         result_list = paginate(
             path="sys_user_group",
