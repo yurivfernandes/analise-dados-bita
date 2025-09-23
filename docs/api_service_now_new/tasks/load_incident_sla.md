@@ -41,7 +41,7 @@ def _filtro(self) -> dict:
 
 ```python
 query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59^taskISNOTEMPTY"
-add_q = "task.assignment_group.nameLIKEvita"
+add_q = "task.assignment_group.nameSTARTSWITHvita"
 query = f"{query}^{add_q}"
 ```
 

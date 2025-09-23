@@ -28,12 +28,15 @@ class LoadTaskTimeWorked(MixinGetDataset, Pipeline):
 
 ```python
 query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59"
+add_q = "task.assignment_group.nameSTARTSWITHvita"
+if add_q not in query:
+    query = f"{query}^{add_q}"
 ```
 
 **Características da Query**:
 - Filtra por `sys_created_on` (quando o registro de tempo foi criado)
-- **Não usa filtro de grupo** específico (diferente de outras tasks)
-- Captura todos os registros de tempo do período
+- **Usa filtro de grupo via dot-walk**: `task.assignment_group.nameSTARTSWITHvita`
+- Captura apenas registros de tempo de tasks do grupo Vita
 
 ## Estrutura de Dados
 
@@ -257,16 +260,15 @@ def overtime_analysis(date_start, date_end):
 ### Características da Query
 
 ```python
-# ✅ Query simples e rápida
-query = "sys_created_on>=2025-01-20 00:00:00^sys_created_on<=2025-01-20 23:59:59"
+# ✅ Query com dot-walk para filtrar por grupo
+query = "sys_created_on>=2025-01-20 00:00:00^sys_created_on<=2025-01-20 23:59:59^task.assignment_group.nameSTARTSWITHvita"
 
-# Não usa filtros de grupo (diferente de outras tasks)
-# Captura TODOS os registros de tempo do período
+# Dot-walk: task -> assignment_group -> name
 ```
 
-**Vantagem**: Mais rápida que tasks com dot-walk ou filtros complexos
+**Vantagem**: Filtra apenas registros de tempo de tasks do grupo Vita
 
-**Cuidado**: Pode capturar registros de grupos não-Vita
+**Desvantagem**: Mais lenta que queries simples devido ao dot-walk
 
 ## Validações e Qualidade
 

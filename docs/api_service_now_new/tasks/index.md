@@ -541,6 +541,7 @@ avg_duration = ServiceNowExecutionLog.objects.filter(
 
 ### Tasks de Configurações (sem período)
 - [LoadContractSla](load_contract_sla.md) - Carrega contratos SLA
+- [LoadAstContract](load_ast_contract.md) - Carrega contratos de ativos
 - [LoadGroups](load_groups.md) - Carrega grupos de atribuição
 - [LoadSysUser](load_sys_user.md) - Carrega usuários (estratégia inteligente)
 - [LoadSysCompany](load_sys_company.md) - Carrega empresas

@@ -28,7 +28,7 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
 
 ```python
 query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59"
-add_q = "assignment_groupLIKEvita"
+add_q = "assignment_groupSTARTSWITHvita"
 query = f"{query}^{add_q}"
 ```
 

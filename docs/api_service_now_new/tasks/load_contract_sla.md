@@ -31,9 +31,9 @@ params = {"sysparm_fields": fields, "sysparm_query": add_q}
 ```
 
 **Filtros Aplicados**:
-- `nameLIKE[vita` - Contratos com "vita" no nome
-- `ORnameLIKE[vgr` - OU contratos com "vgr" no nome  
-- `ORnameLIKEbradesco` - OU contratos com "bradesco" no nome
+- `nameLIKE[vita` - Contratos que contenham "vita"
+- `ORnameLIKE[vgr` - OU contratos que contenham "vgr"  
+- `ORnameLIKEbradesco` - OU contratos que contenham "bradesco"
 
 **Diferença das Tasks de Incidents**: Não filtra por data, busca todos os contratos ativos.
 
@@ -265,7 +265,7 @@ SERVICENOW_SLA_FILTERS = [
 ]
 
 # Na task
-filter_conditions = [f"nameLIKE{client}" for client in settings.SERVICENOW_SLA_FILTERS]
+filter_conditions = [f"nameSTARTSWITH{client}" for client in settings.SERVICENOW_SLA_FILTERS]
 add_q = "^OR".join(filter_conditions)
 ```
 
@@ -386,7 +386,7 @@ for thread in threads:
 ```
 Situação: n_inserted = 0 sempre
 Causa: Nomes dos contratos mudaram no ServiceNow
-Solução: Revisar filtros "nameLIKE[..."
+Solução: Revisar filtros "nameSTARTSWITH..."
 ```
 
 **2. Contratos órfãos em IncidentSla**
@@ -410,7 +410,7 @@ Normal: Ocorre após mudanças em massa no ServiceNow
 from api_service_now_new.utils.servicenow import paginate
 
 # Query atual
-query = "nameLIKE[vita^ORnameLIKE[vgr^ORnameLIKEbradesco"
+query = "nameSTARTSWITHvita^ORnameSTARTSWITHvgr^ORnameSTARTSWITHbradesco"
 result = paginate("contract_sla", params={
     "sysparm_query": query,
     "sysparm_limit": "10"

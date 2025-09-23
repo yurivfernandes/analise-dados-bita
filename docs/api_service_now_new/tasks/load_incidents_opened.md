@@ -45,14 +45,14 @@ A task constrói uma query complexa para o ServiceNow:
 
 ```python
 query = f"opened_at>={start_ts}^opened_at<={end_ts}"
-add_q = "assignment_groupLIKEvita"
+add_q = "assignment_groupSTARTSWITHvita"
 query = f"{query}^{add_q}"
 ```
 
 **Tradução**:
 - `opened_at>=2025-01-20 00:00:00`
 - `^opened_at<=2025-01-20 23:59:59` 
-- `^assignment_groupLIKEvita`
+- `^assignment_groupSTARTSWITHvita`
 
 Isso significa: incidents abertos no período E com grupo de atribuição contendo "vita".
 
@@ -314,11 +314,11 @@ API_TIMEOUT="30"
 
 ```python
 # Filtro atual (hardcoded)
-add_q = "assignment_groupLIKEvita"
+add_q = "assignment_groupSTARTSWITHvita"
 
 # Possível melhoria: configurável via settings
 ADD_QUERY = settings.SERVICENOW_INCIDENT_FILTER
-# "assignment_groupLIKEvita^ORassignment_groupLIKEvgr"
+# "assignment_groupSTARTSWITHvita^ORassignment_groupSTARTSWITHvgr"
 ```
 
 ## Integração
