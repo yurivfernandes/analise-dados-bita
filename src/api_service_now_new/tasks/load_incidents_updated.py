@@ -121,7 +121,7 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
         )
         return pl.DataFrame(
             result_list,
-            schema={f.name: pl.String for f in Incident._meta.fields},
+            schema={f.name: pl.String for f in Incident._meta.fields if f.name != 'id'},
         )
 
 

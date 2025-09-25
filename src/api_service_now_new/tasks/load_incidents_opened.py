@@ -50,7 +50,9 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
             [
                 f.name
                 for f in Incident._meta.fields
-                if not f.name.startswith("etl_") and f.name != "etl_hash"
+                if not f.name.startswith("etl_")
+                and f.name != "etl_hash"
+                and f.name != "id"
             ]
         )
 
@@ -66,7 +68,11 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
         )
         return pl.DataFrame(
             result_list,
-            schema={f.name: pl.String for f in Incident._meta.fields},
+            schema={
+                f.name: pl.String
+                for f in Incident._meta.fields
+                if f.name != "id"
+            },
         )
 
 

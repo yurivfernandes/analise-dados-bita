@@ -23,8 +23,7 @@ class IncidentSla(models.Model):
     sys_updated_on = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
-        blank=True,
-        null=True,
+        primary_key=True,
     )
     business_time_left = models.CharField(
         max_length=255,
@@ -202,5 +201,5 @@ class IncidentSla(models.Model):
     )
 
     class Meta:
-        managed = True
+        managed = False
         db_table = "incident_sla"

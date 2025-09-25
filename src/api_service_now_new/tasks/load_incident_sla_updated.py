@@ -96,7 +96,7 @@ class LoadIncidentSlaUpdated(MixinGetDataset, Pipeline):
             ]
         )
 
-        query = f"sys_created_on>={start_ts}^sys_created_on<={end_ts}^taskISNOTEMPTY^task.assignment_group.nameSTARTSWITHvita"
+        query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}^taskISNOTEMPTY^task.assignment_group.nameSTARTSWITHvita^task.assignment_group.nameSTARTSWITHvita^sla.nameLIKE[vita^ORsla.nameLIKE[vgr^ORsla.nameLIKEbradesco"
         params = {"sysparm_fields": fields, "sysparm_query": query}
         result_list = paginate(
             path="task_sla",

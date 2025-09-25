@@ -47,6 +47,7 @@ class LoadIncidentsView(APIView):
             data_inicio = data_inicio or ontem.strftime("%Y-%m-%d")
             data_fim = data_fim or ontem.strftime("%Y-%m-%d")
         patch_requests_ssl()
+        LoadIncidentSla(start_date=data_inicio, end_date=data_fim).run()
         thread = threading.Thread(
             target=self._run_pipelines_in_background,
             args=(data_inicio, data_fim),
