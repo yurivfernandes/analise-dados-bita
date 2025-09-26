@@ -9,7 +9,7 @@ from django.db import transaction
 from django.utils import timezone as dj_timezone
 
 
-def get_servicenow_env() -> Tuple[str, tuple, Dict]:
+def get_servicenow_env() -> Tuple[str, Tuple[str, str], Dict[str, str]]:
     """Retorna (base_url, (user, password), headers) usando variáveis de ambiente.
 
     Espera encontrar `SERVICE_NOW_BASE_URL`, `SERVICE_NOW_USERNAME` e `SERVICE_NOW_USER_PASSWORD` no env.
@@ -22,6 +22,8 @@ def get_servicenow_env() -> Tuple[str, tuple, Dict]:
         raise RuntimeError(
             "Missing ServiceNow credentials in environment variables"
         )
+    # Informar ao verificador de tipos que as variáveis não são None aqui
+    assert base_url is not None and user is not None and password is not None
     return base_url, (user, password), headers
 
 
@@ -196,9 +198,31 @@ def flatten_reference_fields(data: dict) -> dict:
     """Converte campos de referência do ServiceNow para valores simples"""
     for key in list(data.keys()):
         value = data.get(key)
-        if isinstance(value, dict) and "value" in value:
-            data[key] = value.get("value")
-            data[f"dv_{key}"] = ""
+        if isinstance(value, dict):
+            possible_url = None
+            for url_key in ("link", "url", "sys_href", "href"):
+                u = value.get(url_key)
+                if u and isinstance(u, str):
+                    possible_url = u
+                    break
+            if not possible_url:
+                for v in value.values():
+                    if isinstance(v, str) and (
+                        v.startswith("http://") or v.startswith("https://")
+                    ):
+                        possible_url = v
+                        break
+
+            if possible_url:
+                try:
+                    path = possible_url.split("?")[0]
+                    path = path.rstrip("/")
+                    id_part = path.split("/")[-1]
+                    data[key] = id_part
+                except Exception:
+                    data[key] = str(possible_url)
+            else:
+                data[key] = value
     return data
 
 
