@@ -346,3 +346,17 @@ def upsert_by_sys_id(
                         )
     if isinstance(log, dict):
         log["n_inserted"] = log.get("n_inserted", 0) + created
+
+def parse_datetime(self, value: str) -> datetime | None:
+    """Tenta converter uma string para datetime, testando múltiplos formatos."""
+    from datetime import datetime
+
+    if not isinstance(value, str):
+        return None
+
+    for fmt in ("%d/%m/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
+        try:
+            return datetime.strptime(value, fmt)
+        except ValueError:
+            continue
+    return None

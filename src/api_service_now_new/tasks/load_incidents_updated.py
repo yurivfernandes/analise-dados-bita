@@ -5,9 +5,10 @@ from celery import shared_task
 from django.db import transaction
 from django.utils import timezone
 
-from api_service_now_new.models.incident import Incident
-from api_service_now_new.utils.servicenow import ensure_datetime, paginate
 from app.utils import MixinGetDataset, Pipeline
+
+from ..models.incident import Incident
+from ..utils.servicenow import ensure_datetime, paginate, parse_datetime
 
 
 class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
@@ -31,7 +32,23 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
 
     def extract_and_transform_dataset(self) -> None:
         """Preenche `self.dataset` a partir da property `_incidents` (polars DataFrame)."""
-        self.dataset = self._incidents
+        self.dataset = self._incidents.with_columns(
+            pl.col("opened_at")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("closed_at")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("resolved_at")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("u_fim_indisponibilidade")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("u_data_normalizacao_servico")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+        )
 
     def load(self, dataset: pl.DataFrame, model) -> None:
         """Override: não faz delete+insert; apenas faz update dos registros por `sys_id`."""
@@ -121,7 +138,11 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
         )
         return pl.DataFrame(
             result_list,
-            schema={f.name: pl.String for f in Incident._meta.fields if f.name != 'id'},
+            schema={
+                f.name: pl.String
+                for f in Incident._meta.fields
+                if f.name != "id"
+            },
         )
 
 
@@ -134,4 +155,5 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
 )
 def load_incidents_updated_async(_task, start_date: str, end_date: str):
     sync_task = LoadIncidentsUpdated(start_date=start_date, end_date=end_date)
+    return sync_task.run()
     return sync_task.run()

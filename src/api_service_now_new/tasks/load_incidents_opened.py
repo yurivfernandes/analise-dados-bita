@@ -6,7 +6,7 @@ from celery import shared_task
 from app.utils import MixinGetDataset, Pipeline
 
 from ..models import Incident
-from ..utils.servicenow import ensure_datetime, paginate
+from ..utils.servicenow import ensure_datetime, paginate, parse_datetime
 
 
 class LoadIncidentsOpened(MixinGetDataset, Pipeline):
@@ -37,7 +37,23 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
 
     def extract_and_transform_dataset(self) -> None:
         """Preenche `self.dataset` a partir da property `_incidents` (polars DataFrame)."""
-        self.dataset = self._incidents
+        self.dataset = self._incidents.with_columns(
+            pl.col("opened_at")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("closed_at")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("resolved_at")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("u_fim_indisponibilidade")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+            pl.col("u_data_normalizacao_servico")
+            .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .alias("opened_at"),
+        )
 
     @property
     def _incidents(self) -> pl.DataFrame:
