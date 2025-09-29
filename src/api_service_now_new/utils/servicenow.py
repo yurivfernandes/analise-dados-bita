@@ -183,7 +183,43 @@ def process_data(data: List[Dict]) -> List[Dict]:
 
 
 def parse_datetime(value: str) -> Optional[datetime]:  # deprecado
-    return None
+    """Tenta converter uma string para datetime testando vários formatos.
+
+    Retorna um objeto datetime ou None se não conseguir parsear.
+    Suporta formatos comuns encontrados no ServiceNow e na base de dados:
+    - dd/mm/YYYY HH:MM:SS
+    - dd/mm/YYYY HH:MM
+    - YYYY-MM-DD HH:MM:SS
+    - YYYY-MM-DDTHH:MM:SS[.ffffff]
+    - ISO-like strings
+    """
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return None
+    v = value.strip()
+    if v == "":
+        return None
+
+    fmts = (
+        "%d/%m/%Y %H:%M:%S",
+        "%d/%m/%Y %H:%M",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S.%f",
+    )
+    for fmt in fmts:
+        try:
+            return datetime.strptime(v, fmt)
+        except Exception:
+            continue
+
+    # fallback para ISO via fromisoformat
+    try:
+        return datetime.fromisoformat(v)
+    except Exception:
+        return None
 
 
 def coerce_dates_in_dict(d: dict) -> dict:  # deprecado
@@ -347,16 +383,5 @@ def upsert_by_sys_id(
     if isinstance(log, dict):
         log["n_inserted"] = log.get("n_inserted", 0) + created
 
-def parse_datetime(self, value: str) -> datetime | None:
-    """Tenta converter uma string para datetime, testando múltiplos formatos."""
-    from datetime import datetime
 
-    if not isinstance(value, str):
-        return None
-
-    for fmt in ("%d/%m/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
-        try:
-            return datetime.strptime(value, fmt)
-        except ValueError:
-            continue
-    return None
+# parse_datetime acima substitui a versão antiga/errada
