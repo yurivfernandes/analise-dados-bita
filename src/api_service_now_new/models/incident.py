@@ -21,8 +21,16 @@ class Incident(models.Model):
         blank=True,
         null=True,
     )
-    opened_at = models.DateTimeField()
-    closed_at = models.DateTimeField(blank=True, null=True)
+    opened_at = models.CharField(
+        max_length=255,
+        db_collation="SQL_Latin1_General_CP1_CI_AS",
+    )
+    closed_at = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        db_collation="SQL_Latin1_General_CP1_CI_AS",
+    )
     contract = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
@@ -41,25 +49,25 @@ class Incident(models.Model):
         blank=True,
         null=True,
     )
-    dv_u_categoria_da_falha = models.CharField(
+    u_categoria_da_falha = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
         null=True,
     )
-    dv_u_sub_categoria_da_falha = models.CharField(
+    u_sub_categoria_da_falha = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
         null=True,
     )
-    dv_u_detalhe_sub_categoria_da_falha = models.CharField(
+    u_detalhe_sub_categoria_da_falha = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
         null=True,
     )
-    dv_state = models.CharField(
+    state = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
@@ -77,19 +85,19 @@ class Incident(models.Model):
         blank=True,
         null=True,
     )
-    dv_category = models.CharField(
+    category = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
         null=True,
     )
-    dv_subcategory = models.CharField(
+    subcategory = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
         null=True,
     )
-    dv_u_detail_subcategory = models.CharField(
+    u_detail_subcategory = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
@@ -142,7 +150,12 @@ class Incident(models.Model):
         blank=True,
         null=True,
     )
-    u_tempo_indisponivel = models.DateTimeField(blank=True, null=True)
+    u_tempo_indisponivel = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        db_collation="SQL_Latin1_General_CP1_CI_AS",
+    )
     parent_incident = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
@@ -152,7 +165,7 @@ class Incident(models.Model):
     short_description = models.TextField(
         db_collation="SQL_Latin1_General_CP1_CI_AS", blank=True, null=True
     )
-    dv_location = models.CharField(
+    location = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
@@ -167,13 +180,13 @@ class Incident(models.Model):
         blank=True,
         null=True,
     )
-    dv_urgency = models.CharField(
+    urgency = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
         null=True,
     )
-    dv_closed_by = models.CharField(
+    closed_by = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,
@@ -191,15 +204,19 @@ class Incident(models.Model):
         blank=True,
         null=True,
     )
-    u_fim_indisponibilidade = models.DateTimeField(blank=True, null=True)
-    time_worked = models.DateTimeField(blank=True, null=True)
-    dv_time_worked = models.CharField(
-        max_length=255,
-        db_collation="SQL_Latin1_General_CP1_CI_AS",
+    u_fim_indisponibilidade = models.CharField(
         blank=True,
         null=True,
+        max_length=255,
+        db_collation="SQL_Latin1_General_CP1_CI_AS",
     )
-    dv_priority = models.CharField(
+    time_worked = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        db_collation="SQL_Latin1_General_CP1_CI_AS",
+    )
+    priority = models.CharField(
         max_length=255,
         db_collation="SQL_Latin1_General_CP1_CI_AS",
         blank=True,

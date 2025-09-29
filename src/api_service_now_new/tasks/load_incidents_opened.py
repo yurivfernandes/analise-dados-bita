@@ -57,7 +57,11 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
         )
 
         query = f"opened_at>={start_ts}^opened_at<={end_ts}^assignment_groupSTARTSWITHvita"
-        params = {"sysparm_query": query, "sysparm_fields": fields}
+        params = {
+            "sysparm_query": query,
+            "sysparm_fields": fields,
+            "sysparm_display_value": "true",
+        }
         result_list = paginate(
             path="incident",
             params=params,
