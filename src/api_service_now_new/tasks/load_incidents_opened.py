@@ -43,16 +43,16 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
             .alias("opened_at"),
             pl.col("closed_at")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .alias("openeclosed_atd_at"),
             pl.col("resolved_at")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .alias("resolved_at"),
             pl.col("u_fim_indisponibilidade")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .alias("u_fim_indisponibilidade"),
             pl.col("u_data_normalizacao_servico")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .alias("u_data_normalizacao_servico"),
         )
 
     @property

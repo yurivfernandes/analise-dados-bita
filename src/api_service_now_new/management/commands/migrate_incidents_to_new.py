@@ -21,36 +21,53 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        qs = Incident.objects.all()
-        field_names = [f.name for f in Incident._meta.fields]
-        total = qs.count()
-        self.stdout.write(f"Total registros em Incident: {total}")
+        CHUNK_SIZE = 10_000
+        qs_base = Incident.objects.all().order_by("sys_id")
 
-        # trazer exatamente os campos do model como dicts (melhor performance)
-        rows = list(qs.values(*field_names))
-        df = pl.DataFrame(data=rows)
-        # inicializar log
+        total = qs_base.count()
+
+        field_names = [f.name for f in Incident._meta.fields if f.name != "id"]
         self.log = {}
 
-        date_cols = [
-            "opened_at",
-            "closed_at",
-            "resolved_at",
-            "u_fim_indisponibilidade",
-            "u_data_normalizacao_servico",
-        ]
-        self.stdout.write("Dataframe criado, normalizando as colunas...")
-        # usar map_elements com a função parse_datetime já existente (mais rápido que apply)
-        for c in date_cols:
-            if c in df.columns:
-                self.stdout.write(f"Normalizando a coluna: {c}")
-                df = df.with_columns(
-                    pl.col(c)
-                    .map_elements(parse_datetime, return_dtype=pl.Datetime)
-                    .alias(c)
-                )
-        self.stdout.write("Dataframe normalizado...")
-        self._save(dataset=df, model=IncidentNew)
+        for offset in range(0, total, CHUNK_SIZE):
+            self.stdout.write(
+                f"Processando registros {offset} até {offset + CHUNK_SIZE}..."
+            )
+
+            qs_chunk = qs_base[offset : offset + CHUNK_SIZE].values(
+                *field_names
+            )
+            raw_data = list(qs_chunk.values(*field_names))
+            clean_data = [
+                {k: str(v) if v is not None else None for k, v in row.items()}
+                for row in raw_data
+            ]
+
+            df = pl.DataFrame(
+                list(clean_data),
+                schema={f: pl.String for f in field_names},
+                infer_schema_length=CHUNK_SIZE,
+            )
+
+            date_cols = [
+                "opened_at",
+                "closed_at",
+                "resolved_at",
+                "u_fim_indisponibilidade",
+                "u_data_normalizacao_servico",
+            ]
+            for c in date_cols:
+                if c in df.columns:
+                    self.stdout.write(f"Normalizando a coluna: {c}")
+                    df = df.with_columns(
+                        pl.col(c)
+                        .map_elements(parse_datetime, return_dtype=pl.Datetime)
+                        .alias(c)
+                    )
+
+            self._save(dataset=df, model=IncidentNew)
+
+        self.stdout.write("Todos os blocos foram processados e salvos.")
 
     def _save(self, dataset: pl.DataFrame, model=models.Model) -> None:
         """Salva os dados no banco de dados no model selecionado."""

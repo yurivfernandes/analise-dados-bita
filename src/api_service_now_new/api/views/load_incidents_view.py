@@ -47,7 +47,7 @@ class LoadIncidentsView(APIView):
             data_inicio = data_inicio or ontem.strftime("%Y-%m-%d")
             data_fim = data_fim or ontem.strftime("%Y-%m-%d")
         patch_requests_ssl()
-        LoadIncidentSla(start_date=data_inicio, end_date=data_fim).run()
+        # LoadIncidentsOpened(start_date=data_inicio, end_date=data_fim).run()
         thread = threading.Thread(
             target=self._run_pipelines_in_background,
             args=(data_inicio, data_fim),
@@ -160,20 +160,20 @@ class LoadIncidentsView(APIView):
                 th.join()
 
             # 2. Paralelo: executar updates (atualizações por sys_id) em paralelo
-            # update_tasks = [
-            #     ("load_incidents_updated", LoadIncidentsUpdated),
-            #     ("load_incident_sla_updated", LoadIncidentSlaUpdated),
-            #     ("load_incident_task_updated", LoadIncidentTaskUpdated),
-            # ]
-            # threads = []
-            # for name, cls in update_tasks:
-            #     th = threading.Thread(
-            #         target=_run_task_local, args=(name, cls), daemon=True
-            #     )
-            #     th.start()
-            #     threads.append(th)
-            # for th in threads:
-            #     th.join()
+            update_tasks = [
+                ("load_incidents_updated", LoadIncidentsUpdated),
+                ("load_incident_sla_updated", LoadIncidentSlaUpdated),
+                ("load_incident_task_updated", LoadIncidentTaskUpdated),
+            ]
+            threads = []
+            for name, cls in update_tasks:
+                th = threading.Thread(
+                    target=_run_task_local, args=(name, cls), daemon=True
+                )
+                th.start()
+                threads.append(th)
+            for th in threads:
+                th.join()
         except Exception:
             logger.exception("Erro inesperado no pipeline de incidents")
         finally:
