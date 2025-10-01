@@ -1,6 +1,7 @@
 import datetime
 import logging
 import threading
+from decimal import Decimal
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -134,13 +135,6 @@ class LoadIncidentsView(APIView):
             status="running",
         )
 
-        # método separado para executar uma task; definido como método de instância
-        # para evitar funções aninhadas e facilitar testes
-        def _run_task_local(name, cls):
-            return self._run_task(
-                name, cls, start_date, end_date, results, errors
-            )
-
         try:
             # 1. Paralelo: 4 tasks pesadas (construção inicial)
             heavy_tasks = [
@@ -149,17 +143,23 @@ class LoadIncidentsView(APIView):
                 ("load_task_time_worked", LoadTaskTimeWorked),
                 ("load_incident_task", LoadIncidentTask),
             ]
+
             threads = []
             for name, cls in heavy_tasks:
+                # usar self._run_task diretamente; ele já aceita start/end, results, errors
                 th = threading.Thread(
-                    target=_run_task_local, args=(name, cls), daemon=True
+                    target=self._run_task,
+                    args=(name, cls, start_date, end_date, results, errors),
+                    daemon=True,
                 )
                 th.start()
                 threads.append(th)
+            # aguardar todas as heavy tasks terminarem
             for th in threads:
                 th.join()
 
-            # 2. Paralelo: executar updates (atualizações por sys_id) em paralelo
+            # 2. Após heavy tasks, rodar as updates em paralelo entre si,
+            # mas somente depois que os dados pesados estiverem no banco.
             update_tasks = [
                 ("load_incidents_updated", LoadIncidentsUpdated),
                 ("load_incident_sla_updated", LoadIncidentSlaUpdated),
@@ -168,7 +168,9 @@ class LoadIncidentsView(APIView):
             threads = []
             for name, cls in update_tasks:
                 th = threading.Thread(
-                    target=_run_task_local, args=(name, cls), daemon=True
+                    target=self._run_task,
+                    args=(name, cls, start_date, end_date, results, errors),
+                    daemon=True,
                 )
                 th.start()
                 threads.append(th)
@@ -185,7 +187,10 @@ class LoadIncidentsView(APIView):
             # Atualiza o log
             try:
                 exec_log.ended_at = datetime.datetime.now()
-                exec_log.duration_seconds = round(total.total_seconds(), 2)
+                # armazenar como Decimal para compatibilizar com DecimalField do model
+                exec_log.duration_seconds = Decimal(
+                    str(round(total.total_seconds(), 2))
+                )
                 exec_log.status = "error" if errors else "success"
                 exec_log.error_message = (
                     "; ".join(e for _, e in errors)[:1000] if errors else None
