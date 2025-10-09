@@ -35,19 +35,24 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
         self.dataset = self._incidents.with_columns(
             pl.col("opened_at")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
+            .dt.strftime("%Y-%m-%d %H:%M:%S")
             .alias("opened_at"),
             pl.col("closed_at")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .dt.strftime("%Y-%m-%d %H:%M:%S")
+            .alias("closed_at"),
             pl.col("resolved_at")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .dt.strftime("%Y-%m-%d %H:%M:%S")
+            .alias("resolved_at"),
             pl.col("u_fim_indisponibilidade")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .dt.strftime("%Y-%m-%d %H:%M:%S")
+            .alias("u_fim_indisponibilidade"),
             pl.col("u_data_normalizacao_servico")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("opened_at"),
+            .dt.strftime("%Y-%m-%d %H:%M:%S")
+            .alias("u_data_normalizacao_servico"),
         )
 
     def load(self, dataset: pl.DataFrame, model) -> None:
@@ -94,6 +99,12 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
                 continue
             for k, v in row.items():
                 if k in updatable_fields:
+                    # Garantir que valores não-string sejam convertidos para string
+                    if v is not None and not isinstance(v, str):
+                        v = str(v)
+                    # Converter strings vazias para None
+                    if v == "":
+                        v = None
                     setattr(inst, k, v)
             instances_to_update.append(inst)
 
@@ -155,5 +166,4 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
 )
 def load_incidents_updated_async(_task, start_date: str, end_date: str):
     sync_task = LoadIncidentsUpdated(start_date=start_date, end_date=end_date)
-    return sync_task.run()
     return sync_task.run()
