@@ -3,6 +3,7 @@
 from .load_ast_contract import LoadAstContract
 from .load_cmdb_ci_network_link import LoadCmdbCiNetworkLink
 from .load_contract_sla import LoadContractSla
+from .load_f_incident import LoadFIncident
 from .load_groups import LoadGroups
 from .load_incident_sla import LoadIncidentSla
 from .load_incident_sla_updated import LoadIncidentSlaUpdated
@@ -28,4 +29,5 @@ __all__ = [
     "LoadIncidentTaskUpdated",
     "LoadTaskTimeWorked",
     "LoadCmdbCiNetworkLink",
+    "LoadFIncident",
 ]

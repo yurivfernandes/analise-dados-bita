@@ -6,6 +6,7 @@ from .incident import Incident
 from .incident_new import IncidentNew
 from .incident_sla import IncidentSla
 from .incident_task import IncidentTask
+from .f_incident import FIncident
 from .servicenow_execution_log import ServiceNowExecutionLog
 from .sys_company import SysCompany
 from .sys_user import SysUser
@@ -18,6 +19,7 @@ __all__ = [
     "Incident",
     "IncidentSla",
     "IncidentTask",
+    "FIncident",
     "ServiceNowExecutionLog",
     "SysCompany",
     "SysUser",
