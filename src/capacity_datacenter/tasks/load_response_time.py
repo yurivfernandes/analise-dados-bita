@@ -71,7 +71,14 @@ class LoadResponseTime(MixinGetDataset, Pipeline):
     def extract_and_transform_dataset(self) -> pl.DataFrame:
         """Extrai e transforma o dataset principal."""
         self.dataset = (
-            self._response_time_dataset.group_by(["node_id", "date"])
+            self._response_time_dataset
+            .with_columns(
+                pl.when(pl.col('avg_response_time')>300000)
+                .then(300000)
+                .otherwise(pl.col('avg_response_time'))
+                .alias("avg_response_time")
+            )
+            .group_by(["node_id", "date"])
             .agg(
                 [
                     pl.col("avg_response_time")

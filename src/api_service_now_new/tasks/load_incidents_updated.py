@@ -136,7 +136,7 @@ class LoadIncidentsUpdated(MixinGetDataset, Pipeline):
             ]
         )
 
-        query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}^assignment_groupSTARTSWITHvita"
+        query = f"sys_updated_on>={start_ts}^sys_updated_on<={end_ts}^assignment_groupSTARTSWITHvita^ORassignment_groupSTARTSWITHvivo b2b centro servi"
         params = {"sysparm_query": query, "sysparm_fields": fields}
         result_list = paginate(
             path="incident",

@@ -41,3 +41,4 @@ celery==5.2.7
 
 #Meraki
 meraki
+fastexcel

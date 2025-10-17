@@ -45,7 +45,7 @@ class LoadIncidentTask(MixinGetDataset, Pipeline):
             ]
         )
 
-        query = f"opened_at>={self.start_date} 00:00:00^opened_at<={self.end_date} 23:59:59^assignment_groupSTARTSWITHvita"
+        query = f"opened_at>={self.start_date} 00:00:00^opened_at<={self.end_date} 23:59:59^assignment_groupSTARTSWITHvita^ORassignment_groupSTARTSWITHvivo b2b centro servi"
 
         result_list = paginate(
             path="incident_task",

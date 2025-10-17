@@ -40,7 +40,7 @@ class LoadGroups(MixinGetDataset, Pipeline):
 
         params = {
             "sysparm_fields": fields,
-            "sysparm_query": "nameSTARTSWITHvita",
+            "sysparm_query": "nameSTARTSWITHvita^ORnameSTARTSWITHvivo b2b centro servi",
         }
 
         result_list = paginate(

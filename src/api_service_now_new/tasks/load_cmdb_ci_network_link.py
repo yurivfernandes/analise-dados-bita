@@ -40,7 +40,7 @@ class LoadCmdbCiNetworkLink(MixinGetDataset, Pipeline):
         )
         params = {
             "sysparm_fields": fields,
-            "sysparm_query": "company.nameLIKEbradesco",
+            "sysparm_query": "company.nameLIKEbradesco^Orcompany.nameLIKEraia",
         }
         result_list = paginate(
             path="cmdb_ci_network_link",

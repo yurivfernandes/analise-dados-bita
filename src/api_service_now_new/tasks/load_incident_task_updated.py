@@ -96,7 +96,7 @@ class LoadIncidentTaskUpdated(MixinGetDataset, Pipeline):
             ]
         )
 
-        query = f"opened_at>={start_ts} 00:00:00^opened_at<={end_ts} 23:59:59^assignment_groupSTARTSWITHvita"
+        query = f"opened_at>={start_ts} 00:00:00^opened_at<={end_ts} 23:59:59^assignment_groupSTARTSWITHvita^ORassignment_groupSTARTSWITHvivo b2b centro servi"
 
         params = {"sysparm_fields": fields, "sysparm_query": query}
         result_list = paginate(

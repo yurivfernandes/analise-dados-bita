@@ -76,8 +76,15 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
         self.dataset = (
             self._custom_poller_statistics_dataset.with_columns(
                 pl.col("weight").cast(pl.Float64),
-                pl.col("raw_status").cast(pl.Float64),
                 pl.col("date").cast(pl.Date),
+                pl.col("raw_status").cast(pl.Float64),
+            )
+            .with_columns(
+                pl.when(pl.col("raw_status") > 300000)
+                .then(300000)
+                .otherwise(pl.col("raw_status"))
+                .cast(pl.Float64)
+                .alias("raw_status"),
             )
             .group_by(["node_id", "date"])
             .agg(
@@ -146,13 +153,16 @@ class LoadCustompollerStatistics(MixinGetDataset, Pipeline):
                 in_list = ",".join(f"'{self._esc(a)}'" for a in batch)
 
                 inner_query = (
-                    "SELECT\n                        poller.CustomPollerAssignmentID,\n                        poller.RowID,\n                        CONVERT(VARCHAR(10), poller.DateTime, 23) AS DateTime,\n                        poller.RawStatus,\n                        poller.Weight\n                    FROM [BR_TD_VITAIT].dbo.[CustomPollerStatistics_CS] poller\n                    WHERE poller.CustomPollerAssignmentID IN ("
-                    + in_list
-                    + ") AND poller.DateTime >= '"
-                    + window_start.strftime("%Y-%m-%d %H:%M:%S")
-                    + "' AND poller.DateTime < '"
-                    + window_end.strftime("%Y-%m-%d %H:%M:%S")
-                    + "'"
+                    "SELECT\n"
+                    "    poller.CustomPollerAssignmentID,\n"
+                    "    poller.RowID,\n"
+                    "    CONVERT(VARCHAR(10), poller.DateTime, 23) AS DateTime,\n"
+                    "    CASE WHEN poller.RawStatus > 2000 THEN NULL ELSE poller.RawStatus END AS RawStatus,\n"
+                    "    poller.Weight\n"
+                    "FROM [BR_TD_VITAIT].dbo.[CustomPollerStatistics_CS] poller\n"
+                    f"WHERE poller.CustomPollerAssignmentID IN ({in_list})\n"
+                    f"AND poller.DateTime >= '{window_start.strftime('%Y-%m-%d %H:%M:%S')}'\n"
+                    f"AND poller.DateTime < '{window_end.strftime('%Y-%m-%d %H:%M:%S')}'"
                 )
 
                 inner_for_openquery = inner_query.replace("'", "''")

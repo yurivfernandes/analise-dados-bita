@@ -4,8 +4,8 @@ from . import views
 
 urlpatterns = [
     path(
-        "load_capacity_datacenter/",
+        "load-capacity-datacenter/",
         views.LoadCapacityDatacenterView.as_view(),
-        name="load_capacity_datacenter",
+        name="load-capacity-datacenter",
     ),
 ]

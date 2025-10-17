@@ -41,7 +41,7 @@ class LoadIncidentSla(MixinGetDataset, Pipeline):
                 if not f.name.startswith("etl_") and f.name != "etl_hash"
             ]
         )
-        query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59^taskISNOTEMPTY^task.assignment_group.nameSTARTSWITHvita^sla.nameLIKE[vita^ORsla.nameLIKE[vgr^ORsla.nameLIKEbradesco"
+        query = f"sys_created_on>={self.start_date} 00:00:00^sys_created_on<={self.end_date} 23:59:59^taskISNOTEMPTY^task.assignment_group.nameSTARTSWITHvita^ORtask.assignment_groupSTARTSWITHvivo b2b centro servi^sla.nameLIKE[vita^ORsla.nameLIKE[vgr^ORsla.nameLIKEbradesco^ORsla.nameLIKE[vgr^ORsla.nameLIKE"
         # query = f"task.closed_at>={self.start_date} 00:00:00^task.closed_at<={self.end_date} 23:59:59^taskISNOTEMPTY^task.assignment_group.nameSTARTSWITHvita^sla.nameLIKE[vita^ORsla.nameLIKE[vgr^ORsla.nameLIKEbradesco"
         result_list = paginate(
             path="task_sla",

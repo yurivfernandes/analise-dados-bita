@@ -43,7 +43,7 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
             .alias("opened_at"),
             pl.col("closed_at")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
-            .alias("openeclosed_atd_at"),
+            .alias("closed_at"),
             pl.col("resolved_at")
             .map_elements(parse_datetime, return_dtype=pl.Datetime)
             .alias("resolved_at"),
@@ -72,7 +72,7 @@ class LoadIncidentsOpened(MixinGetDataset, Pipeline):
             ]
         )
 
-        query = f"opened_at>={start_ts}^opened_at<={end_ts}^assignment_groupSTARTSWITHvita"
+        query = f"opened_at>={start_ts}^opened_at<={end_ts}^assignment_groupSTARTSWITHvita^ORassignment_groupSTARTSWITHvivo b2b centro servi"
         params = {
             "sysparm_query": query,
             "sysparm_fields": fields,
